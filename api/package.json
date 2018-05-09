@@ -13,7 +13,7 @@
     "start": "babel-node src/index.js"
   },
   "dependencies": {
-    "cosmos-sql": "^0.0.4",
+    "cosmos-sql": "^0.1.0",
     "documentdb": "^1.14.4",
     "node-bits": "^0.0.34",
     "node-bits-code": "^0.0.25",
