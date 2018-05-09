@@ -1,0 +1,38 @@
+{
+  "name": "schwankie",
+  "version": "1.0.0",
+  "description": "api of schwankie.com",
+  "main": "src/index.js",
+  "repository": "https://github.com/jgretz/schwankie",
+  "author": "Josh Gretz",
+  "license": "MIT",
+  "scripts": {
+    "build": "node tools/build.js",
+    "debug": "nodemon --exec babel-node --inspect --presets es2015 src/index.js --inspect",
+    "nodemon": "NODE_ENV=DEV nodemon src/index.js --exec babel-node",
+    "start": "babel-node src/index.js"
+  },
+  "dependencies": {
+    "cosmos-sql": "^0.0.4",
+    "documentdb": "^1.14.4",
+    "node-bits": "^0.0.34",
+    "node-bits-code": "^0.0.25",
+    "node-bits-express": "^0.0.21"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.0",
+    "babel-eslint": "^8.2.1",
+    "babel-plugin-transform-runtime": "^6.23.0",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-es2015": "^6.24.0",
+    "babel-preset-stage-1": "^6.22.0",
+    "babel-register": "^6.26.0",
+    "babel-runtime": "^6.26.0",
+    "eslint": "^4.4.1",
+    "eslint-plugin-import": "^2.7.0",
+    "eslint-plugin-react": "^7.6.0",
+    "nodemon": "^1.14.11",
+    "shelljs": "^0.8.1"
+  }
+}
