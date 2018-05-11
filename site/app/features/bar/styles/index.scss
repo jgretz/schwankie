@@ -1,0 +1,20 @@
+.bar {
+  background-color: $header;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  ul {
+    margin: 0 0 0 10px;
+    li {
+      display: inline-block;
+      margin: 10px 5px;
+    }
+  }
+
+  input {
+    margin: 0 15px 0 0;
+    width: 200px;
+  }
+}

@@ -1,3 +1,14 @@
+/* Named Colors */
 $black: #000;
 $white: #fff;
-$error: #d9534f;
+$red: #d9534f;
+$nyanza: #E4FDE1;
+$darkSeaGreen: #8ACB88;
+$aurometalsaurus: #648381;
+$davysgrey: #575761;
+$pastelOrange: #FFBF46;
+
+
+/* theme slots */
+$error: $red;
+$header: $pastelOrange;
