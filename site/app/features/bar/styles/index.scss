@@ -5,11 +5,13 @@
   justify-content: space-between;
   align-items: center;
 
-  ul {
-    margin: 0 0 0 10px;
-    li {
-      display: inline-block;
-      margin: 10px 5px;
+  .menu {
+    padding: 15px 0 0 5px;
+
+    .active {
+      background-color: $davysgrey !important;
+      color: $header !important;
+      font-weight: bold !important;
     }
   }
 
