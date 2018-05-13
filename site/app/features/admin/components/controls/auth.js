@@ -16,14 +16,9 @@ const handleLogin = (auth, login, clearAuthForm) => () => {
 
 const authForm = ({auth, updateAuthForm, login, clearAuthForm}) => (
   <Form className="auth">
-    <Form.Field>
-      <label>User:</label>
-      <input placeholder="user" value={auth.user} onChange={handleChange('user', updateAuthForm)} />
-    </Form.Field>
-    <Form.Field>
-      <label>Password:</label>
-      <input placeholder="password" type="password" value={auth.password} onChange={handleChange('password', updateAuthForm)} />
-    </Form.Field>
+    <Form.Field label="User:" control="input" placeholder="user" value={auth.user} onChange={handleChange('user', updateAuthForm)} />
+    <Form.Field label="Password:" control="input" placeholder="password" type="password" value={auth.password} onChange={handleChange('password', updateAuthForm)} />
+    
     <Button type="submit" onClick={handleLogin(auth, login, clearAuthForm)}>Login</Button>
   </Form>
 );

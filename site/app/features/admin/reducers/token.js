@@ -5,7 +5,7 @@ const TOKEN = 'TOKEN';
 
 export default stateReducer(localStorage.getItem(TOKEN), {
   [LOGIN_SUCESS]: (_, payload) => {
-    localStorage.setItem(TOKEN, payload);
-    return payload;
+    localStorage.setItem(TOKEN, payload.token);
+    return payload.token;
   },
 });
