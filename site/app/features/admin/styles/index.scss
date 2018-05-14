@@ -7,3 +7,26 @@ form.auth {
     float: right;
   }
 }
+
+.linkForm {
+  width: 600px;
+  margin: 30px auto;
+
+  .forms {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+
+    form {
+      width: 295px;
+    }
+  }
+
+  .buttons {
+    display: flex;
+    justify-content: flex-end;
+    align-content: flex-start;
+
+    margin: 12px 0 0 0;
+  }
+}

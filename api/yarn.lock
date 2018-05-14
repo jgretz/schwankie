@@ -1233,9 +1233,9 @@ cors@^2.8.3:
     object-assign "^4"
     vary "^1"
 
-cosmos-sql@^0.1.0:
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/cosmos-sql/-/cosmos-sql-0.1.0.tgz#9f8ba74237d9fa66075d5a7f644a20386ba35b78"
+cosmos-sql@^0.1.1:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/cosmos-sql/-/cosmos-sql-0.1.1.tgz#87d3ed6c564a9bc325045b78f24766e546963aac"
   dependencies:
     documentdb "^1.14.4"
 
