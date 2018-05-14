@@ -13,6 +13,7 @@
     "start": "babel-node src/index.js"
   },
   "dependencies": {
+    "axios": "^0.18.0",
     "cosmos-sql": "^0.1.1",
     "documentdb": "^1.14.4",
     "jsonwebtoken": "^8.2.1",
