@@ -1,9 +1,16 @@
 import _ from 'lodash';
-import {findById, findByUrl, findBySearch} from '../../strategies';
+import {logError} from 'node-bits';
+import {findById, findRecent, findByUrl, findBySearch} from '../../strategies';
 
-const strategies = [findById, findByUrl, findBySearch];
+const strategies = [findById, findRecent, findByUrl, findBySearch];
 
 export default class Links {
+  handleError(res, err) {
+    logError(JSON.stringify(err));
+
+    res.status(500).send(err);
+  }
+
   async get(req, res) {
     const strategy = _.find(strategies, s => s.test(req));
     if (!strategy) {
@@ -16,7 +23,7 @@ export default class Links {
     try {
       await strategy.find(req, res, col);
     } catch (err) {
-      res.status(500).send(err);
+      this.handleError(res, err);
     }
   }
 
@@ -27,7 +34,7 @@ export default class Links {
       const result = await col.create(req.body);
       res.json(result);
     } catch (err) {
-      res.status(500).send(err);
+      this.handleError(res, err);
     }
   }
 
@@ -38,7 +45,7 @@ export default class Links {
       const result = await col.replace(req.body.id, req.body);
       res.json(result);
     } catch (err) {
-      res.status(500).send(err);
+      this.handleError(res, err);
     }
   }
 
@@ -49,7 +56,7 @@ export default class Links {
       const result = await col.delete(req.query.id);
       res.json(result);
     } catch (err) {
-      res.status(500).send(err);
+      this.handleError(res, err);
     }
   }
 }

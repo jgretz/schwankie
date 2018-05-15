@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import moment from 'moment';
 import {post, put} from 'truefit-react-utils';
 
 export const LINK_SAVED = 'LINK_SAVED';
@@ -9,8 +10,12 @@ export const saveLink = async item => {
     ...inbound,
 
     id: inbound.id ? inbound.id : undefined, // eslint-disable-line
-    tags: inbound.tags.split(',').map(t => _.trim(t)).filter(x => x.length > 0),
-  }
+    tags: inbound.tags
+      .split(',')
+      .map(t => _.trim(t))
+      .filter(x => x.length > 0),
+    date: moment().unix(),
+  };
 
   const response = await (item.id ? put('links', body) : post('links', body));
   const link = response.data;

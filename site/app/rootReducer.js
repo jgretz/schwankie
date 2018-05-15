@@ -3,13 +3,13 @@
 /* eslint-disable object-shorthand */
 import {combineReducers} from 'redux';
 import {routerReducer} from 'react-router-redux';
-import admin from './features/admin/reducers';
 import bar from './features/bar/reducers';
+import admin from './features/admin/reducers';
 
 const rootReducer = combineReducers({
   features: combineReducers({
-    admin: admin,
     bar: bar,
+    admin: admin,
   }),
   router: routerReducer,
 });

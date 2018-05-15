@@ -17,18 +17,14 @@ const findLinkFromWeb = async url => {
   const title = doc.filter('title').text();
   const description = doc.filter('meta[name="description"]').attr('content');
   const keywords = doc.filter('meta[name="keywords"]').attr('content');
-  const images = doc
-    .find('img')
-    .toArray()
-    .map(image => image.src)
-    .filter(x => x && x.length > 0);
+  const image = doc.filter('meta[name="og:image"]').attr('content');
 
   return {
     url,
     title,
     description,
     tags: keywords ? keywords.join(', ') : '',
-    images: images,
+    image,
   };
 };
 

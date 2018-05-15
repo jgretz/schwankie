@@ -12,7 +12,7 @@ export default {
     const tagSearch = terms.map(t => `ARRAY_CONTAINS(l.tags, "${t}")`).join(' OR ');
 
     const query = `
-        SELECT l.id,, l.url, l.title, l.description, l.tags
+        SELECT l.id,, l.url, l.title, l.description, l.tags, l.image
         FROM links l
         WHERE (
           ${titleSearch} OR ${descriptionSearch} OR ${tagSearch}
