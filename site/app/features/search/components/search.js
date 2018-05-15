@@ -1,8 +1,10 @@
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
 import Masonry from 'react-masonry-component';
+import autobind from 'autobind-decorator';
 
-import {loadRecentLinks} from '../actions';
+import {loadRecentLinks, searchForLinks} from '../actions';
+import {updateSearch} from '../../bar/actions';
 import {linksSelector} from '../selectors';
 
 const DEFAULT_IMAGE = 'https://placeimg.com/300/300/any/grayscale';
@@ -13,7 +15,25 @@ class Search extends Component {
     this.props.loadRecentLinks();
   }
 
+  // actions
+  @autobind
+  handleTagClick(tag) {
+    return () => {
+      this.props.updateSearch({target: {value: tag}});
+      this.props.searchForLinks(tag);
+    };
+  }
+
   // render
+  renderTags(tags) {
+    return tags.map((tag, index) => (
+      <div key={tag} onClick={this.handleTagClick(tag)}>
+        {tag}
+        {index === tags.length - 1 ? '' : ', '}
+      </div>
+    ));
+  }
+
   render() {
     const {links} = this.props;
 
@@ -26,8 +46,8 @@ class Search extends Component {
             <a href={url} target="_blank">
               <h3>{title}</h3>
             </a>
-            <p>{description}</p>
-            <p className="tags">Tags: {tags.join(', ')}</p>
+            <div>{description}</div>
+            <div className="tags">Tags: {this.renderTags(tags)}</div>
           </div>
         </li>
       ),
@@ -45,4 +65,8 @@ const mapStateToProps = state => ({
   links: linksSelector(state),
 });
 
-export default connect(mapStateToProps, {loadRecentLinks})(Search);
+export default connect(mapStateToProps, {
+  loadRecentLinks,
+  searchForLinks,
+  updateSearch,
+})(Search);
