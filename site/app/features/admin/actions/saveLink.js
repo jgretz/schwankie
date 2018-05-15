@@ -12,7 +12,7 @@ export const saveLink = async item => {
     id: inbound.id ? inbound.id : undefined, // eslint-disable-line
     tags: inbound.tags
       .split(',')
-      .map(t => _.trim(t))
+      .map(t => _.trim(t).toLowerCase())
       .filter(x => x.length > 0),
     date: moment().unix(),
   };

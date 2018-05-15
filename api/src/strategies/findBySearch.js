@@ -7,17 +7,17 @@ export default {
       return;
     }
 
-    const titleSearch = terms.map(t => `CONTAINS(l.title, "${t}")`).join(' OR ');
-    const descriptionSearch = terms.map(t => `CONTAINS(l.description, "${t}")`).join(' OR ');
-    const tagSearch = terms.map(t => `ARRAY_CONTAINS(l.tags, "${t}")`).join(' OR ');
+    const titleSearch = terms.map(t => `CONTAINS(LOWER(l.title), LOWER("${t}"))`).join(' OR ');
+    const descriptionSearch = terms.map(t => `CONTAINS(LOWER(l.description), LOWER("${t}"))`).join(' OR ');
+    const tagSearch = terms.map(t => `ARRAY_CONTAINS(l.tags, LOWER("${t}"))`).join(' OR ');
 
     const query = `
-        SELECT l.id,, l.url, l.title, l.description, l.tags, l.image
-        FROM links l
-        WHERE (
-          ${titleSearch} OR ${descriptionSearch} OR ${tagSearch}
-        )
-      `;
+      SELECT l.id, l.url, l.title, l.description, l.tags, l.image
+      FROM links l
+      WHERE (
+        ${titleSearch} OR ${descriptionSearch} OR ${tagSearch}
+      )
+    `;
 
     const results = await col.query(query);
     res.json(results);
