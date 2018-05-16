@@ -7,6 +7,7 @@
     "build-site": "node tools/build_site.js",
     "start": "nodemon src/index.js --exec babel-node",
     "build": "node tools/build.js",
+    "test": "",
     "publish": "yarn build && git subtree push --prefix lib heroku master"
   },
   "author": "Josh Gretz",

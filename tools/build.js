@@ -19,6 +19,7 @@ exec('yarn', () => {
     cd('../lib');
     
     mv('../api/lib/*', './');
+    rm('../api/lib');
     rm('constants/private.js');
   
     // build site
