@@ -1,9 +1,15 @@
 .bar {
+  flex: 1;
+
   background-color: $header;
 
   display: flex;
   justify-content: space-between;
   align-items: center;
+
+  height: 65px;
+  max-height: 65px;
+  min-height: 65px;
 
   .menu {
     padding: 15px 0 0 5px;

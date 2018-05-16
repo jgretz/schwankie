@@ -1,0 +1,21 @@
+.page-footer {
+  flex-shrink: 0;
+
+  height: 35px;
+  width: 100%;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  background-color: $davysgrey;
+  color: $pastelOrange;
+
+  div {
+    margin: 5px;
+
+    a {
+      color: $davysgrey;
+    }
+  }
+}
