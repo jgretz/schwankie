@@ -17,28 +17,41 @@ const origin = url => {
 };
 
 const findLinkFromWeb = async url => {
-  const response = await get('search', {url});
-  const doc = $(response.data);
-  const title = doc.filter('title').text();
-  const description = doc.filter('meta[name="description"]').attr('content');
-  const keywords = doc.filter('meta[name="keywords"]').attr('content');
+  try {
+    const response = await get('search', {url});
+    const doc = $(response.data);
+    const title = doc.filter('title').text();
+    const description = doc.filter('meta[name="description"]').attr('content');
+    const keywords = doc.filter('meta[name="keywords"]').attr('content');
 
-  let image = doc.filter('meta[name="og:image"]').attr('content');
-  if (!image) {
-    const images = doc
-      .find('img')
-      .toArray()
-      .map(x => x.src.replace(location.origin, origin(url)));
-    image = images.length > 0 ? images[0] : '';
+    let image = doc.filter('meta[name="og:image"]').attr('content');
+    if (!image) {
+      const images = doc
+        .find('img')
+        .toArray()
+        .map(x => x.src.replace(location.origin, origin(url)));
+      image = images.length > 0 ? images[0] : '';
+    }
+
+    return {
+      id: null,
+      url,
+      title: title || '',
+      description: description || '',
+      tags: keywords && keywords.join ? keywords.join(', ') : '',
+      image,
+    };
+  } catch (err) {
+    console.log(err); // eslint-disable-line
+    return {
+      id: null,
+      url,
+      title: '',
+      description: '',
+      tags: '',
+      image: '',
+    };
   }
-
-  return {
-    url,
-    title,
-    description,
-    tags: keywords ? keywords.join(', ') : '',
-    image,
-  };
 };
 
 const findLinkInStore = async url => {
