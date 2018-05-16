@@ -14,7 +14,7 @@
     "generateReducerIndexFiles": "babel-node tools/generateReducerIndexFiles.js",
     "generateRootReducer": "babel-node tools/generateRootReducer.js",
     "generateFiles": "run-p generateIndexFiles generateRootReducer",
-    "webpack": "webpack-cli --config webpack.config.prod.babel.js --bail -p --progress",
+    "webpack": "webpack-cli --config webpack.config.prod.babel.js --bail",
     "clean": "rimraf /lib",
     "build": "yarn run generateFiles && yarn run webpack",
     "precommit": "lint-staged"
