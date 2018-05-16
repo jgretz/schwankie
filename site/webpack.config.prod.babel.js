@@ -13,8 +13,8 @@ export default {
     main: ['babel-polyfill', './app/index.js'],
   },
   output: {
-    path: path.resolve(__dirname, '/lib'),
-    publicPath: '/react/',
+    path: path.resolve(__dirname, './lib'),
+    publicPath: '/',
     filename: '[name].[chunkhash].js',
     chunkFilename: '[name].[chunkhash].js',
   },
@@ -55,6 +55,7 @@ export default {
               'react',
             ],
             plugins: [
+              'transform-decorators-legacy',
               'syntax-dynamic-import',
               'transform-react-remove-prop-types',
               'transform-object-rest-spread',

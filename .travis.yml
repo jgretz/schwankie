@@ -1,0 +1,14 @@
+language: node_js
+node_js:
+- node
+after_success:
+- yarn build
+before_deploy:
+- cd ./lib
+deploy:
+  provider: heroku
+  api_key:
+    secure: AUgBQvV20R/rLe/y4E1PAqmC1gXHM62bsrvUQN5+eh2jA06MGShB5Lto25ey+NhAhu9XmBjK4Th3+Kudn+glx4e0KC0lSA5S1pGikqxReVLA/uIbX3ji8zCGsFcRxlLxxTZFZfdmAg9/xy4Ln4fyO2kXLym7BmI83rhHBEbUQ+AK8LyxQJBhB1zwswC6l/Wejl66bB8s2cs4rvfgq/CLEU6juvng09YmfzvR4yJoZgrIAI9+H5b9e5+O6EisRhQsDHSwHoJbl9MT82cKbS7PBnCf4+WiafFrAL000ca8P2T+MEfZWmyGqhzO5AQLxDJyA3lT4XUjGiqSfZjvP1Q4Y2iUwwdSzT62IYBEvltexHTko4O9bq14QhgzOAZoGcQR1JVMBXjVuG6L28l0DWnl+tRngnK+sv6E4AcXFjIvXgBwPt5mSBabnHdKayPmuhZxDORILrKi5/2DJAoi4fuYSZXdQ4z8cOuo/lhqS6a2aK3BLhmlPmw1tk7QxY7dtUxl8klBB5BKoU/in5PTMu4kSVP7ZoD0v8wZgyvQNVpdA0wsQf7BLFK1bC1FTpbeqJUbnEwy++AijAjBrB8eTap6PUPmr4YiVxLrjVtbtW5oFhSOc4H+YxyhdmbYtIJBWIKYlPOLhJz5mGddn5hVFEphivHWmYvaKmNbr1G9UE+pnXg=
+  app: schwankie
+  on:
+    repo: jgretz/schwankie
