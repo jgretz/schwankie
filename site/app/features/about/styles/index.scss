@@ -1,0 +1,12 @@
+.about {
+  padding: 24px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+
+  p {
+    width: 400px;
+  }
+}
