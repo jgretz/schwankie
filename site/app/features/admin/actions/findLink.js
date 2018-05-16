@@ -11,13 +11,26 @@ const isUrlValid = userInput => {
   return res;
 };
 
+const origin = url => {
+  const parts = url.split('/');
+  return `${parts[0]}//${parts[2]}`;
+};
+
 const findLinkFromWeb = async url => {
   const response = await get('search', {url});
   const doc = $(response.data);
   const title = doc.filter('title').text();
   const description = doc.filter('meta[name="description"]').attr('content');
   const keywords = doc.filter('meta[name="keywords"]').attr('content');
-  const image = doc.filter('meta[name="og:image"]').attr('content');
+
+  let image = doc.filter('meta[name="og:image"]').attr('content');
+  if (!image) {
+    const images = doc
+      .find('img')
+      .toArray()
+      .map(x => x.src.replace(location.origin, origin(url)));
+    image = images.length > 0 ? images[0] : '';
+  }
 
   return {
     url,

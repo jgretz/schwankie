@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import moment from 'moment';
 import {post, put} from 'truefit-react-utils';
+import toastr from 'toastr';
 
 export const LINK_SAVED = 'LINK_SAVED';
 
@@ -19,6 +20,8 @@ export const saveLink = async item => {
 
   const response = await (item.id ? put('links', body) : post('links', body));
   const link = response.data;
+
+  toastr.success('Link Saved');
 
   return {
     type: LINK_SAVED,
