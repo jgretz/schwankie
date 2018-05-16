@@ -16,6 +16,13 @@ const origin = url => {
   return `${parts[0]}//${parts[2]}`;
 };
 
+const replaceMap = {
+  'https://assets-cdn.github.com/images/spinners/octocat-spinner-32-EAF2F5.gif':
+    'https://assets-cdn.github.com/images/modules/logos_page/Octocat.png',
+};
+
+const mapImage = image => replaceMap[image] || image;
+
 const findLinkFromWeb = async url => {
   try {
     const response = await get('search', {url});
@@ -39,7 +46,7 @@ const findLinkFromWeb = async url => {
       title: title || '',
       description: description || '',
       tags: keywords && keywords.join ? keywords.join(', ') : '',
-      image,
+      image: mapImage(image),
     };
   } catch (err) {
     console.log(err); // eslint-disable-line
@@ -62,6 +69,7 @@ const findLinkInStore = async url => {
     return {
       ...link,
       tags: link.tags ? link.tags.join(', ') : '',
+      image: mapImage(link.image),
     };
   }
 
