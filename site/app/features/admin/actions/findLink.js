@@ -48,7 +48,7 @@ const findLinkInStore = async url => {
     const link = response.data[0];
     return {
       ...link,
-      tags: link.tags.join(', '),
+      tags: link.tags ? link.tags.join(', ') : '',
     };
   }
 
