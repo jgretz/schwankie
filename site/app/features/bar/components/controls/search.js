@@ -3,31 +3,26 @@ import {connect} from 'react-redux';
 import {Input, Icon} from 'semantic-ui-react';
 
 import {updateSearch} from '../../actions';
-import {searchForLinks} from '../../../search/actions';
+import {searchForLinks, loadRecentLinks} from '../../../search/actions';
 import {searchSelector} from '../../selectors';
 
-const handleKeyPress = (term, searchForLinks) => event => {
-  if (event.key !== 'Enter') {
+const handleSearch = (term, searchForLinks, loadRecentLinks) => event => {
+  if (event.key && event.key !== 'Enter') {
+    return;
+  }
+
+  if (term.length === 0) {
+    loadRecentLinks();
     return;
   }
 
   searchForLinks(term);
 };
 
-const handleSearch = (term, searchForLinks) => () => {
-  searchForLinks(term);
-};
+const searchBox = ({search, updateSearch, searchForLinks, loadRecentLinks}) => {
+  const handler = handleSearch(search, searchForLinks, loadRecentLinks);
 
-const searchBox = ({search, updateSearch, searchForLinks}) => {
-  const icon = (
-    <Icon
-      name="search"
-      inverted
-      circular
-      link
-      onClick={handleSearch(search, searchForLinks)}
-    />
-  );
+  const icon = <Icon name="search" inverted circular link onClick={handler} />;
 
   return (
     <Input
@@ -35,7 +30,7 @@ const searchBox = ({search, updateSearch, searchForLinks}) => {
       placeholder="Search ..."
       value={search}
       onChange={updateSearch}
-      onKeyPress={handleKeyPress(search, searchForLinks)}
+      onKeyPress={handler}
     />
   );
 };
@@ -44,6 +39,8 @@ const mapStateToProps = state => ({
   search: searchSelector(state),
 });
 
-export default connect(mapStateToProps, {updateSearch, searchForLinks})(
-  searchBox,
-);
+export default connect(mapStateToProps, {
+  updateSearch,
+  loadRecentLinks,
+  searchForLinks,
+})(searchBox);
