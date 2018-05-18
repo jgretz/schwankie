@@ -4,7 +4,7 @@ import Masonry from 'react-masonry-component';
 import autobind from 'autobind-decorator';
 import {Message, Loader} from 'semantic-ui-react';
 
-import {loadRecentLinks, searchForLinks} from '../actions';
+import {loadRandomLinks, searchForLinks} from '../actions';
 import {updateSearch} from '../../bar/actions';
 import {linksSelector} from '../selectors';
 import {searchSelector} from '../../bar/selectors';
@@ -14,7 +14,7 @@ const getImage = image => (image && image.length > 0 ? image : DEFAULT_IMAGE);
 
 class Search extends Component {
   componentDidMount() {
-    this.props.loadRecentLinks();
+    this.props.loadRandomLinks();
   }
 
   // actions
@@ -97,7 +97,7 @@ const mapStateToProps = state => ({
 });
 
 export default connect(mapStateToProps, {
-  loadRecentLinks,
+  loadRandomLinks,
   searchForLinks,
   updateSearch,
 })(Search);

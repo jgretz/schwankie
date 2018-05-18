@@ -1,8 +1,8 @@
 import _ from 'lodash';
 import {logError} from 'node-bits';
-import {findById, findRecent, findByUrl, findBySearch} from '../../strategies';
+import {findById, findRandom, findRecent, findByUrl, findBySearch} from '../../strategies';
 
-const strategies = [findById, findRecent, findByUrl, findBySearch];
+const strategies = [findById, findRandom, findRecent, findByUrl, findBySearch];
 
 export default class Links {
   handleError(res, err) {
