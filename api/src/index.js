@@ -3,12 +3,12 @@ import nodeBitsExpress, {cors, bodyParser} from 'node-bits-express';
 import nodeBitsCode from 'node-bits-code';
 import nodeBitsSpa from 'node-bits-spa';
 
-import {configureCosmos, configureHttps, configureJwt} from './services';
+import {configureCosmos, configureJwt} from './services';
 
 nodeBits([
   nodeBitsExpress({
     port: 4005,
-    configurations: [configureHttps(),
+    configurations: [
       cors({methods: [GET, POST, PUT, DELETE, OPTIONS]}), bodyParser(),
       configureCosmos(), configureJwt(),
     ],

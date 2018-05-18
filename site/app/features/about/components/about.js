@@ -4,8 +4,8 @@ export default () => (
   <div className="about">
     <h1>Schwankie.com</h1>
     <h3>A random index of the web</h3>
+    <pre>TLDR: It&#39;s a fancy replacement for my browser bookmarks</pre>
     <p>
-      <pre>TLDR: It&#39;s a fancy replacement for my browser bookmarks</pre>
       <span>
         I read a lot. Whether from Twitter, newsletters, HackerNews, or
         conferences - a large percentage of my life is spent drinking from the
@@ -21,7 +21,29 @@ export default () => (
         nested folder. Rather than follow that paradigm, this site allows me to
         tag each link as well, adding a layer of knowledge and discoverability
         that I have been missing.
+        <br />
+        <br />
+        My bookmarks tend towards either tech or cooking, so if you are looking
+        for something in those domains, chances are you might find something
+        interesting or helpful here. If you do, please consider buying me a
+        coffee (I love coffee :))
       </span>
+
+      <br />
+      <br />
+      <div className="coffee">
+        <a
+          className="bmc-button"
+          target="_blank"
+          href="https://www.buymeacoffee.com/joshgretz"
+        >
+          <img
+            src="https://www.buymeacoffee.com/assets/img/BMC-btn-logo.svg"
+            alt="Buy me a coffee"
+          />
+          <span>Buy me a coffee</span>
+        </a>
+      </div>
     </p>
   </div>
 );

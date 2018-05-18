@@ -20,9 +20,3 @@ export const authConfig = getValue('adminAuth', {
 
 // secret
 export const secret = getValue('secret', process.env.secret);
-
-// https
-export const httpsConfig = getValue('httpsConfig', {
-  url: process.env.httpChallengeUrl,
-  data: process.env.httpsChallengeData,
-});
