@@ -1,5 +1,7 @@
+import {httpsConfig} from '../constants';
+
 export default () => app => {
-  app.get(process.env.httpChallengeUrl, (req, res) => {
-    res.status(200).send(process.env.httpsChallengeData);
+  app.get(httpsConfig.url, (req, res) => {
+    res.status(200).send(httpsConfig.data);
   });
 };
