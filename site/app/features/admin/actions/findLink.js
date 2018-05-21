@@ -19,6 +19,8 @@ const origin = url => {
 const replaceMap = {
   'https://assets-cdn.github.com/images/spinners/octocat-spinner-32-EAF2F5.gif':
     'https://assets-cdn.github.com/images/modules/logos_page/Octocat.png',
+  'https://www.youtube.com/yts/img/pixel-vfl3z5WfW.gif':
+    'https://www.youtube.com/yt/about/media/images/brand-resources/icons/YouTube-icon-our_icon.png',
 };
 
 const mapImage = image => replaceMap[image] || image;
