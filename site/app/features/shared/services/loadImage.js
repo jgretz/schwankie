@@ -57,5 +57,5 @@ const loadImageInWork = (src, onLoad, onError) => {
 };
 
 export default (src, onLoad, onError) => {
-  loadImageInWork(src, onLoad, onError);
+  loadImageInWork(src.replace('http://', 'https://'), onLoad, onError);
 };
