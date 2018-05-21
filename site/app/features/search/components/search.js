@@ -22,6 +22,10 @@ class Search extends Component {
     this.props.loadRandomLinks();
   }
 
+  componentWillUnmount() {
+    this.unmounted = true;
+  }
+
   // actions
   @autobind
   handleTagClick(tag) {
@@ -33,7 +37,7 @@ class Search extends Component {
 
   @autobind
   imageLoadedLogic() {
-    if (this.masonry) {
+    if (this.masonry && !this.unmounted) {
       this.masonry.performLayout();
     }
   }
@@ -71,7 +75,6 @@ class Search extends Component {
       <Masonry
         elementType="ul"
         className="search-list"
-        disableImagesLoaded
         ref={x => {
           this.masonry = x;
         }}
