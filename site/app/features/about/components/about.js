@@ -5,7 +5,7 @@ export default () => (
     <h1>Schwankie.com</h1>
     <h3>A random index of the web</h3>
     <pre>TLDR: It&#39;s a fancy replacement for my browser bookmarks</pre>
-    <p>
+    <div className="message">
       <span>
         I read a lot. Whether from Twitter, newsletters, HackerNews, or
         conferences - a large percentage of my life is spent drinking from the
@@ -44,6 +44,6 @@ export default () => (
           <span>Buy me a coffee</span>
         </a>
       </div>
-    </p>
+    </div>
   </div>
 );

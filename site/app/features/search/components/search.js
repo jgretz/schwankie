@@ -1,18 +1,23 @@
+import _ from 'lodash';
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
 import Masonry from 'react-masonry-component';
 import autobind from 'autobind-decorator';
 import {Message, Loader} from 'semantic-ui-react';
 
+import {Image} from '../../shared/components';
 import {loadRandomLinks, searchForLinks} from '../actions';
 import {updateSearch} from '../../bar/actions';
 import {linksSelector} from '../selectors';
 import {searchSelector} from '../../bar/selectors';
 
-const DEFAULT_IMAGE = 'https://placeimg.com/300/300/any/grayscale';
-const getImage = image => (image && image.length > 0 ? image : DEFAULT_IMAGE);
-
 class Search extends Component {
+  constructor(props) {
+    super(props);
+
+    this.imageLoaded = _.debounce(this.imageLoadedLogic, 500);
+  }
+
   componentDidMount() {
     this.props.loadRandomLinks();
   }
@@ -26,10 +31,17 @@ class Search extends Component {
     };
   }
 
+  @autobind
+  imageLoadedLogic() {
+    if (this.masonry) {
+      this.masonry.performLayout();
+    }
+  }
+
   // render
   renderTags(tags) {
     return tags.map((tag, index) => (
-      <div key={tag} onClick={this.handleTagClick(tag)}>
+      <div key={index} onClick={this.handleTagClick(tag)}>
         {tag}
         {index === tags.length - 1 ? '' : ', '}
       </div>
@@ -40,7 +52,7 @@ class Search extends Component {
   renderLink({id, url, title, description, image, tags}) {
     return (
       <li key={id}>
-        <img src={getImage(image)} />
+        <Image src={image} onLoad={this.imageLoaded} />
 
         <div className="footer">
           <a href={url} target="_blank">
@@ -56,7 +68,14 @@ class Search extends Component {
   @autobind
   renderLinks(links) {
     return (
-      <Masonry elementType="ul" className="search-list">
+      <Masonry
+        elementType="ul"
+        className="search-list"
+        disableImagesLoaded
+        ref={x => {
+          this.masonry = x;
+        }}
+      >
         {links.map(this.renderLink)}
       </Masonry>
     );
