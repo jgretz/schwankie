@@ -19,14 +19,16 @@ const getToken = req => {
 const API = '/api';
 const SEARCH = '/api/links';
 const AUTH = '/api/auth';
+const SITEMAP = '/sitemap.xml';
 
 const isApi = req => req.url.startsWith(API);
 const isSearch = req => req.method === GET && req.url.startsWith(SEARCH);
 const isAuth = req => req.method === POST && req.url === AUTH;
+const isSitemap = req => req.url === SITEMAP;
 
 export default () => app => {
   app.use((req, res, next) => {
-    if (!isApi(req) || isSearch(req) || isAuth(req)) {
+    if (!isApi(req) || isSearch(req) || isAuth(req) || isSitemap(req)) {
       next();
       return;
     }
