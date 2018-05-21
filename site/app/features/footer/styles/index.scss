@@ -8,14 +8,14 @@
   justify-content: space-between;
   align-items: center;
 
-  background-color: $davysgrey;
-  color: $pastelOrange;
+  background-color: $foreground;
+  color: $accent;
 
   div {
     margin: 5px;
 
     a {
-      color: $davysgrey;
+      color: $foreground;
     }
   }
 }
