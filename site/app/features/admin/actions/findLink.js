@@ -17,13 +17,14 @@ const origin = url => {
 };
 
 const replaceMap = {
-  'https://assets-cdn.github.com/images/spinners/octocat-spinner-32-EAF2F5.gif':
+  'https://assets-cdn.github.com/images/spinners/octocat-spinner-32-eaf2f5.gif':
     'https://assets-cdn.github.com/images/modules/logos_page/Octocat.png',
-  'https://www.youtube.com/yts/img/pixel-vfl3z5WfW.gif':
+  'https://www.youtube.com/yts/img/pixel-vfl3z5wfw.gif':
     'https://www.youtube.com/yt/about/media/images/brand-resources/icons/YouTube-icon-our_icon.png',
 };
 
-const mapImage = image => replaceMap[image] || image;
+const mapImage = image =>
+  (image ? replaceMap[image.toLowerCase()] : '') || image;
 
 const findLinkFromWeb = async url => {
   try {
@@ -64,10 +65,11 @@ const findLinkFromWeb = async url => {
 };
 
 const findLinkInStore = async url => {
-  const response = await get(`links?url=${url}`);
+  const response = await get(`links?url=${encodeURIComponent(url)}`);
 
   if (response.data.length > 0) {
     const link = response.data[0];
+
     return {
       ...link,
       tags: link.tags ? link.tags.join(', ') : '',

@@ -4,7 +4,7 @@ export default {
     const query = `
         SELECT l.id, l.url, l.title, l.description, l.tags, l.image
         FROM links l
-        WHERE l.url = "${req.query.url}"
+        WHERE l.url = "${decodeURIComponent(req.query.url)}"
       `;
 
     const results = await col.query(query);
