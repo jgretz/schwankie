@@ -45,7 +45,8 @@ const loadImageInWork = (src, onLoad, onError) => {
       if (m.data.success) {
         onLoad();
       } else if (onError) {
-        onError(m.data.error);
+        // give image a chance
+        loadImageInApp(src, onLoad, onError);
       }
     };
     worker.postMessage(src);
@@ -57,5 +58,11 @@ const loadImageInWork = (src, onLoad, onError) => {
 };
 
 export default (src, onLoad, onError) => {
-  loadImageInWork(src.replace('http://', 'https://'), onLoad, onError);
+  // images can't be loaded on http from a web worker on https
+  if (src.startsWith('http://')) {
+    loadImageInApp(src, onLoad, onError);
+    return;
+  }
+
+  loadImageInWork(src, onLoad, onError);
 };
