@@ -8,8 +8,14 @@
   justify-content: flex-start;
   align-items: center;
 
+  p {
+    max-width: 460px;
+    font-style: italic;
+  }
+
   .message {
-    width: 460px;
+    max-width: 460px;
+    width: 100%;
   }
 
   .coffee {

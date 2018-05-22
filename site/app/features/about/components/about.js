@@ -4,7 +4,7 @@ export default () => (
   <div className="about">
     <h1>Schwankie.com</h1>
     <h3>A random index of the web</h3>
-    <pre>TLDR: It&#39;s a fancy replacement for my browser bookmarks</pre>
+    <p>TLDR: It&#39;s a fancy replacement for my browser bookmarks</p>
     <div className="message">
       <span>
         I read a lot. Whether from Twitter, newsletters, HackerNews, or
