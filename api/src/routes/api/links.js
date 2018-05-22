@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import {logError} from 'node-bits';
-import {findById, findRandom, findRecent, findByUrl, findBySearch} from '../../strategies';
+import {findById, findRandom, findRecent, findByUrl, findBySearch} from '../../services';
 
 const strategies = [findById, findRandom, findRecent, findByUrl, findBySearch];
 

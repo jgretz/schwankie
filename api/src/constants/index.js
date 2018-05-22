@@ -1,5 +1,5 @@
-const isDev = process.env.NODE_ENV === 'DEV';
-const getValue = (key, server) => (isDev ? require('./private.js')[key] : server);
+import {isDev} from '../services';
+const getValue = (key, server) => (isDev() ? require('./private.js')[key] : server);
 
 // cosmos config
 const serverConfig = getValue('cosmosConfig', {
