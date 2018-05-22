@@ -16,7 +16,7 @@
   }
 
   .menu {
-    padding: 15px 0 0 5px;
+    padding: 5px 0 0 5px;
 
     .active {
       background-color: $accent !important;
@@ -28,5 +28,18 @@
   .icon {
     margin: 10px 15px;
     width: 300px;
+  }
+
+  .logo {
+    margin: 5px 0 0 15px;
+
+    img {
+      border-radius: 12px;
+      height: 55px;
+    }
+
+    @media screen and (max-width: 768px) {
+      display: none;
+    }
   }
 }

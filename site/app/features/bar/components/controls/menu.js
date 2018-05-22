@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import React from 'react';
 import {Menu} from 'semantic-ui-react';
+import {Link} from 'react-router-dom';
 import {connect} from 'react-redux';
 import {push} from 'react-router-redux';
 
@@ -20,13 +21,13 @@ const siteMenu = ({activeRoute, token, push}) => {
     })
     .map(x => ({
       ...x,
+      as: Link,
+      to: x.route,
       onClick: handleRouteClick(x, push),
       active: x.route === activeRoute,
     }));
 
-  return (
-    <Menu items={items} secondary />
-  );
+  return <Menu items={items} secondary />;
 };
 
 const mapStateToProps = state => ({

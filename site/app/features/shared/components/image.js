@@ -19,6 +19,10 @@ export default class ImageWrapper extends Component {
     }
 
     loadImage(src, () => {
+      if (this.unmounted) {
+        return;
+      }
+
       this.setState({displaySrc: src});
 
       if (onLoad) {
@@ -27,6 +31,10 @@ export default class ImageWrapper extends Component {
         });
       }
     });
+  }
+
+  componentWillUnmount() {
+    this.unmounted = true;
   }
 
   render() {
