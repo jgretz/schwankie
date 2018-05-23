@@ -14,10 +14,10 @@ export default class Sitemap {
     res.status(200).send(`
       <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
         <url>
-          <loc>http://www.schwankie.com/</loc>
+          <loc>https://www.schwankie.com/</loc>
         </url>
         <url>
-          <loc>http://www.schwankie.com/about</loc>
+          <loc>https://www.schwankie.com/about</loc>
         </url>
       </urlset>
     `);
