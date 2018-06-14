@@ -1,4 +1,7 @@
 .search-list {
+  position: relative;
+  z-index: 0;
+
   flex: 1 0 auto;
 
   li {
@@ -50,4 +53,53 @@
 .search-message {
   align-self: center;
   width: 350px;
+}
+
+.source {
+  position: absolute;
+  top: 25px;
+  right: 15px;
+  z-index: 10;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  width: 204.77px;
+  height: 80px;
+
+  border-radius: 50%;
+  background-color: $foreground;
+
+  .source-option {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    width: 102.38px;
+    height: 80px;
+
+    padding-top: 35px;
+
+    background-color: $foreground;
+    color: $accent;
+
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .source-option.left {
+    border-top-left-radius: 50%;
+    border-bottom-left-radius: 50%;
+  }
+
+  .source-option.right {
+    border-top-right-radius: 50%;
+    border-bottom-right-radius: 50%;
+  }
+
+  .source-option.active {
+    background-color: $accent;
+    color: $foreground;
+  }
 }

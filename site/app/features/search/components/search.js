@@ -6,10 +6,19 @@ import autobind from 'autobind-decorator';
 import {Message, Loader} from 'semantic-ui-react';
 
 import {Image} from '../../shared/components';
-import {loadRandomLinks, searchForLinks} from '../actions';
+
+import {
+  loadRandomLinks,
+  loadRecentLinks,
+  searchForLinks,
+  setSource,
+} from '../actions';
 import {updateSearch} from '../../bar/actions';
-import {linksSelector} from '../selectors';
+
+import {linksSelector, sourceSelector} from '../selectors';
 import {searchSelector} from '../../bar/selectors';
+
+import {SOURCE} from '../../shared/constants';
 
 class Search extends Component {
   constructor(props) {
@@ -19,11 +28,26 @@ class Search extends Component {
   }
 
   componentDidMount() {
-    this.props.loadRandomLinks();
+    this.loadLinks();
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.source !== prevProps.source) {
+      this.loadLinks();
+    }
   }
 
   componentWillUnmount() {
     this.unmounted = true;
+  }
+
+  // helpers
+  @autobind
+  loadLinks() {
+    const {source, loadRandomLinks, loadRecentLinks} = this.props;
+    const load = source === SOURCE.Random ? loadRandomLinks : loadRecentLinks;
+
+    load();
   }
 
   // actions
@@ -40,6 +64,15 @@ class Search extends Component {
     if (this.masonry && !this.unmounted) {
       this.masonry.performLayout();
     }
+  }
+
+  @autobind
+  setSource(source) {
+    return () => {
+      const {setSource} = this.props;
+
+      setSource(source);
+    };
   }
 
   // render
@@ -98,6 +131,41 @@ class Search extends Component {
     return <Loader indeterminate>Loading most recent articles</Loader>;
   }
 
+  @autobind
+  renderSource() {
+    const {source, searchTerm} = this.props;
+
+    if (searchTerm && searchTerm.length > 0) {
+      return null;
+    }
+
+    return (
+      <div className="source">
+        <div
+          className={[
+            'source-option',
+            'left',
+            source === SOURCE.Random ? 'active' : '',
+          ].join(' ')}
+          onClick={this.setSource(SOURCE.Random)}
+        >
+          Random
+        </div>
+
+        <div
+          className={[
+            'source-option',
+            'right',
+            source === SOURCE.Recent ? 'active' : '',
+          ].join(' ')}
+          onClick={this.setSource(SOURCE.Recent)}
+        >
+          Recent
+        </div>
+      </div>
+    );
+  }
+
   render() {
     const {links, searchTerm} = this.props;
 
@@ -109,17 +177,25 @@ class Search extends Component {
       }
     }
 
-    return this.renderLinks(links);
+    return (
+      <div>
+        {this.renderSource()}
+        {this.renderLinks(links)}
+      </div>
+    );
   }
 }
 
 const mapStateToProps = state => ({
   links: linksSelector(state),
   searchTerm: searchSelector(state),
+  source: sourceSelector(state),
 });
 
 export default connect(mapStateToProps, {
   loadRandomLinks,
+  loadRecentLinks,
   searchForLinks,
+  setSource,
   updateSearch,
 })(Search);

@@ -1,4 +1,7 @@
 .bar {
+  position: relative;
+  z-index: 15;
+
   flex: 1;
 
   background-color: $foreground;
@@ -27,7 +30,7 @@
 
   .icon {
     margin: 10px 15px;
-    width: 300px;
+    width: 204.77px;
   }
 
   .logo {
