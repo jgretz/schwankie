@@ -8,3 +8,5 @@ export const SOURCE = {
   Random: 0,
   Recent: 1,
 };
+
+export const DEFAULT_IMAGE = 'https://placeimg.com/300/300/any/grayscale';

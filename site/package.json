@@ -48,6 +48,7 @@
     "react-router": "^4.2.0",
     "react-router-dom": "^4.1.2",
     "react-router-redux": "next",
+    "react-sw-img": "^1.0.0",
     "redux": "^4.0.0",
     "redux-async-await": "^1.0.1",
     "redux-promise-middleware": "^5.0.0",

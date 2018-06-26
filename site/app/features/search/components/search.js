@@ -5,7 +5,7 @@ import Masonry from 'react-masonry-component';
 import autobind from 'autobind-decorator';
 import {Message, Loader} from 'semantic-ui-react';
 
-import {Image} from '../../shared/components';
+import WorkerImage from 'react-sw-img';
 
 import {
   loadRandomLinks,
@@ -18,7 +18,7 @@ import {updateSearch} from '../../bar/actions';
 import {linksSelector, sourceSelector} from '../selectors';
 import {searchSelector} from '../../bar/selectors';
 
-import {SOURCE} from '../../shared/constants';
+import {SOURCE, DEFAULT_IMAGE} from '../../shared/constants';
 
 class Search extends Component {
   constructor(props) {
@@ -89,7 +89,11 @@ class Search extends Component {
   renderLink({id, url, title, description, image, tags}) {
     return (
       <li key={id}>
-        <Image src={image} onLoad={this.imageLoaded} />
+        <WorkerImage
+          src={image}
+          onLoad={this.imageLoaded}
+          placeholder={DEFAULT_IMAGE}
+        />
 
         <div className="footer">
           <a href={url} target="_blank">
