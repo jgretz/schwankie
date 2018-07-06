@@ -1,7 +1,8 @@
-import React, {Component} from 'react';
+import React from 'react';
 import {connect} from 'react-redux';
 import {Input, Icon} from 'semantic-ui-react';
-import autobind from 'autobind-decorator';
+import {compose} from 'recompose';
+import withLifecycle from '@hocs/with-lifecycle';
 
 import {
   searchForLinks,
@@ -12,68 +13,67 @@ import {
 import {termSelector, sourceSelector} from '../selectors';
 import {SOURCE} from '../../shared/constants';
 
-class Search extends Component {
-  componentDidMount() {
-    this.loadLinks();
+// actions
+const loadLinks = ({source, loadRandomLinks, loadRecentLinks}) => {
+  const load = source === SOURCE.Random ? loadRandomLinks : loadRecentLinks;
+  load();
+};
+
+const handleSearch = (term, {searchForLinks, ...props}) => event => {
+  if (event.key && event.key !== 'Enter') {
+    return;
   }
 
-  componentDidUpdate(prevProps) {
-    if (this.props.source !== prevProps.source) {
-      this.loadLinks();
-    }
+  if (term.length === 0) {
+    loadLinks(props);
+    return;
   }
 
-  @autobind
-  loadLinks() {
-    const {source, loadRandomLinks, loadRecentLinks} = this.props;
-    const load = source === SOURCE.Random ? loadRandomLinks : loadRecentLinks;
+  searchForLinks(term);
+};
 
-    load();
-  }
+// render
+const Search = ({term, updateSearch, ...props}) => {
+  const handler = handleSearch(term, props);
 
-  handleSearch(term, searchForLinks, loadRandomLinks) {
-    return event => {
-      if (event.key && event.key !== 'Enter') {
-        return;
+  const icon = <Icon name="search" inverted circular link onClick={handler} />;
+
+  return (
+    <Input
+      icon={icon}
+      placeholder="Search ..."
+      value={term}
+      onChange={updateSearch}
+      onKeyPress={handler}
+    />
+  );
+};
+
+// lifecycle
+const ComposedSearch = compose(
+  withLifecycle({
+    onDidMount(props) {
+      loadLinks(props);
+    },
+    onDidUpdate(prevProps, props) {
+      if (props.source !== prevProps.source) {
+        loadLinks(props);
       }
+    },
+  }),
+)(Search);
 
-      if (term.length === 0) {
-        loadRandomLinks();
-        return;
-      }
-
-      searchForLinks(term);
-    };
-  }
-
-  render() {
-    const {term, updateSearch, searchForLinks, loadRandomLinks} = this.props;
-    const handler = this.handleSearch(term, searchForLinks, loadRandomLinks);
-
-    const icon = (
-      <Icon name="search" inverted circular link onClick={handler} />
-    );
-
-    return (
-      <Input
-        icon={icon}
-        placeholder="Search ..."
-        value={term}
-        onChange={updateSearch}
-        onKeyPress={handler}
-      />
-    );
-  }
-}
-
+// redux
 const mapStateToProps = state => ({
   term: termSelector(state),
   source: sourceSelector(state),
 });
 
-export default connect(mapStateToProps, {
+const mapDispatchToProps = {
   updateSearch,
   loadRandomLinks,
   loadRecentLinks,
   searchForLinks,
-})(Search);
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(ComposedSearch);

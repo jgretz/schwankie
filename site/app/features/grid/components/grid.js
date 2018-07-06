@@ -1,84 +1,95 @@
 import _ from 'lodash';
-import React, {Component} from 'react';
+import React from 'react';
 import {connect} from 'react-redux';
 import Masonry from 'react-masonry-component';
-import autobind from 'autobind-decorator';
 import {Message, Loader} from 'semantic-ui-react';
+import {compose, withHandlers} from 'recompose';
+import withLifecycle from '@hocs/with-lifecycle';
 
 import Source from './source';
 import Item from './item';
 
 import {linksSelector} from '../../search/selectors';
 
-class Search extends Component {
-  constructor(props) {
-    super(props);
+// actions
+const imageLoaded = ({performMasonryLayout}) => () => {
+  performMasonryLayout();
+};
 
-    this.imageLoaded = _.debounce(this.imageLoadedLogic, 500);
+// render
+const renderLoading = () => (
+  <Loader indeterminate>Loading most recent articles</Loader>
+);
+
+const renderEmpty = () => (
+  <Message className="search-message">
+    Sorry, I don&#39;t have any links that involve the term &#39;{
+      // searchTerm
+    }&#39;
+  </Message>
+);
+
+const renderLinks = (links, {onMasonryRef, ...props}) => {
+  const linkElements = links.map(link => (
+    <Item key={link.id} item={link} imageLoaded={imageLoaded(props)} />
+  ));
+
+  return (
+    <Masonry elementType="ul" className="search-list" ref={onMasonryRef}>
+      {linkElements}
+    </Masonry>
+  );
+};
+
+const Grid = ({links, ...props}) => {
+  if (links.length === 0) {
+    return renderLoading() || renderEmpty();
   }
 
-  componentWillUnmount() {
-    this.unmounted = true;
-  }
+  return (
+    <div>
+      <Source />
 
-  // actions
-  @autobind
-  imageLoadedLogic() {
-    if (this.masonry && !this.unmounted) {
-      this.masonry.performLayout();
-    }
-  }
+      {renderLinks(links, props)}
+    </div>
+  );
+};
 
-  // render
-  @autobind
-  renderLinks(links) {
-    return (
-      <Masonry
-        elementType="ul"
-        className="search-list"
-        ref={x => {
-          this.masonry = x;
-        }}
-      >
-        {links.map(link => (
-          <Item key={link.id} item={link} imageLoaded={this.imageLoadedLogic} />
-        ))}
-      </Masonry>
-    );
-  }
+// compose
+const ComposedGrid = compose(
+  withHandlers(() => {
+    let masonry = null;
+    let mounted = true;
 
-  renderNoneFound(searchTerm) {
-    return (
-      <Message className="search-message">
-        Sorry, I don&#39;t have any links that involve the term &#39;{
-          searchTerm
-        }&#39;
-      </Message>
-    );
-  }
+    const performLayout = _.debounce(() => {
+      if (!mounted) {
+        return;
+      }
 
-  renderLoading() {
-    return <Loader indeterminate>Loading most recent articles</Loader>;
-  }
+      masonry.performLayout();
+    }, 500);
 
-  render() {
-    const {links} = this.props;
+    return {
+      onMasonryRef: () => x => {
+        masonry = x;
+      },
+      performMasonryLayout: () => () => performLayout(),
 
-    if (links.length === 0) {
-      return this.renderLoading();
-    }
+      unmount: () => () => {
+        mounted = false;
+      },
+    };
+  }),
+  withLifecycle({
+    onWillUnmount({unmount}) {
+      unmount();
+    },
+  }),
+)(Grid);
 
-    return (
-      <div>
-        <Source />
-        {this.renderLinks(links)}
-      </div>
-    );
-  }
-}
-
+// redux
 const mapStateToProps = state => ({
   links: linksSelector(state),
 });
 
-export default connect(mapStateToProps)(Search);
+export default connect(mapStateToProps)(ComposedGrid);
