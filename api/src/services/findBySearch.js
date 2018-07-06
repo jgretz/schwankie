@@ -66,8 +66,6 @@ export default {
       WHERE (${where.join(' OR ')})
     `;
 
-    console.log(query);
-
     const results = await col.query(query);
     res.json(results);
   },
