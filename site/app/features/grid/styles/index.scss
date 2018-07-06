@@ -44,11 +44,28 @@
     padding: 10px;
 
     overflow-x: hidden;
+
+    .bottom {
+      padding-top: 5px;
+
+      display: flex;
+      justify-content: space-between;
+
+      div {
+        font-size: 10px;
+      }
+
+      .admin-edit {
+        cursor: pointer;
+        white-space: nowrap;
+        user-select: none;
+      }
+    }
   }
 
   .tags {
+    max-width: 200px;
     text-align: right;
-    font-size: 10px;
 
     div {
       display: inline-block;
