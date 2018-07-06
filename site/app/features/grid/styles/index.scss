@@ -1,8 +1,17 @@
+.links-grid {
+  display: flex;
+  justify-content: flex-start;
+
+  flex: 1 0 auto;
+
+  width: 100%;
+}
+
 .search-list {
   position: relative;
   z-index: 0;
 
-  flex: 1 0 auto;
+  width: 100%;
 
   li {
     display: inline-block;

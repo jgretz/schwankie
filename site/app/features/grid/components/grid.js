@@ -11,11 +11,6 @@ import Item from './item';
 
 import {linksSelector} from '../../search/selectors';
 
-// actions
-const imageLoaded = ({performMasonryLayout}) => () => {
-  performMasonryLayout();
-};
-
 // render
 const renderLoading = () => (
   <Loader indeterminate active>
@@ -29,9 +24,9 @@ const renderEmpty = () => (
   </Message>
 );
 
-const renderLinks = (links, {onMasonryRef, ...props}) => {
+const renderLinks = (links, {onMasonryRef, imageLoaded}) => {
   const linkElements = links.map(link => (
-    <Item key={link.id} item={link} imageLoaded={imageLoaded(props)} />
+    <Item key={link.id} item={link} imageLoaded={imageLoaded} />
   ));
 
   return (
@@ -51,7 +46,7 @@ const Grid = ({links: {loading, items}, ...props}) => {
   }
 
   return (
-    <div>
+    <div className="links-grid">
       <Source />
 
       {renderLinks(items, props)}
@@ -77,7 +72,9 @@ const ComposedGrid = compose(
       onMasonryRef: () => x => {
         masonry = x;
       },
-      performMasonryLayout: () => () => performLayout(),
+      imageLoaded: () => () => {
+        performLayout();
+      },
 
       unmount: () => () => {
         mounted = false;
