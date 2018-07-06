@@ -5,10 +5,9 @@ import {Link} from 'react-router-dom';
 import {connect} from 'react-redux';
 import {push} from 'react-router-redux';
 
-import {activeRouteSelector} from '../../selectors';
-import {tokenSelector} from '../../../admin/selectors';
-
-import {ROUTES} from '../../../shared/constants';
+import {activeRouteSelector} from '../../shared/selectors';
+import {tokenSelector} from '../../admin/selectors';
+import {ROUTES} from '../../shared/constants';
 
 const handleRouteClick = (route, push) => () => {
   push(route.route);

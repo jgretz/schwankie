@@ -1,7 +1,8 @@
 import React from 'react';
 import {Link} from 'react-router-dom';
 
-import {Menu, Search} from './controls';
+import Menu from './menu';
+import {Search} from '../../search/components';
 
 import {imageSrc} from '../../shared/services';
 import {ROUTES} from '../../shared/constants';

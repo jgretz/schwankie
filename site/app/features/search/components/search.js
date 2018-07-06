@@ -1,32 +1,18 @@
-import _ from 'lodash';
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
-import Masonry from 'react-masonry-component';
+import {Input, Icon} from 'semantic-ui-react';
 import autobind from 'autobind-decorator';
-import {Message, Loader} from 'semantic-ui-react';
-
-import WorkerImage from 'react-sw-img';
 
 import {
+  searchForLinks,
   loadRandomLinks,
   loadRecentLinks,
-  searchForLinks,
-  setSource,
+  updateSearch,
 } from '../actions';
-import {updateSearch} from '../../bar/actions';
-
-import {linksSelector, sourceSelector} from '../selectors';
-import {searchSelector} from '../../bar/selectors';
-
-import {SOURCE, DEFAULT_IMAGE} from '../../shared/constants';
+import {termSelector, sourceSelector} from '../selectors';
+import {SOURCE} from '../../shared/constants';
 
 class Search extends Component {
-  constructor(props) {
-    super(props);
-
-    this.imageLoaded = _.debounce(this.imageLoadedLogic, 500);
-  }
-
   componentDidMount() {
     this.loadLinks();
   }
@@ -37,11 +23,6 @@ class Search extends Component {
     }
   }
 
-  componentWillUnmount() {
-    this.unmounted = true;
-  }
-
-  // helpers
   @autobind
   loadLinks() {
     const {source, loadRandomLinks, loadRecentLinks} = this.props;
@@ -50,156 +31,49 @@ class Search extends Component {
     load();
   }
 
-  // actions
-  @autobind
-  handleTagClick(tag) {
-    return () => {
-      this.props.updateSearch({target: {value: tag}});
-      this.props.searchForLinks(tag);
+  handleSearch(term, searchForLinks, loadRandomLinks) {
+    return event => {
+      if (event.key && event.key !== 'Enter') {
+        return;
+      }
+
+      if (term.length === 0) {
+        loadRandomLinks();
+        return;
+      }
+
+      searchForLinks(term);
     };
-  }
-
-  @autobind
-  imageLoadedLogic() {
-    if (this.masonry && !this.unmounted) {
-      this.masonry.performLayout();
-    }
-  }
-
-  @autobind
-  setSource(source) {
-    return () => {
-      const {setSource} = this.props;
-
-      setSource(source);
-    };
-  }
-
-  // render
-  renderTags(tags) {
-    return tags.map((tag, index) => (
-      <div key={index} onClick={this.handleTagClick(tag)}>
-        {tag}
-        {index === tags.length - 1 ? '' : ', '}
-      </div>
-    ));
-  }
-
-  @autobind
-  renderLink({id, url, title, description, image, tags}) {
-    return (
-      <li key={id}>
-        <WorkerImage
-          src={image}
-          onLoad={this.imageLoaded}
-          placeholder={DEFAULT_IMAGE}
-        />
-
-        <div className="footer">
-          <a href={url} target="_blank">
-            <h3>{title}</h3>
-          </a>
-          <div>{description}</div>
-          <div className="tags">Tags: {this.renderTags(tags)}</div>
-        </div>
-      </li>
-    );
-  }
-
-  @autobind
-  renderLinks(links) {
-    return (
-      <Masonry
-        elementType="ul"
-        className="search-list"
-        ref={x => {
-          this.masonry = x;
-        }}
-      >
-        {links.map(this.renderLink)}
-      </Masonry>
-    );
-  }
-
-  renderNoneFound(searchTerm) {
-    return (
-      <Message className="search-message">
-        Sorry, I don&#39;t have any links that involve the term &#39;{
-          searchTerm
-        }&#39;
-      </Message>
-    );
-  }
-
-  renderLoading() {
-    return <Loader indeterminate>Loading most recent articles</Loader>;
-  }
-
-  @autobind
-  renderSource() {
-    const {source, searchTerm} = this.props;
-
-    if (searchTerm && searchTerm.length > 0) {
-      return null;
-    }
-
-    return (
-      <div className="source">
-        <div
-          className={[
-            'source-option',
-            'left',
-            source === SOURCE.Random ? 'active' : '',
-          ].join(' ')}
-          onClick={this.setSource(SOURCE.Random)}
-        >
-          Random
-        </div>
-
-        <div
-          className={[
-            'source-option',
-            'right',
-            source === SOURCE.Recent ? 'active' : '',
-          ].join(' ')}
-          onClick={this.setSource(SOURCE.Recent)}
-        >
-          Recent
-        </div>
-      </div>
-    );
   }
 
   render() {
-    const {links, searchTerm} = this.props;
+    const {term, updateSearch, searchForLinks, loadRandomLinks} = this.props;
+    const handler = this.handleSearch(term, searchForLinks, loadRandomLinks);
 
-    if (links.length === 0) {
-      if (searchTerm.length === 0) {
-        return this.renderLoading();
-      } else {
-        return this.renderNoneFound(searchTerm);
-      }
-    }
+    const icon = (
+      <Icon name="search" inverted circular link onClick={handler} />
+    );
 
     return (
-      <div>
-        {this.renderSource()}
-        {this.renderLinks(links)}
-      </div>
+      <Input
+        icon={icon}
+        placeholder="Search ..."
+        value={term}
+        onChange={updateSearch}
+        onKeyPress={handler}
+      />
     );
   }
 }
 
 const mapStateToProps = state => ({
-  links: linksSelector(state),
-  searchTerm: searchSelector(state),
+  term: termSelector(state),
   source: sourceSelector(state),
 });
 
 export default connect(mapStateToProps, {
+  updateSearch,
   loadRandomLinks,
   loadRecentLinks,
   searchForLinks,
-  setSource,
-  updateSearch,
 })(Search);
