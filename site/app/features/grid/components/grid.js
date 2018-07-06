@@ -66,7 +66,7 @@ const ComposedGrid = compose(
     let mounted = true;
 
     const performLayout = _.debounce(() => {
-      if (!mounted) {
+      if (!mounted || !masonry) {
         return;
       }
 
