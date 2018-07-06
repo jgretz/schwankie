@@ -18,14 +18,14 @@ const imageLoaded = ({performMasonryLayout}) => () => {
 
 // render
 const renderLoading = () => (
-  <Loader indeterminate>Loading most recent articles</Loader>
+  <Loader indeterminate active>
+    Loading articles
+  </Loader>
 );
 
 const renderEmpty = () => (
   <Message className="search-message">
-    Sorry, I don&#39;t have any links that involve the term &#39;{
-      // searchTerm
-    }&#39;
+    Unable to find any thing related to the current search :(
   </Message>
 );
 
@@ -41,16 +41,20 @@ const renderLinks = (links, {onMasonryRef, ...props}) => {
   );
 };
 
-const Grid = ({links, ...props}) => {
-  if (links.length === 0) {
-    return renderLoading() || renderEmpty();
+const Grid = ({links: {loading, items}, ...props}) => {
+  if (loading) {
+    return renderLoading();
+  }
+
+  if (items.length === 0) {
+    return renderEmpty();
   }
 
   return (
     <div>
       <Source />
 
-      {renderLinks(links, props)}
+      {renderLinks(items, props)}
     </div>
   );
 };
