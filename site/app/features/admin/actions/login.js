@@ -1,6 +1,6 @@
 import {post} from 'truefit-react-utils';
 
-export const LOGIN_SUCESS = 'LOGIN_SUCCESS';
+export const LOGIN_SUCCESS = 'LOGIN_SUCCESS';
 export const LOGIN_FAILURE = 'LOGIN_FAILURE';
 
 export const login = async auth => {
@@ -8,12 +8,12 @@ export const login = async auth => {
     const response = await post('auth', auth);
 
     return {
-      type: LOGIN_SUCESS,
+      type: LOGIN_SUCCESS,
       payload: response.data,
     };
   } catch (err) {
     return {
       type: LOGIN_FAILURE,
-    }
+    };
   }
 };

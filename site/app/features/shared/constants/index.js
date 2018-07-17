@@ -10,3 +10,5 @@ export const SOURCE = {
 };
 
 export const DEFAULT_IMAGE = 'https://placeimg.com/300/300/any/grayscale';
+
+export const TOKEN = 'TOKEN';
