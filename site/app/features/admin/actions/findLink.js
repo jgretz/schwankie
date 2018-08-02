@@ -17,8 +17,13 @@ const origin = url => {
 };
 
 const replaceMap = {
+  // github
   'https://assets-cdn.github.com/images/spinners/octocat-spinner-32-eaf2f5.gif':
     'https://assets-cdn.github.com/images/modules/logos_page/Octocat.png',
+  'https://assets-cdn.github.com/images/search-shortcut-hint.svg':
+    'https://assets-cdn.github.com/images/modules/logos_page/Octocat.png',
+
+  // youtube
   'https://www.youtube.com/yts/img/pixel-vfl3z5wfw.gif':
     'https://www.youtube.com/yt/about/media/images/brand-resources/icons/YouTube-icon-our_icon.png',
 };

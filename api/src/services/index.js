@@ -5,3 +5,5 @@ export {default as findBySearch} from './findBySearch';
 export {default as findByUrl} from './findByUrl';
 
 export {default as isDev} from './isDev';
+
+export {default as findAndUpdateImage} from './findAndUpdateImage';
