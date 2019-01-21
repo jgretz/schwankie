@@ -22,6 +22,10 @@ const replaceMap = {
     'https://assets-cdn.github.com/images/modules/logos_page/Octocat.png',
   'https://assets-cdn.github.com/images/search-shortcut-hint.svg':
     'https://assets-cdn.github.com/images/modules/logos_page/Octocat.png',
+  'https://github.githubassets.com/images/search-key-slash.svg':
+    'https://assets-cdn.github.com/images/modules/logos_page/Octocat.png',
+  'https://assets-cdn.github.com/images/search-key-slash.svg':
+    'https://assets-cdn.github.com/images/modules/logos_page/Octocat.png',
 
   // youtube
   'https://www.youtube.com/yts/img/pixel-vfl3z5wfw.gif':
