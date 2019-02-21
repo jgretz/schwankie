@@ -2,9 +2,9 @@
 // want to use different images switch their default
 
 const imageUrl =
-  'https://assets-cdn.github.com/images/search-key-slash.svg';
-const replacementUrl =
   'https://assets-cdn.github.com/images/modules/logos_page/Octocat.png';
+const replacementUrl =
+  'https://github.githubassets.com/images/modules/logos_page/Octocat.png';
 
 export default async col => {
   const query = `

@@ -4,6 +4,9 @@ import $ from 'jquery';
 export const LINK_FOUND = 'LINK_FOUND';
 export const LINK_NOT_FOUND = 'LINK_NOT_FOUND';
 
+const OCTOCAT =
+  'https://github.githubassets.com/images/modules/logos_page/Octocat.png';
+
 const isUrlValid = userInput => {
   const res = userInput.match(
     /(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_.~#?&//=]*)/g,
@@ -18,14 +21,10 @@ const origin = url => {
 
 const replaceMap = {
   // github
-  'https://assets-cdn.github.com/images/spinners/octocat-spinner-32-eaf2f5.gif':
-    'https://assets-cdn.github.com/images/modules/logos_page/Octocat.png',
-  'https://assets-cdn.github.com/images/search-shortcut-hint.svg':
-    'https://assets-cdn.github.com/images/modules/logos_page/Octocat.png',
-  'https://github.githubassets.com/images/search-key-slash.svg':
-    'https://assets-cdn.github.com/images/modules/logos_page/Octocat.png',
-  'https://assets-cdn.github.com/images/search-key-slash.svg':
-    'https://assets-cdn.github.com/images/modules/logos_page/Octocat.png',
+  'https://assets-cdn.github.com/images/spinners/octocat-spinner-32-eaf2f5.gif': OCTOCAT,
+  'https://assets-cdn.github.com/images/search-shortcut-hint.svg': OCTOCAT,
+  'https://github.githubassets.com/images/search-key-slash.svg': OCTOCAT,
+  'https://assets-cdn.github.com/images/search-key-slash.svg': OCTOCAT,
 
   // youtube
   'https://www.youtube.com/yts/img/pixel-vfl3z5wfw.gif':
