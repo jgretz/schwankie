@@ -1,1 +1,6 @@
-index.js
+node_modules
+bin
+build
+lib
+
+*.ejs

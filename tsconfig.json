@@ -1,10 +1,22 @@
 {
-    "compilerOptions": {
-        "experimentalDecorators": true,
-        "allowJs": true
-    },
-    "exclude": [
-        "**/node_modules/*",
-        "**/.vscode/*"
-    ]
+  "compilerOptions": {
+    "sourceMap": false,
+    "inlineSourceMap": true,
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "target": "es6",
+    "jsx": "react",
+    "experimentalDecorators": true,
+    "noImplicitAny": false,
+    "noImplicitThis": true,
+    "noUnusedLocals": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "outDir": "build",
+    "strict": false,
+    "declaration": true,
+    "declarationDir": "build/types"
+  },
+  "include": ["tools/**/*"],
+  "exclude": ["node_modules", "lib"]
 }
