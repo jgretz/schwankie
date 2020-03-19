@@ -1,7 +1,8 @@
 {
   "private": true,
   "scripts": {
-    "build": "ts-node ./tools/build.ts"
+    "build": "ts-node ./tools/build.ts",
+    "test": "echo test"
   },
   "dependencies": {
     "shelljs": "^0.8.3"
