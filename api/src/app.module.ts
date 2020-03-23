@@ -6,7 +6,7 @@ import {APP_INTERCEPTOR} from '@nestjs/core';
 
 import {resolveClientPath} from './services';
 
-import {AppController, AppService} from './features/main';
+import {LinksModule} from './features/links';
 
 @Module({
   imports: [
@@ -16,14 +16,14 @@ import {AppController, AppService} from './features/main';
     }),
     CqrsModule,
     CacheModule.register(),
+    LinksModule,
   ],
   providers: [
-    AppService,
     {
       provide: APP_INTERCEPTOR,
       useClass: CacheInterceptor,
     },
   ],
-  controllers: [AppController],
+  controllers: [],
 })
 export class AppModule {}
