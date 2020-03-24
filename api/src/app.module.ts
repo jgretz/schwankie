@@ -7,6 +7,7 @@ import {APP_INTERCEPTOR} from '@nestjs/core';
 import {resolveClientPath} from './services';
 
 import {LinksModule} from './features/links';
+import {SitemapController} from './features/sitemap';
 
 @Module({
   imports: [
@@ -24,6 +25,6 @@ import {LinksModule} from './features/links';
       useClass: CacheInterceptor,
     },
   ],
-  controllers: [],
+  controllers: [SitemapController],
 })
 export class AppModule {}
