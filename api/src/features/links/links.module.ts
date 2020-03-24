@@ -1,12 +1,15 @@
 import {Module} from '@nestjs/common';
 import {CqrsModule} from '@nestjs/cqrs';
 import {CosmosProvider} from '../cosmos';
+
 import LinksController from './links.controller';
-import {FindDefaultHandler} from './findDefault.handler';
+
+import {FindRecentHandler} from './findRecent.handler';
+import {FindBySearchHandler} from './findBySearch.handler';
 
 @Module({
   imports: [CqrsModule],
-  providers: [CosmosProvider, FindDefaultHandler],
+  providers: [CosmosProvider, FindRecentHandler, FindBySearchHandler],
   controllers: [LinksController],
 })
 export class LinksModule {}

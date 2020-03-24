@@ -1,22 +1,22 @@
 import {IQueryHandler, QueryHandler} from '@nestjs/cqrs';
 import {Dependencies} from '@nestjs/common';
 import {DATABASE} from '../../constants';
-import {FindDefaultQuery} from './findDefault.query';
+import {FindRecentQuery} from './findRecent.query';
 import {Cosmos} from '../cosmos/cosmos';
 import {LINKS, Link} from './link';
 
-@QueryHandler(FindDefaultQuery)
+@QueryHandler(FindRecentQuery)
 @Dependencies(DATABASE)
-export class FindDefaultHandler implements IQueryHandler<FindDefaultQuery> {
+export class FindRecentHandler implements IQueryHandler<FindRecentQuery> {
   constructor(private readonly cosmos: Cosmos) {}
 
-  async execute(): Promise<Link[]> {
+  async execute(query: FindRecentQuery): Promise<Link[]> {
     return this.cosmos.query<Link>(
       LINKS,
       `
-        SELECT TOP 150 l.id, l.url, l.title, l.description, l.tags, l.image, l.date
-          FROM links l
-          ORDER BY l.date DESC
+        SELECT TOP ${query.count} l.id, l.url, l.title, l.description, l.tags, l.image, l.date
+        FROM links l
+        ORDER BY l.date DESC
       `,
     );
   }
