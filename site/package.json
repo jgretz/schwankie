@@ -43,6 +43,7 @@
     "@truefit/bach": "^2.0.1",
     "@truefit/bach-material-ui": "^2.0.0",
     "@truefit/bach-react-router": "^2.0.1",
+    "@truefit/bach-recompose": "^2.0.1",
     "@truefit/bach-redux": "^2.0.1",
     "@truefit/http-utils": "^2.0.2",
     "axios": "^0.19.2",

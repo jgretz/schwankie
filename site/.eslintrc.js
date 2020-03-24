@@ -36,6 +36,7 @@ module.exports = {
     'react/jsx-no-target-blank': 0,
 
     'import/no-named-as-default': 0,
+    'import/prefer-default-export': 0,
 
     '@typescript-eslint/explicit-function-return-type': 0,
 

@@ -35,7 +35,7 @@ export default {
 
   plugins: [
     new EnvironmentPlugin({
-      API_BASE_URL: 'https://localhost:3000/api',
+      API_BASE_URL: 'http://localhost:3000/api',
       // This is only for development purposes when the client and server
       // run at two different locations.
       APP_BASE_URL: 'http://localhost:8000',

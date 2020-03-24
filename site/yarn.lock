@@ -1291,6 +1291,11 @@
   resolved "https://registry.yarnpkg.com/@truefit/bach-react-router/-/bach-react-router-2.0.1.tgz#9d42d05499a305bed14f78790728bef5ffcd70a9"
   integrity sha512-TmMbL1/VLqw0ZjZCA8s7zcsE1RaNOmPyetuE5vvINxj6oeafyQaqFpkP3Yjy3g9NpuhlH6s8jQl32zvN+hHU9w==
 
+"@truefit/bach-recompose@^2.0.1":
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/@truefit/bach-recompose/-/bach-recompose-2.0.1.tgz#80a3108c41f02f1984b8e4cf6777fe44161d5769"
+  integrity sha512-H6+F6K2frT/AMnrdjUEFNkRMhk1YCE57t0zoHfmn1rp9XfkztBsqAFWSUpqFdsKxfy+Mp3yzDpizckIbEo716w==
+
 "@truefit/bach-redux@^2.0.1":
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/@truefit/bach-redux/-/bach-redux-2.0.1.tgz#aa46367f6ce949b0f36fcba16e90dbb342227054"
