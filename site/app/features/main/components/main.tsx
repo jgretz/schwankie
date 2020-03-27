@@ -2,6 +2,8 @@ import React from 'react';
 import {compose, withEffect} from '@truefit/bach';
 import {withActions} from '@truefit/bach-redux';
 import {loadRecentLinks} from '../../link/actions';
+
+import Header from './Header';
 import {LinkList} from '../../link/components';
 
 type Props = {
@@ -10,6 +12,7 @@ type Props = {
 
 const Main = () => (
   <div>
+    <Header />
     <LinkList />
   </div>
 );

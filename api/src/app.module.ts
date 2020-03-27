@@ -7,6 +7,7 @@ import {APP_INTERCEPTOR} from '@nestjs/core';
 import {resolveClientPath} from './services';
 
 import {LinksModule} from './features/links';
+import {TagsModule} from './features/tags';
 import {SitemapController} from './features/sitemap';
 
 @Module({
@@ -18,6 +19,7 @@ import {SitemapController} from './features/sitemap';
     CqrsModule,
     CacheModule.register(),
     LinksModule,
+    TagsModule,
   ],
   providers: [
     {

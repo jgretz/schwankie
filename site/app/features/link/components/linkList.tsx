@@ -27,7 +27,7 @@ const Loading = ({classes}: Props) => (
 
 const List = ({links}: Props) => (
   <ul>
-    {links.map(link => (
+    {links.map((link) => (
       <li key={link.id}>{link.title}</li>
     ))}
   </ul>

@@ -34,6 +34,7 @@ module.exports = {
     'react/prop-types': ['error', {skipUndeclared: true}],
     'react/display-name': 0,
     'react/jsx-no-target-blank': 0,
+    'react/jsx-props-no-spreading': 0,
 
     'import/no-named-as-default': 0,
     'import/prefer-default-export': 0,
