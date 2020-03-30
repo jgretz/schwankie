@@ -36,7 +36,9 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
 
-    height: 50,
+    height: 80,
+    padding: 10,
+
     width: '100%',
   },
   searchContainer: {
