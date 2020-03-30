@@ -17,7 +17,7 @@ export default () => {
 
     // TODO: rename the name to your app
     devTools: IS_PRODUCTION || {
-      name: 'Truefit React Template',
+      name: 'Schwankie.com',
     },
   });
 
