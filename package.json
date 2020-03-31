@@ -1,32 +1,15 @@
 {
-  "name": "schwankiecom",
-  "version": "0.0.1",
-  "description": "",
+  "private": true,
   "scripts": {
-    "build-server": "node tools/build_server.js",
-    "build-site": "node tools/build_site.js",
-    "start": "nodemon src/index.js --exec babel-node",
-    "build": "node tools/build.js",
-    "test": "echo future",
-    "publish": "yarn build && git subtree push --prefix lib heroku master"
+    "build": "ts-node ./tools/build.ts",
+    "test": "echo test"
   },
-  "author": "Josh Gretz",
-  "license": "MIT",
   "dependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-core": "^6.26.0",
-    "babel-eslint": "^8.2.1",
-    "babel-plugin-transform-runtime": "^6.23.0",
-    "babel-plugin-transform-object-rest-spread": "^6.26.0",
-    "babel-polyfill": "^6.26.0",
-    "babel-preset-env": "^1.6.1",
-    "babel-preset-stage-1": "^6.22.0",
-    "babel-register": "^6.26.0",
-    "babel-runtime": "^6.26.0",
-    "eslint": "^4.4.1",
-    "eslint-plugin-import": "^2.7.0",
-    "eslint-plugin-react": "^7.6.0",
-    "nodemon": "^1.14.11",
-    "shelljs": "^0.8.1"
+    "shelljs": "^0.8.3"
+  },
+  "devDependencies": {
+    "@types/node": "^13.9.2",
+    "ts-node": "^8.7.0",
+    "typescript": "^3.8.3"
   }
 }
