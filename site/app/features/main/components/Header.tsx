@@ -2,18 +2,17 @@ import React from 'react';
 import {compose} from '@truefit/bach';
 import {withStyles} from '@truefit/bach-material-ui';
 
-import InfoIcon from '@material-ui/icons/Info';
 import GearIcon from '@material-ui/icons/Settings';
 import {Link} from 'react-router-dom';
-import {Theme} from '@material-ui/core';
+
 import Search from './Search';
+import About from './About';
 
 type Props = {
   classes: {
     container: string;
     searchContainer: string;
     iconContainer: string;
-    iconLink: string;
     adminLink: string;
   };
 };
@@ -21,7 +20,7 @@ type Props = {
 const Header = ({classes}: Props) => (
   <div className={classes.container}>
     <div className={classes.iconContainer}>
-      <Link to="/admin" className={classes.iconLink}>
+      <Link to="/admin">
         <GearIcon className={classes.adminLink} />
       </Link>
     </div>
@@ -29,14 +28,12 @@ const Header = ({classes}: Props) => (
       <Search />
     </div>
     <div className={classes.iconContainer}>
-      <Link to="/about" className={classes.iconLink}>
-        <InfoIcon />
-      </Link>
+      <About />
     </div>
   </div>
 );
 
-const styles = (theme: Theme) => ({
+const styles = {
   container: {
     display: 'flex',
     alignItems: 'center',
@@ -57,12 +54,9 @@ const styles = (theme: Theme) => ({
     flex: 0,
     display: 'flex',
   },
-  iconLink: {
-    color: theme.palette.primary.main,
-  },
   adminLink: {
     display: 'none',
   },
-});
+};
 
 export default compose(withStyles(styles))(Header);
