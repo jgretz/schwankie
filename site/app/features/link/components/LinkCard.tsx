@@ -59,6 +59,10 @@ const LinkCard = ({classes, link}: Props) => (
 const styles = (theme: Theme) => ({
   cardContainer: {
     width: '33%',
+
+    [theme.breakpoints.down('sm')]: {
+      width: '100%',
+    },
   },
   card: {
     margin: 20,
