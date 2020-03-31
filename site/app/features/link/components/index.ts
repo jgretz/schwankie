@@ -1,3 +1,4 @@
 /* eslint-disable import/prefer-default-export */
 
-export {default as LinkList} from './linkList';
+export {default as LinkCard} from './LinkCard';
+export {default as LinkList} from './LinkList';

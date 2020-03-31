@@ -6,6 +6,7 @@ import {withStyles} from '@truefit/bach-material-ui';
 import {renderIf} from '@truefit/bach-recompose';
 
 import {CircularProgress, Theme} from '@material-ui/core';
+import LinkCard from './LinkCard';
 
 import {loadingSelector, linksSelector} from '../selectors';
 import {Link} from '../types';
@@ -13,6 +14,7 @@ import {Link} from '../types';
 type Props = {
   classes: {
     loadingContainer: string;
+    listContainer: string;
   };
 
   loading: boolean;
@@ -25,12 +27,12 @@ const Loading = ({classes}: Props) => (
   </div>
 );
 
-const List = ({links}: Props) => (
-  <ul>
+const List = ({classes, links}: Props) => (
+  <div className={classes.listContainer}>
     {links.map((link) => (
-      <li key={link.id}>{link.title}</li>
+      <LinkCard key={link.id} link={link} />
     ))}
-  </ul>
+  </div>
 );
 
 // handlers
@@ -43,6 +45,15 @@ const styles = (theme: Theme) => ({
     '& > * + *': {
       marginLeft: theme.spacing(2),
     },
+  },
+
+  listContainer: {
+    display: 'flex',
+    flexFlow: 'row wrap',
+
+    maxWidth: 1280,
+    marginLeft: 'auto',
+    marginRight: 'auto',
   },
 });
 
