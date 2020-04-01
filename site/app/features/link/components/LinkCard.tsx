@@ -22,6 +22,7 @@ type InternalProps = {
     cardContainer: string;
     card: string;
     image: string;
+    content: string;
     link: string;
     button: string;
     title: string;
@@ -38,7 +39,7 @@ const LinkCard = ({classes, link}: Props) => (
   <div className={classes.cardContainer}>
     <Card className={classes.card}>
       <WorkerImage className={classes.image} src={link.image} placeholder={DEFAULT_IMAGE} />
-      <CardContent>
+      <CardContent className={classes.content}>
         <a className={classes.link} href={link.url} target="_blank">
           <Button className={classes.button} variant="contained" color="primary">
             Visit
@@ -65,30 +66,42 @@ const styles = (theme: Theme) => ({
     },
   },
   card: {
+    display: 'flex',
+    flexDirection: 'column',
+
     margin: 20,
     minHeight: 330,
-  },
+  } as CSSProperties,
   image: {
     height: 200,
     width: '100%',
     borderBottom: '1px solid',
   },
 
+  content: {
+    flex: 1,
+
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+
+    height: '100%',
+    paddingTop: '13px !important',
+    paddingBottom: '10px !important',
+  } as CSSProperties,
   link: {
+    height: 0,
     textDecoration: 'none',
   },
   button: {
     float: 'right',
-    top: -40,
+    top: -32,
   } as CSSProperties,
   title: {
     fontSize: '1.2em',
     fontWeight: 'bold',
-    marginBottom: 3,
   } as CSSProperties,
   description: {
-    marginBottom: 3,
-
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',

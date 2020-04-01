@@ -6,7 +6,7 @@ export const loadRecentLinks = () => async (dispatch: Dispatch) => {
   dispatch(startLoading());
 
   try {
-    const response = await get('links/recent');
+    const response = await get('links/recent?count=27');
     dispatch(linksLoaded(response.data));
   } finally {
     dispatch(stopLoading());
