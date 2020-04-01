@@ -10,6 +10,7 @@ import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import {Theme} from '@material-ui/core';
 import {CSSProperties} from '@material-ui/styles';
+import Tag from './Tag';
 
 import {Link} from '../types';
 
@@ -27,7 +28,7 @@ type InternalProps = {
     button: string;
     title: string;
     description: string;
-    subtitle: string;
+    tags: string;
   };
 };
 
@@ -49,9 +50,11 @@ const LinkCard = ({classes, link}: Props) => (
         <Typography className={classes.description} variant="subtitle2">
           {link.description}
         </Typography>
-        <Typography className={classes.subtitle} variant="subtitle2">
-          {link.tags.join(', ')}
-        </Typography>
+        <div className={classes.tags}>
+          {link.tags.map((tag, index) => (
+            <Tag key={tag} tag={tag} comma={index < link.tags.length - 1} />
+          ))}
+        </div>
       </CardContent>
     </Card>
   </div>
@@ -106,8 +109,9 @@ const styles = (theme: Theme) => ({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   } as CSSProperties,
-  subtitle: {
-    color: theme.palette.primary.main,
+  tags: {
+    display: 'flex',
+    flexDirection: 'row',
 
     whiteSpace: 'nowrap',
     overflow: 'hidden',

@@ -2,3 +2,4 @@
 
 export {default as LinkCard} from './LinkCard';
 export {default as LinkList} from './LinkList';
+export {default as Tag} from './Tag';

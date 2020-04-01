@@ -5,7 +5,7 @@ import {withStyles} from '@truefit/bach-material-ui';
 import GearIcon from '@material-ui/icons/Settings';
 import {Link} from 'react-router-dom';
 
-import Search from './Search';
+import {Search} from '../../search/components';
 import About from './About';
 
 type Props = {

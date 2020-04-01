@@ -21,8 +21,6 @@ export class FindBySearchHandler implements IQueryHandler<FindBySearchQuery> {
         where (
           (CONTAINS(l.title, '${term}'))
           OR
-          (CONTAINS(l.description, '${term}'))
-          OR
           (ARRAY_CONTAINS(l.tags, '${term}'))
         )
         ORDER BY l.date DESC

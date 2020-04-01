@@ -41,7 +41,13 @@ const renderLoading = ({loading}: Props) => loading;
 // styles
 const styles = (theme: Theme) => ({
   loadingContainer: {
+    height: '100vh',
+    width: '100hw',
+
     display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+
     '& > * + *': {
       marginLeft: theme.spacing(2),
     },
