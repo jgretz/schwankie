@@ -5,9 +5,6 @@ const SITEMAP = `
     <url>
       <loc>https://www.schwankie.com/</loc>
     </url>
-    <url>
-      <loc>https://www.schwankie.com/about</loc>
-    </url>
   </urlset>
 `;
 
