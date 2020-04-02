@@ -5,5 +5,5 @@ export type Link = {
   description: string;
   tags: string[];
   image: string;
-  date: Date;
+  date: number;
 };

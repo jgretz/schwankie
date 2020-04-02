@@ -1,12 +1,14 @@
 import React from 'react';
 
-import {compose} from '@truefit/bach';
+import {compose, withMemo} from '@truefit/bach';
 import {withStyles} from '@truefit/bach-material-ui';
+
+import {format} from 'date-fns';
 
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import Typography from '@material-ui/core/Typography';
-import {Theme} from '@material-ui/core';
+import {Theme, fade} from '@material-ui/core';
 import {CSSProperties} from '@material-ui/styles';
 import Tag from './Tag';
 import Image from './Image';
@@ -22,18 +24,25 @@ type InternalProps = {
   classes: {
     cardContainer: string;
     card: string;
+    dateContainer: string;
+    date: string;
     content: string;
     title: string;
     description: string;
     tags: string;
   };
+
+  date: string;
 };
 
 type Props = PublicProps & InternalProps;
 
-const LinkCard = ({classes, link}: Props) => (
+const LinkCard = ({classes, link, date}: Props) => (
   <div className={classes.cardContainer}>
     <Card className={classes.card}>
+      <div className={classes.dateContainer}>
+        <div className={classes.date}>{date}</div>
+      </div>
       <Image link={link} />
       <CardContent className={classes.content}>
         <Buttons link={link} />
@@ -51,6 +60,8 @@ const LinkCard = ({classes, link}: Props) => (
   </div>
 );
 
+const makeDate = ({link}: Props) => format(new Date(link.date * 1000), 'LLL d, yyyy');
+
 const styles = (theme: Theme) => ({
   cardContainer: {
     width: '33%',
@@ -67,6 +78,19 @@ const styles = (theme: Theme) => ({
     minHeight: 330,
   } as CSSProperties,
 
+  dateContainer: {
+    position: 'absolute',
+  } as CSSProperties,
+  date: {
+    marginTop: 5,
+    marginLeft: 5,
+
+    padding: 5,
+    borderRadius: 12,
+    backgroundColor: fade(theme.palette.grey[900], 0.8),
+
+    fontSize: 10,
+  } as CSSProperties,
   content: {
     flex: 1,
 
@@ -97,4 +121,7 @@ const styles = (theme: Theme) => ({
   } as CSSProperties,
 });
 
-export default compose<PublicProps>(withStyles(styles))(LinkCard);
+export default compose<PublicProps>(
+  withMemo('date', makeDate, ['link']),
+  withStyles(styles),
+)(LinkCard);
