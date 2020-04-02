@@ -62,7 +62,6 @@
     "react-router": "^5.1.2",
     "react-router-dom": "^5.1.2",
     "react-spectrum": "^1.1.7",
-    "react-sw-img": "^1.0.1",
     "redux": "^4.0.5",
     "redux-async-await": "^1.0.1",
     "redux-observable": "^1.2.0",

@@ -3,7 +3,6 @@ import React from 'react';
 import {compose} from '@truefit/bach';
 import {withStyles} from '@truefit/bach-material-ui';
 
-import WorkerImage from 'react-sw-img';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import Typography from '@material-ui/core/Typography';
@@ -11,6 +10,7 @@ import Button from '@material-ui/core/Button';
 import {Theme} from '@material-ui/core';
 import {CSSProperties} from '@material-ui/styles';
 import Tag from './Tag';
+import Image from './Image';
 
 import {Link} from '../types';
 
@@ -22,7 +22,6 @@ type InternalProps = {
   classes: {
     cardContainer: string;
     card: string;
-    image: string;
     content: string;
     link: string;
     button: string;
@@ -34,12 +33,10 @@ type InternalProps = {
 
 type Props = PublicProps & InternalProps;
 
-const DEFAULT_IMAGE = 'https://placeimg.com/300/300/any/grayscale';
-
 const LinkCard = ({classes, link}: Props) => (
   <div className={classes.cardContainer}>
     <Card className={classes.card}>
-      <WorkerImage className={classes.image} src={link.image} placeholder={DEFAULT_IMAGE} />
+      <Image link={link} />
       <CardContent className={classes.content}>
         <a className={classes.link} href={link.url} target="_blank">
           <Button className={classes.button} variant="contained" color="primary">
@@ -75,11 +72,6 @@ const styles = (theme: Theme) => ({
     margin: 20,
     minHeight: 330,
   } as CSSProperties,
-  image: {
-    height: 200,
-    width: '100%',
-    borderBottom: '1px solid',
-  },
 
   content: {
     flex: 1,
