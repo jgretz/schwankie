@@ -1,1 +1,3 @@
-export const APP_INITIALIZED = 'APP_INITIALIZED';
+/* eslint-disable import/prefer-default-export */
+
+export * from './misc';

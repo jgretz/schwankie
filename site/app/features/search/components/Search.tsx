@@ -15,6 +15,8 @@ import {tagSuggestionsSelector} from '../../tag/selectors';
 import {setSearchTerm} from '../actions';
 import {searchTermSelector} from '../selectors';
 
+import {scrollToTop} from '../../shared/services';
+
 type Props = {
   classes: {
     container: string;
@@ -67,9 +69,10 @@ const Search = ({
 );
 
 // handlers
+
 const makeTagTitles = ({tags}: Props) => tags.map((t) => t.title);
 
-const onSearchTextChanged = ({getTagSuggestions, setSearchTerm}: Props) => (
+const onSearchTextChanged = ({getTagSuggestions, onSearchQueryChanged}: Props) => (
   e: ChangeEvent<HTMLInputElement>,
   value: string,
   reason: string,
@@ -77,12 +80,13 @@ const onSearchTextChanged = ({getTagSuggestions, setSearchTerm}: Props) => (
   getTagSuggestions(value);
 
   if (reason === 'input' && value.length === 0) {
-    setSearchTerm(value);
+    onSearchQueryChanged(e, value);
   }
 };
 
 const onSearchQueryChanged = ({setSearchTerm}: Props) => (e: object, value: string) => {
   setSearchTerm(value);
+  scrollToTop();
 };
 
 // styles
@@ -101,8 +105,8 @@ export default compose(
   withMemo('tagTitles', makeTagTitles, ['tags']),
 
   withSelector('searchTerm', searchTermSelector),
-  withCallback('onSearchTextChanged', onSearchTextChanged),
   withCallback('onSearchQueryChanged', onSearchQueryChanged),
+  withCallback('onSearchTextChanged', onSearchTextChanged),
 
   withStyles(styles),
 )(Search);

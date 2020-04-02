@@ -9,6 +9,8 @@ import {Theme} from '@material-ui/core';
 
 import {setSearchTerm} from '../../search/actions';
 
+import {scrollToTop} from '../../shared/services';
+
 type PublicProps = {
   tag: string;
   comma: boolean;
@@ -37,6 +39,7 @@ const makeText = ({tag, comma}: Props) => (comma ? `${tag},` : tag);
 
 const handleClick = ({tag, setSearchTerm}: Props) => () => {
   setSearchTerm(tag);
+  scrollToTop();
 };
 
 const styles = (theme: Theme) => ({
