@@ -77,8 +77,15 @@ const onSearchTextChanged = ({getTagSuggestions, onSearchQueryChanged}: Props) =
   value: string,
   reason: string,
 ) => {
+  // this is multi-search - we dont try to support typeahead for this right now
+  if (value.indexOf(',') > -1) {
+    return;
+  }
+
+  // get the tag suggestions for typeahead
   getTagSuggestions(value);
 
+  // this is a bit of hack to handle clear because material doesnt have a good plan for it
   if (reason === 'input' && value.length === 0) {
     onSearchQueryChanged(e, value);
   }
