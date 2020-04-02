@@ -6,11 +6,11 @@ import {withStyles} from '@truefit/bach-material-ui';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import Typography from '@material-ui/core/Typography';
-import Button from '@material-ui/core/Button';
 import {Theme} from '@material-ui/core';
 import {CSSProperties} from '@material-ui/styles';
 import Tag from './Tag';
 import Image from './Image';
+import Buttons from './Buttons';
 
 import {Link} from '../types';
 
@@ -23,8 +23,6 @@ type InternalProps = {
     cardContainer: string;
     card: string;
     content: string;
-    link: string;
-    button: string;
     title: string;
     description: string;
     tags: string;
@@ -38,11 +36,7 @@ const LinkCard = ({classes, link}: Props) => (
     <Card className={classes.card}>
       <Image link={link} />
       <CardContent className={classes.content}>
-        <a className={classes.link} href={link.url} target="_blank">
-          <Button className={classes.button} variant="contained" color="primary">
-            Visit
-          </Button>
-        </a>
+        <Buttons link={link} />
         <Typography className={classes.title}>{link.title}</Typography>
         <Typography className={classes.description} variant="subtitle2">
           {link.description}
@@ -83,14 +77,6 @@ const styles = (theme: Theme) => ({
     height: '100%',
     paddingTop: '13px !important',
     paddingBottom: '10px !important',
-  } as CSSProperties,
-  link: {
-    height: 0,
-    textDecoration: 'none',
-  },
-  button: {
-    float: 'right',
-    top: -32,
   } as CSSProperties,
   title: {
     fontSize: '1.2em',
