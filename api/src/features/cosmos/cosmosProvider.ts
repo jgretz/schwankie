@@ -2,7 +2,6 @@ import {CosmosClient} from '@azure/cosmos';
 
 import {FactoryProvider} from '@nestjs/common';
 import {DATABASE} from '../../constants';
-import Config from './config';
 import {Cosmos} from './cosmos';
 
 // we should only create 1 per memory space
@@ -16,11 +15,11 @@ export default {
     }
 
     const cosmosClient = new CosmosClient({
-      endpoint: Config.endpoint,
-      key: Config.key,
+      endpoint: process.env.AZURE_COSMOS_ENDPOINT,
+      key: process.env.AZURE_COSMOS_KEY,
     });
 
-    cosmos = new Cosmos(cosmosClient, Config.databaseId);
+    cosmos = new Cosmos(cosmosClient, process.env.AZURE_COSMOS_DATABASE_ID);
 
     return cosmos;
   },

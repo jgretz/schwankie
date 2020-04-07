@@ -57,7 +57,8 @@ const styles = (theme: Theme) => ({
     display: 'flex',
     flexFlow: 'row wrap',
 
-    maxWidth: 1280,
+    justifyContent: 'center',
+
     marginLeft: 'auto',
     marginRight: 'auto',
   },

@@ -99,8 +99,8 @@ const onSearchQueryChanged = ({setSearchTerm}: Props) => (e: object, value: stri
 // styles
 const styles = {
   container: {
-    width: '80%',
-    maxWidth: 1000,
+    width: '100%',
+    minWidth: 300,
   },
 };
 

@@ -8,7 +8,7 @@ import {APP_INITIALIZED} from '../constants';
 import {setSearchTerm} from '../../search/actions';
 import {loadRecentLinks} from '../../link/actions';
 
-export const onReduxInit: Epic = (action$: Observable<Action>) =>
+export const loadLinksOnAppInitialized: Epic = (action$: Observable<Action>) =>
   action$.pipe(
     ofType(APP_INITIALIZED),
     map(() => {

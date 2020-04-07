@@ -65,6 +65,7 @@ const makeDate = ({link}: Props) => format(new Date(link.date * 1000), 'LLL d, y
 const styles = (theme: Theme) => ({
   cardContainer: {
     width: '33%',
+    maxWidth: 430,
 
     [theme.breakpoints.down('sm')]: {
       width: '100%',

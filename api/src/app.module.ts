@@ -8,6 +8,7 @@ import {resolveClientPath} from './services';
 
 import {LinksModule} from './features/links';
 import {TagsModule} from './features/tags';
+import {UserModule} from './features/user';
 import {SitemapController} from './features/sitemap';
 
 @Module({
@@ -16,10 +17,12 @@ import {SitemapController} from './features/sitemap';
       rootPath: resolveClientPath(),
       renderPath: '/*',
     }),
-    CqrsModule,
     CacheModule.register(),
+
+    CqrsModule,
     LinksModule,
     TagsModule,
+    UserModule,
   ],
   providers: [
     {

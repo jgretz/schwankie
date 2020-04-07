@@ -1,8 +1,12 @@
 import {NestFactory} from '@nestjs/core';
 import {AppModule} from './app.module';
-import {enforceKeyMiddleware} from './middleware';
+import {configureEnvironment} from './services';
 
 async function bootstrap() {
+  if (process.env.NODE_ENV !== 'PRODUCTION') {
+    configureEnvironment();
+  }
+
   const app = await NestFactory.create(AppModule);
 
   if (process.env.NODE_ENV !== 'PRODUCTION') {
@@ -10,7 +14,6 @@ async function bootstrap() {
   }
 
   app.setGlobalPrefix('api');
-  app.use(enforceKeyMiddleware);
 
   await app.listen(process.env.PORT || 3000);
 }

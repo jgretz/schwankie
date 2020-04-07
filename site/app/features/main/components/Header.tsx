@@ -2,11 +2,9 @@ import React from 'react';
 import {compose} from '@truefit/bach';
 import {withStyles} from '@truefit/bach-material-ui';
 
-import GearIcon from '@material-ui/icons/Settings';
-import {Link} from 'react-router-dom';
-
 import {Search} from '../../search/components';
 import About from './About';
+import {AdminGear} from '../../admin/components';
 
 type Props = {
   classes: {
@@ -20,9 +18,7 @@ type Props = {
 const Header = ({classes}: Props) => (
   <div className={classes.container}>
     <div className={classes.iconContainer}>
-      <Link to="/admin">
-        <GearIcon className={classes.adminLink} />
-      </Link>
+      <AdminGear />
     </div>
     <div className={classes.searchContainer}>
       <Search />
@@ -37,25 +33,30 @@ const styles = {
   container: {
     display: 'flex',
     alignItems: 'center',
+    justifyContent: 'space-around',
 
     height: 80,
     padding: 10,
 
     width: '100%',
   },
-  searchContainer: {
+  iconContainer: {
     flex: 1,
+
+    display: 'flex',
+
+    width: 24,
+    marginLeft: 16,
+    marginRight: 16,
+  },
+  searchContainer: {
+    flex: 3,
 
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  iconContainer: {
-    flex: 0,
-    display: 'flex',
-  },
-  adminLink: {
-    display: 'none',
+
+    marginTop: -5,
   },
 };
 

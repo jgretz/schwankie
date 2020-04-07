@@ -1,4 +1,4 @@
 import {combineEpics} from 'redux-observable';
-import {onReduxInit} from './onReduxInit';
+import {loadLinksOnAppInitialized} from './loadLinksOnAppInitialized';
 
-export default combineEpics(onReduxInit);
+export default combineEpics(loadLinksOnAppInitialized);

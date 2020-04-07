@@ -20,9 +20,7 @@ export class Cosmos {
   }
 
   async getItem<T>(collectionId: string, itemId: string): Promise<T> {
-    const response = await this.collection(collectionId)
-      .item(itemId)
-      .read();
+    const response = await this.collection(collectionId).item(itemId).read();
 
     return response.resource;
   }
@@ -32,9 +30,7 @@ export class Cosmos {
     query: string | SqlQuerySpec,
     options?: FeedOptions,
   ): Promise<Array<T>> {
-    const response = await this.collection(collectionId)
-      .items.query<T>(query, options)
-      .fetchAll();
+    const response = await this.collection(collectionId).items.query<T>(query, options).fetchAll();
 
     return response.resources;
   }
@@ -50,9 +46,7 @@ export class Cosmos {
     item: T,
     options?: RequestOptions,
   ): Promise<T> {
-    const response = await this.collection(collectionId)
-      .item(item.id)
-      .replace(item, options);
+    const response = await this.collection(collectionId).item(item.id).replace(item, options);
 
     return (response.item as unknown) as T;
   }
@@ -62,8 +56,6 @@ export class Cosmos {
     item: T,
     options?: RequestOptions,
   ): Promise<void> {
-    await this.collection(collectionId)
-      .item(item.id)
-      .delete(options);
+    await this.collection(collectionId).item(item.id).delete(options);
   }
 }
