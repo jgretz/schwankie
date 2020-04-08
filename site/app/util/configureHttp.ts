@@ -13,7 +13,7 @@ export default (store: Store): void => {
 
       return {
         ...headers,
-        token: user.token,
+        token: user?.token,
       };
     },
   });
