@@ -9,6 +9,7 @@ import {FormContext} from 'react-hook-form';
 import {CSSProperties} from '@material-ui/styles';
 import {Button} from '@material-ui/core';
 import {HookFormTextField, HookFormPasswordField} from '../../forms/components';
+
 import {authorizeUser} from '../actions';
 
 type FormValues = {

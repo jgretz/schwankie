@@ -5,27 +5,20 @@ import {withSelector} from '@truefit/bach-redux';
 import {withStyles} from '@truefit/bach-material-ui';
 import {renderIf} from '@truefit/bach-recompose';
 
-import {CircularProgress, Theme} from '@material-ui/core';
 import LinkCard from './LinkCard';
+import {Loading} from '../../shared/components';
 
 import {loadingSelector, linksSelector} from '../selectors';
 import {Link} from '../types';
 
 type Props = {
   classes: {
-    loadingContainer: string;
     listContainer: string;
   };
 
   loading: boolean;
   links: Link[];
 };
-
-const Loading = ({classes}: Props) => (
-  <div className={classes.loadingContainer}>
-    <CircularProgress />
-  </div>
-);
 
 const List = ({classes, links}: Props) => (
   <div className={classes.listContainer}>
@@ -35,24 +28,9 @@ const List = ({classes, links}: Props) => (
   </div>
 );
 
-// handlers
 const renderLoading = ({loading}: Props) => loading;
 
-// styles
-const styles = (theme: Theme) => ({
-  loadingContainer: {
-    height: '100vh',
-    width: '100hw',
-
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-
-    '& > * + *': {
-      marginLeft: theme.spacing(2),
-    },
-  },
-
+const styles = {
   listContainer: {
     display: 'flex',
     flexFlow: 'row wrap',
@@ -62,14 +40,16 @@ const styles = (theme: Theme) => ({
     marginLeft: 'auto',
     marginRight: 'auto',
   },
-});
+};
 
 // compose
-export default compose(
-  withSelector('loading', loadingSelector),
+const ComposedList = compose(
   withSelector('links', linksSelector),
 
   withStyles(styles),
-
-  renderIf(renderLoading, Loading),
 )(List);
+
+export default compose(
+  withSelector('loading', loadingSelector),
+  renderIf(renderLoading, Loading),
+)(ComposedList);

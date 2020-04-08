@@ -6,10 +6,21 @@ import LinksController from './links.controller';
 
 import {FindRecentHandler} from './findRecent.handler';
 import {FindBySearchHandler} from './findBySearch.handler';
+import {FindByUrlHandler} from './findByUrl.handler';
+
+import {CreateLinkHandler} from './createLink.handler';
+import {UpdateLinkHandler} from './updateLink.handler';
 
 @Module({
   imports: [CqrsModule],
-  providers: [CosmosProvider, FindRecentHandler, FindBySearchHandler],
+  providers: [
+    CosmosProvider,
+    FindRecentHandler,
+    FindBySearchHandler,
+    FindByUrlHandler,
+    CreateLinkHandler,
+    UpdateLinkHandler,
+  ],
   controllers: [LinksController],
 })
 export class LinksModule {}

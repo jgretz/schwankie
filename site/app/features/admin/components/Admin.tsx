@@ -1,6 +1,6 @@
 import React from 'react';
-import {compose} from '@truefit/bach';
-import {withSelector} from '@truefit/bach-redux';
+import {compose, withCallback} from '@truefit/bach';
+import {withSelector, withActions} from '@truefit/bach-redux';
 import {renderIf} from '@truefit/bach-recompose';
 import {withStyles} from '@truefit/bach-material-ui';
 
@@ -12,6 +12,7 @@ import {CSSProperties} from '@material-ui/styles';
 import AdminLogin from './AdminLogin';
 import AdminLink from './AdminLink';
 
+import {setSearchTerm} from '../../search/actions';
 import {userSelector} from '../selectors';
 
 import {User} from '../types';
@@ -28,6 +29,9 @@ type Props = {
   };
 
   user: User;
+
+  setSearchTerm: (term: string) => void;
+  onBackClick: () => void;
 };
 
 const shouldRenderLogin = ({user}: Props) => !user;
@@ -37,11 +41,11 @@ const Content = compose(
   renderIf(shouldRenderLogin, AdminLogin),
 )(AdminLink);
 
-const Admin = ({classes}: Props) => (
+const Admin = ({classes, onBackClick}: Props) => (
   <div>
     <div className={classes.container}>
       <div className={classes.iconContainer}>
-        <Link to="/">
+        <Link to="/" onClick={onBackClick}>
           <ArrowBack className={classes.icon} />
         </Link>
       </div>
@@ -55,6 +59,10 @@ const Admin = ({classes}: Props) => (
     <Content />
   </div>
 );
+
+const onBackClick = ({setSearchTerm}: Props) => () => {
+  setSearchTerm('');
+};
 
 const styles = (theme: Theme) => ({
   container: {
@@ -89,4 +97,8 @@ const styles = (theme: Theme) => ({
   },
 });
 
-export default compose(withStyles(styles))(Admin);
+export default compose(
+  withActions({setSearchTerm}),
+  withCallback('onBackClick', onBackClick),
+  withStyles(styles),
+)(Admin);

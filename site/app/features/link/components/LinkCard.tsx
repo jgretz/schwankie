@@ -3,7 +3,7 @@ import React from 'react';
 import {compose, withMemo} from '@truefit/bach';
 import {withStyles} from '@truefit/bach-material-ui';
 
-import {format} from 'date-fns';
+import {format, fromUnixTime} from 'date-fns';
 
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
@@ -60,7 +60,7 @@ const LinkCard = ({classes, link, date}: Props) => (
   </div>
 );
 
-const makeDate = ({link}: Props) => format(new Date(link.date * 1000), 'LLL d, yyyy');
+const makeDate = ({link}: Props) => format(fromUnixTime(link.date), 'LLL d, yyyy');
 
 const styles = (theme: Theme) => ({
   cardContainer: {
