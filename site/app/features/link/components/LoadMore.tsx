@@ -10,6 +10,7 @@ import {Theme, Button, CircularProgress} from '@material-ui/core';
 import {PAGE_SIZE} from '../constants';
 import {loadMoreRecentLinks} from '../actions';
 import {loadingSelector, linksSelector} from '../selectors';
+import {searchTermSelector} from '../../search/selectors';
 
 import {Link} from '../types';
 
@@ -19,9 +20,10 @@ type Props = {
     button: string;
   };
 
+  searchTerm: string;
   links: Link[];
-
   linksLoading: boolean;
+
   loading: boolean;
   setLoading: (value: boolean) => void;
 
@@ -31,6 +33,8 @@ type Props = {
   loadMoreRecentLinks: (count: number, page: number) => void;
   handleLoadMoreClick: () => void;
 };
+
+const Empty = (): React.ReactNode => null;
 
 const Loading = ({classes}: Props) => (
   <div className={classes.container}>
@@ -47,6 +51,7 @@ const LoadMore = ({classes, handleLoadMoreClick}: Props) => (
 );
 
 const areAllLinksLoading = ({linksLoading}: Props) => linksLoading;
+const hasSearchTerm = ({searchTerm}: Props) => searchTerm?.length > 0;
 const isLoading = ({loading}: Props) => loading;
 
 const handleLoadMoreClick = ({setLoading, page, setPage, loadMoreRecentLinks}: Props) => () => {
@@ -80,6 +85,7 @@ export default compose(
 
   withSelector('linksLoading', loadingSelector),
   withSelector('links', linksSelector),
+  withSelector('searchTerm', searchTermSelector),
 
   withActions({loadMoreRecentLinks}),
 
@@ -88,6 +94,7 @@ export default compose(
 
   withStyles(styles),
 
-  renderIf(areAllLinksLoading, (): React.ReactNode => null),
+  renderIf(hasSearchTerm, Empty),
+  renderIf(areAllLinksLoading, Empty),
   renderIf(isLoading, Loading),
 )(LoadMore);
