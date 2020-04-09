@@ -1,3 +1,3 @@
 export class FindRecentQuery {
-  constructor(public count: number) {}
+  constructor(public count: number, public page: number) {}
 }

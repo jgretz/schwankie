@@ -1,12 +1,13 @@
 import React from 'react';
 
 import Header from './Header';
-import {LinkList} from '../../link/components';
+import {LinkList, LoadMore} from '../../link/components';
 
 const Main = () => (
   <div>
     <Header />
     <LinkList />
+    <LoadMore />
   </div>
 );
 

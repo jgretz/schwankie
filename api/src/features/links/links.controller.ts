@@ -23,8 +23,8 @@ export default class LinksController {
   }
 
   @Get('recent')
-  async getRecent(@Query('count') count = 25) {
-    return this.queryBus.execute(new FindRecentQuery(count));
+  async getRecent(@Query('count') count = 25, @Query('page') page = 0) {
+    return this.queryBus.execute(new FindRecentQuery(count, page));
   }
 
   @Get('search')

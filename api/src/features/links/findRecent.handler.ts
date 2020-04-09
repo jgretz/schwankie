@@ -14,9 +14,10 @@ export class FindRecentHandler implements IQueryHandler<FindRecentQuery> {
     return this.cosmos.query<Link>(
       LINKS,
       `
-        SELECT TOP ${query.count} l.id, l.url, l.title, l.description, l.tags, l.image, l.date
+        SELECT l.id, l.url, l.title, l.description, l.tags, l.image, l.date
         FROM links l
         ORDER BY l.date DESC
+        OFFSET ${query.page * query.count} LIMIT ${query.count}
       `,
     );
   }
