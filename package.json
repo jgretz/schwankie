@@ -1,5 +1,7 @@
 {
-  "private": true,
+  "name": "schwankie-build",
+  "author": "jgretz",
+  "license": "MIT",
   "scripts": {
     "build": "ts-node ./tools/build.ts",
     "test": "echo test"

@@ -1,5 +1,5 @@
 {
-  "name": "truefit-react-template",
+  "name": "schwankie-site",
   "scripts": {
     "start": "yarn run generateAllFiles && yarn serve",
     "serve": "yarn webpack-dev-server --config webpack.config.dev.ts",
@@ -20,7 +20,8 @@
     "generateUtilsIndexFiles": "wall-e g -utils",
     "todo": "grep --color --exclude-dir={.git,node_modules,lib} --exclude={package.json,yarn-error.log,README.md} -rEI 'TODO|FIXME' . 2>/dev/null"
   },
-  "private": true,
+  "author": "jgretz",
+  "license": "MIT",
   "browserslist": [
     "defaults"
   ],
