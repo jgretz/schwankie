@@ -23,6 +23,17 @@ const findExisting = async (cosmos: Cosmos, url: string): Promise<Link> => {
   return results.length > 0 ? results[0] : null;
 };
 
+const isUseableImageLink = (src = '', allowData: boolean): boolean => {
+  return src.startsWith('http') || (allowData && src.startsWith('data:'));
+};
+
+const findUseableImage = ($: CheerioStatic, allowData: boolean): string | undefined => {
+  return $('img')
+    .filter((i, el) => isUseableImageLink($(el).attr('src'), allowData))
+    .first()
+    ?.attr('src');
+};
+
 const findDetails = async (url: string): Promise<Link> => {
   const response = await fetch(url);
   const html = await response.text();
@@ -30,7 +41,7 @@ const findDetails = async (url: string): Promise<Link> => {
 
   const title = $('head').find('title').text();
   const description = $('head').find('description').text();
-  const image = $('img').first()?.attr('src');
+  const image = findUseableImage($, false) || findUseableImage($, true);
 
   return {
     url,

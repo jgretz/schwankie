@@ -17,7 +17,7 @@ import {Link} from '../../link/types';
 import {HookFormTextField} from '../../forms/components';
 import {Loading} from '../../shared/components';
 
-import {lookupUrl, saveLink} from '../services';
+import {lookupUrl, saveLink, cleanTags} from '../services';
 import {
   withSnackbar,
   EnqueueSnackbarFunction,
@@ -120,7 +120,7 @@ const handleSubmit = ({enqueueSnackbar, formContext: {setValue}}: Props) => asyn
       url: values.url,
       title: values.title,
       description: values.description,
-      tags: values.tags.split(', '),
+      tags: cleanTags(values.tags),
       image: values.image,
       date: getUnixTime(new Date()),
     });
