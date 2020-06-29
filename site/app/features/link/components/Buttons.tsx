@@ -44,7 +44,7 @@ const CopyButton = ({classes, handleCopyClick}: Props) => (
 );
 
 const VisitButton = ({classes, link}: Props) => (
-  <a className={classes.link} href={link.url} target="_blank">
+  <a className={classes.link} href={link.url} target="_blank" rel="noopener">
     <IconButton className={classes.visitButton}>
       <OpenInBrowserIcon />
     </IconButton>
