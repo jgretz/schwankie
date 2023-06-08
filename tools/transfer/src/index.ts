@@ -13,12 +13,39 @@ interface Item {
 const prisma = new PrismaClient();
 
 async function main() {
+  const noDate = new Date(2016, 12, 1);
+
   for (const item of data.reverse()) {
     let link = await prisma.link.findFirst({
       where: {
         url: item.url,
       },
     });
+
+    if (link) {
+      let date: Date;
+      if (item.date) {
+        date = new Date(item.date * 1000);
+      } else {
+        date = noDate;
+
+        noDate.setDate(noDate.getDate() + 1);
+      }
+
+      if (link.create_date.getTime() !== date.getTime()) {
+        await prisma.link.update({
+          data: {
+            create_date: date,
+            update_date: date,
+          },
+          where: {
+            id: link.id,
+          },
+        });
+
+        console.log(`Updated date of ${link.title} to ${date}`);
+      }
+    }
 
     if (!link) {
       const image_url = item.image?.startsWith('data:image') ? '' : item.image;
