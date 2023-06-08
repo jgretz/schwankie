@@ -1,0 +1,40 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model link {
+  id          Int    @id @default(autoincrement())
+  url         String @db.VarChar(2048)
+  title       String @db.VarChar(500)
+  description String? @db.VarChar(800)
+  image_url   String? @db.VarChar(2048)
+
+  create_date DateTime @db.Timestamp(6)
+  update_date DateTime @db.Timestamp(6)
+
+  link_tag link_tag[]
+}
+
+model tag {
+  id   Int    @id @default(autoincrement())
+  text String @db.VarChar(80)
+
+  create_date DateTime @db.Timestamp(6)
+  update_date DateTime @db.Timestamp(6)
+
+  link_tag link_tag[]
+}
+
+model link_tag {
+  id      Int @id @default(autoincrement())
+  link_id Int
+  tag_id  Int
+
+  link link @relation(fields: [link_id], references: [id])
+  tag  tag  @relation(fields: [tag_id], references: [id])
+}
