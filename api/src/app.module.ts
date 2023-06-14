@@ -1,11 +1,11 @@
 import {MiddlewareConsumer, Module} from '@nestjs/common';
 import {PrismaService, LinksService, SearchService, TagsService} from './services';
-import {LinksController, SearchController, SitemapController, TagsController} from './controllers';
+import {LinksController, SearchController, TagsController} from './controllers';
 import {ApiKeyMiddleware} from './middleware/api_key.middleware';
 
 @Module({
   imports: [],
-  controllers: [LinksController, SearchController, SitemapController, TagsController],
+  controllers: [LinksController, SearchController, TagsController],
   providers: [PrismaService, LinksService, SearchService, TagsService],
 })
 export class AppModule {

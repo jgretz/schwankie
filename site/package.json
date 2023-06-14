@@ -14,12 +14,15 @@
     "@remix-run/react": "^1.17.0",
     "@remix-run/serve": "^1.17.0",
     "isbot": "^3.6.8",
+    "ramda": "^0.29.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
+    "@flydotio/dockerfile": "^0.2.14",
     "@remix-run/dev": "^1.17.0",
     "@remix-run/eslint-config": "^1.17.0",
+    "@types/ramda": "^0.29.2",
     "@types/react": "^18.0.35",
     "@types/react-dom": "^18.0.11",
     "eslint": "^8.38.0",

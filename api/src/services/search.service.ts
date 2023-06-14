@@ -54,6 +54,7 @@ export class SearchService {
         id: true,
         title: true,
         description: true,
+        url: true,
         image_url: true,
         update_date: true,
         link_tag: {
