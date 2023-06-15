@@ -3,7 +3,14 @@ import {CardList} from '~/components/card';
 import {Navbar} from '~/components/navbar';
 import {loadLinks} from '~/services';
 
-export * from './meta';
+import type {V2_MetaFunction} from '@remix-run/node';
+
+export const meta: V2_MetaFunction = () => {
+  return [
+    {title: 'Schwankie.com'},
+    {name: 'description', content: 'Schwankie.com - an alternative memory'},
+  ];
+};
 
 export async function loader() {
   const links = await loadLinks();
@@ -17,7 +24,7 @@ export default function Index() {
   const {links} = useLoaderData();
 
   return (
-    <div className="bg-champagne pb-5">
+    <div className="pb-5">
       <Navbar />
       <CardList links={links} />
     </div>

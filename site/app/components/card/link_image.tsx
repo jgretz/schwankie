@@ -1,16 +1,10 @@
 import {useMemo} from 'react';
 import type {LinkSearchResponseItem} from '~/Types';
-
-import noImage1 from '../../images/no-image-1.png';
-import noImage2 from '../../images/no-image-2.png';
-import noImage3 from '../../images/no-image-3.png';
-import noImage4 from '../../images/no-image-4.png';
+import {API_URL} from '~/constants';
 
 interface Props {
   link: LinkSearchResponseItem;
 }
-
-const noImages = [noImage1, noImage2, noImage3, noImage4];
 
 const GITHUB = 'https://github.githubassets.com/images/modules/logos_page/Octocat.png';
 const YOUTUBE =
@@ -32,8 +26,7 @@ const handleKnownImage = (url: string, image_url: string) => {
 };
 
 const handleUnknownImage = () => {
-  const index = Math.floor(Math.random() * noImages.length);
-  return noImages[index];
+  return `${API_URL}/images/random`;
 };
 
 export function LinkImage({link}: Props) {
