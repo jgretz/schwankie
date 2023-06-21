@@ -6,6 +6,7 @@ interface Props {
   link: LinkSearchResponseItem;
 }
 
+const RANDOM = `${API_URL}/images/random`;
 const GITHUB = 'https://github.githubassets.com/images/modules/logos_page/Octocat.png';
 const YOUTUBE =
   'https://lh3.googleusercontent.com/z6Sl4j9zQ88oUKNy0G3PAMiVwy8DzQLh_ygyvBXv0zVNUZ_wQPN_n7EAR2By3dhoUpX7kTpaHjRPni1MHwKpaBJbpNqdEsHZsH4q';
@@ -26,7 +27,7 @@ const handleKnownImage = (url: string, image_url: string) => {
 };
 
 const handleUnknownImage = () => {
-  return `${API_URL}/images/random`;
+  return RANDOM;
 };
 
 export function LinkImage({link}: Props) {
@@ -38,5 +39,11 @@ export function LinkImage({link}: Props) {
 
   const imageAlt = useMemo(() => link.description || link.title, [link.description, link.title]);
 
-  return <img className="h-[100px] w-[100px] ml-5 my-5 rounded-md" src={imageSrc} alt={imageAlt} />;
+  return (
+    <img
+      className="h-[100px] w-[100px] ml-5 my-5 rounded-md border"
+      src={imageSrc}
+      alt={imageAlt}
+    />
+  );
 }

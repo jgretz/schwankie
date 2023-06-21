@@ -3,9 +3,11 @@
 export function Util() {
   return (
     <>
-      <div className="bg-dark_cyan"></div>
-      <div className="bg-palatinate"></div>
-      <div className="bg-caribbean_current"></div>
+      <div className="bg-accent_salmon"></div>
+      <div className="bg-accent_tan"></div>
+      <div className="bg-accent_blue"></div>
+      <div className="bg-accent_dark_green"></div>
+      <div className="bg-accent_light_green"></div>
     </>
   );
 }
