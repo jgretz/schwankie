@@ -1,17 +1,11 @@
 import {MiddlewareConsumer, Module} from '@nestjs/common';
-import {PrismaService, LinksService, SearchService, TagsService} from './services';
-import {
-  ImagesRandomController,
-  LinksController,
-  SearchController,
-  TagsController,
-} from './controllers';
-import {ApiKeyMiddleware} from './middleware/api_key.middleware';
+
+import {ApiKeyMiddleware} from './security/middleware/api_key.middleware';
+import {CrudModule} from './crud/crud.module';
+import {SearchModule} from './search/search.module';
 
 @Module({
-  imports: [],
-  controllers: [ImagesRandomController, LinksController, SearchController, TagsController],
-  providers: [PrismaService, LinksService, SearchService, TagsService],
+  imports: [CrudModule, SearchModule],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {

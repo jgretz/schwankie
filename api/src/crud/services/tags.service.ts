@@ -1,10 +1,11 @@
 import {Injectable} from '@nestjs/common';
 import * as R from 'ramda';
 
-import {PrismaService} from './prisma.service';
-import {TagCreateDto, TagUpdateDto} from '../dto';
-import {CrudService} from '../Types';
 import {tag} from '@prisma/client';
+import {CrudService} from 'src/Types';
+import {PrismaService} from 'src/shared/services/prisma.service';
+import {TagCreateDto} from '../dto/tag_create.dto';
+import {TagUpdateDto} from '../dto/tag_update.dto';
 
 const clean = R.pipe(R.trim, R.toLower);
 

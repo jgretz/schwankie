@@ -1,9 +1,10 @@
 import {Injectable} from '@nestjs/common';
 import * as R from 'ramda';
 
-import {PrismaService} from './prisma.service';
-import {SearchDto} from '../dto';
-import {DEFAULT_SKIP, DEFAULT_TAKE} from '../constants';
+import {PrismaService} from '../../shared/services/prisma.service';
+import {SearchDto} from '../dto/search.dto';
+
+import {DEFAULT_SKIP, DEFAULT_TAKE} from '../../constants';
 
 const clean = R.pipe(R.trim, R.toLower);
 const cleanAll = R.map(clean);

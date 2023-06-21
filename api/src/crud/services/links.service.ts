@@ -2,11 +2,12 @@ import {Injectable} from '@nestjs/common';
 
 import * as R from 'ramda';
 
-import {PrismaService} from './prisma.service';
-import {LinkCreateDto, LinkUpdateDto} from '../dto';
+import {PrismaService} from '../../shared/services/prisma.service';
 import {TagsService} from './tags.service';
 import {link} from '@prisma/client';
-import {CrudService} from '../Types';
+import {CrudService} from '../../Types';
+import {LinkCreateDto} from '../dto/link_create.dto';
+import {LinkUpdateDto} from '../dto/link_update.dto';
 
 @Injectable()
 export class LinksService implements CrudService<link, LinkCreateDto, LinkUpdateDto> {

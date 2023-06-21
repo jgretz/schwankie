@@ -1,5 +1,5 @@
 import {Body, Delete, Get, Param, Post, Put} from '@nestjs/common';
-import {CrudService} from '../Types';
+import {CrudService} from '../../Types';
 
 interface IdParam {
   id: string;
