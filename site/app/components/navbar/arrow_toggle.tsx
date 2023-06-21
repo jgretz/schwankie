@@ -1,6 +1,5 @@
 import {useCallback, useMemo, useState} from 'react';
 import {ArrowUpCircle, ArrowDownCircle} from 'lucide-react';
-import {Button} from '~/components/ui/button';
 
 export function ArrowToggle() {
   const [flag, setFlag] = useState(false);
@@ -10,9 +9,5 @@ export function ArrowToggle() {
 
   const Arrow = useMemo(() => (flag ? ArrowUpCircle : ArrowDownCircle), [flag]);
 
-  return (
-    <Button variant="ghost" onClick={handleToggle}>
-      <Arrow size={24} color="#fff" />
-    </Button>
-  );
+  return <Arrow size={24} color="#fff" onClick={handleToggle} />;
 }

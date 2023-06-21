@@ -26,16 +26,16 @@ const handleKnownImage = (url: string, image_url: string) => {
   return image_url;
 };
 
-const handleUnknownImage = () => {
-  return RANDOM;
+const handleUnknownImage = (id: number) => {
+  return `${RANDOM}?id=${id}`;
 };
 
 export function LinkImage({link}: Props) {
-  const {url, image_url} = link;
+  const {id, url, image_url} = link;
 
   const imageSrc = useMemo(() => {
-    return image_url ? handleKnownImage(url, image_url) : handleUnknownImage();
-  }, [image_url, url]);
+    return image_url ? handleKnownImage(url, image_url) : handleUnknownImage(id);
+  }, [id, image_url, url]);
 
   const imageAlt = useMemo(() => link.description || link.title, [link.description, link.title]);
 

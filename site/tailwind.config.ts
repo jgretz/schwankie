@@ -56,7 +56,7 @@ module.exports = {
         },
 
         accent_salmon: {
-          DEFAULT: '#fdebd3',
+          DEFAULT: '#f9b4ab',
         },
         accent_tan: {
           DEFAULT: '#fdebd3',

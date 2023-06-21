@@ -11,7 +11,7 @@ export default function Navbar() {
           <div className="flex flex-row items-center">
             <div className="w-1/6"></div>
             <Search />
-            <CollapsibleTrigger className="flex justify-end w-1/6">
+            <CollapsibleTrigger className="flex justify-end mr-5 w-1/6">
               <ArrowToggle />
             </CollapsibleTrigger>
           </div>
