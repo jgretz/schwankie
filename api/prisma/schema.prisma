@@ -36,6 +36,9 @@ model link_tag {
   link_id Int
   tag_id  Int
 
+  create_date DateTime @db.Timestamp(6)
+  update_date DateTime @db.Timestamp(6)
+
   link link @relation(fields: [link_id], references: [id])
   tag  tag  @relation(fields: [tag_id], references: [id])
 }

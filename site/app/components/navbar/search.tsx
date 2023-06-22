@@ -5,7 +5,7 @@ import {Input} from '~/components/ui/input';
 export function Search() {
   return (
     <div className="flex flex-row flex-grow justify-center">
-      <Input type="test" placeholder="Search" />
+      <Input type="text" placeholder="Search" />
       <Button variant="ghost">
         <SearchIcon size={32} color="#fff" />
       </Button>

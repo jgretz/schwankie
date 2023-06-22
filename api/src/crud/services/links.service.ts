@@ -119,6 +119,8 @@ export class LinksService implements CrudService<link, LinkCreateDto, LinkUpdate
       .map((t) => ({
         tag_id: t.id,
         link_id,
+        create_date: new Date(),
+        update_date: new Date(),
       }));
 
     const newJoinWork = joinsToCreate.map((j) => this.prisma.link_tag.create({data: j}));
