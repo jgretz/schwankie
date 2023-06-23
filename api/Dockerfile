@@ -26,7 +26,6 @@ RUN npm ci --include=dev
 
 # Copy application code
 COPY --link src ./src
-COPY --link assets ./assets
 COPY --link prisma ./prisma
 COPY --link docker-entrypoint ./docker-entrypoint
 COPY --link nest-cli.json tsconfig.json tsconfig.build.json ./
@@ -45,7 +44,6 @@ COPY --from=build /app/dist ./dist
 COPY --from=build /app/package.json ./package.json
 COPY --from=build /app/package-lock.json ./package-lock.json
 COPY --from=build /app/prisma ./prisma
-COPY --from=build /app/assets ./assets
 
 # Install production node_modules
 RUN npm ci --production

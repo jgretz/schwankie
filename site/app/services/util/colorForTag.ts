@@ -1,9 +1,30 @@
 import * as R from 'ramda';
 
-const RECIPE_TAGS = ['recipe', 'baking', 'coffee'];
-const TECH_TAGS = ['react', 'javascript', 'programming', 'ai', 'ml', 'software', 'technology'];
+const FOOD_TAGS = [
+  'food',
+  'recipe',
+  'baking',
+  'coffee',
+  'chicken',
+  'cookies',
+  'bread',
+  'soup',
+  'instantpot',
+  'breakfast',
+];
+const TECH_TAGS = [
+  'tech',
+  'react',
+  'javascript',
+  'programming',
+  'ai',
+  'ml',
+  'software',
+  'technology',
+  'development',
+];
 const BUSINESS_TAGS = ['business', 'career', 'interview', 'life', 'startup'];
-const SPORTS_TAGS = ['running', 'basketball', 'football', 'soccer'];
+const SPORTS_TAGS = ['sports', 'running', 'basketball', 'football', 'soccer', 'races', 'shoes'];
 
 const tagBgColorMap = {
   food: 'accent_salmon',
@@ -12,14 +33,14 @@ const tagBgColorMap = {
   sports: 'accent_blue',
 };
 
-const DEFAULT_COLOR = 'fore_black';
+const DEFAULT_COLOR = 'slate-300';
 
 export function colorForTag(tag: string) {
   return colorForTags([tag]);
 }
 
 export function colorForTags(tags: string[]) {
-  if (R.intersection(tags, RECIPE_TAGS).length > 0) {
+  if (R.intersection(tags, FOOD_TAGS).length > 0) {
     return tagBgColorMap.food;
   }
 

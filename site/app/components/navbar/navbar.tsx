@@ -1,9 +1,16 @@
+import type {TagListItem} from '~/Types';
 import {ArrowToggle} from './arrow_toggle';
 import {Search} from './search';
-import {Topics} from './topics';
+import {Tags} from './tags';
 import {Collapsible, CollapsibleContent, CollapsibleTrigger} from '~/components/ui/collapsible';
 
-export default function Navbar() {
+interface Props {
+  mainTags: TagListItem[];
+  topTags: TagListItem[];
+  recentTags: TagListItem[];
+}
+
+export default function Navbar(props: Props) {
   return (
     <div className="flex justify-center items-center">
       <div className="h-full rounded-b-lg w-3/4 bg-fore_black drop-shadow-md py-5">
@@ -17,7 +24,7 @@ export default function Navbar() {
           </div>
 
           <CollapsibleContent className="CollapsibleContent">
-            <Topics />
+            <Tags {...props} />
           </CollapsibleContent>
         </Collapsible>
       </div>

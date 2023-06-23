@@ -1,3 +1,11 @@
+// Internal Types
+export interface TagListItem {
+  id: number;
+  text: string;
+  color: string;
+  support: string;
+}
+
 // Response Types
 export interface LinkSearchResponseItem {
   id: number;
@@ -16,4 +24,21 @@ export interface LinkSearchResponseItem {
       };
     },
   ];
+}
+
+export interface RecentTagsResponseItem {
+  tag: {
+    id: number;
+    text: string;
+    create_date: Date;
+    update_date: Date;
+  };
+}
+
+export interface TopTagsResponsItem {
+  id: number;
+  text: string;
+  _count: {
+    link_tag: number;
+  };
 }

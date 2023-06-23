@@ -3,6 +3,7 @@
 export function Util() {
   return (
     <>
+      <div className="bg-slate-300"></div>
       <div className="bg-accent_salmon"></div>
       <div className="bg-accent_tan"></div>
       <div className="bg-accent_blue"></div>
