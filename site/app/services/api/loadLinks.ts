@@ -1,8 +1,17 @@
 import {SEARCH_URL} from '~/constants';
 import type {LinkSearchResponseItem} from '../../Types';
+import {appendParams} from '../util/appendParams';
 
-export async function loadLinks(query?: string) {
-  const URL = SEARCH_URL + new URLSearchParams([['query', query || '']]);
+interface Params {
+  query?: string;
+  size?: number;
+}
+
+export async function loadLinks({query, size}: Params) {
+  const URL = appendParams(SEARCH_URL, [
+    ['query', query],
+    ['size', size],
+  ]);
 
   const response = await fetch(URL, {
     headers: {

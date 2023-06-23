@@ -2,12 +2,16 @@ import {Search as SearchIcon} from 'lucide-react';
 import {Button} from '~/components/ui/button';
 import {Input} from '~/components/ui/input';
 
-export function Search() {
+interface Props {
+  query?: string;
+}
+
+export function Search({query}: Props) {
   return (
     <div className="flex flex-row flex-grow justify-center">
-      <Input type="text" placeholder="Search" />
+      <Input type="text" placeholder="Search" value={query} />
       <Button variant="ghost">
-        <SearchIcon size={32} color="#fff" />
+        <SearchIcon size={24} color="#fff" />
       </Button>
     </div>
   );

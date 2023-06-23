@@ -12,7 +12,7 @@ interface TagProps {
 
 function LinkTag({text, displayComma}: TagProps) {
   return (
-    <Link to={`/${text}`}>
+    <Link to={`?query=${text}`}>
       <span>{text}</span>
       {displayComma && <span>,&nbsp;</span>}
     </Link>
