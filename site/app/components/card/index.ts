@@ -1,1 +1,1 @@
-export * from './card_list';
+export * from './card';

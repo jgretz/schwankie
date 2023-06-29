@@ -1,5 +1,6 @@
 import {Link} from '@remix-run/react';
 import type {LinkSearchResponseItem} from '~/Types';
+import {appendParams} from '~/services/util/appendParams';
 
 interface Props {
   link: LinkSearchResponseItem;
@@ -11,8 +12,10 @@ interface TagProps {
 }
 
 function CardTag({text, displayComma}: TagProps) {
+  const linkTo = appendParams('/?', [['query', text]]);
+
   return (
-    <Link to={`?query=${text}`}>
+    <Link to={linkTo}>
       <span>{text}</span>
       {displayComma && <span>,&nbsp;</span>}
     </Link>

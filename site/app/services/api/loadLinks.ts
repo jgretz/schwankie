@@ -10,7 +10,7 @@ interface Params {
 export async function loadLinks({query, size}: Params) {
   const URL = appendParams(SEARCH_URL, [
     ['query', query],
-    ['size', size],
+    ['take', size],
   ]);
 
   const response = await fetch(URL, {

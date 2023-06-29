@@ -1,7 +1,7 @@
 import {Collapsible, CollapsibleContent, CollapsibleTrigger} from '~/components/ui/collapsible';
-import {TagsList} from '~/routes/resources/tags_list/route';
-import {ArrowToggle} from '~/components/arrow_toggle/arrow_toggle';
-import {Search} from '../search/search';
+import {ArrowToggle} from '~/components/arrow_toggle';
+import {Search} from './search';
+import {TagPane} from './tag_pane';
 
 export function Navbar() {
   return (
@@ -17,7 +17,7 @@ export function Navbar() {
           </div>
 
           <CollapsibleContent className="CollapsibleContent">
-            <TagsList />
+            <TagPane />
           </CollapsibleContent>
         </Collapsible>
       </div>

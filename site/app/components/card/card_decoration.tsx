@@ -1,6 +1,6 @@
 import {useMemo} from 'react';
 import type {LinkSearchResponseItem} from '~/Types';
-import {colorForTags} from '~/services';
+import {colorForTags} from '~/services/util/colorForTag';
 
 interface Props {
   link: LinkSearchResponseItem;

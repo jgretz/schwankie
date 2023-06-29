@@ -4,11 +4,12 @@ import type {FormEvent} from 'react';
 import {useCallback, useEffect, useState} from 'react';
 import {Button} from '~/components/ui/button';
 import {Input} from '~/components/ui/input';
+import {appendParams} from '~/services/util/appendParams';
 import {parseSearchParams} from '~/services/util/parseSearchParams';
 
 export function Search() {
   const [searchParams] = useSearchParams();
-  const {query} = parseSearchParams(searchParams);
+  const {query, size} = parseSearchParams(searchParams);
 
   const [cachedQuery, setCachedQuery] = useState(query);
   const [term, setTerm] = useState(query);
@@ -33,9 +34,14 @@ export function Search() {
     (e: FormEvent<HTMLFormElement>) => {
       e.preventDefault();
 
-      navigate(`/?query=${term}`);
+      const linkTo = appendParams('/?', [
+        ['query', term],
+        ['size', size],
+      ]);
+
+      navigate(linkTo);
     },
-    [navigate, term],
+    [navigate, size, term],
   );
 
   return (

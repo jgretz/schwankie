@@ -42,3 +42,12 @@ export interface TopTagsResponsItem {
     link_tag: number;
   };
 }
+
+// Loader Types
+export interface IndexLoaderData {
+  links: LinkSearchResponseItem[];
+
+  mainTags: TagListItem[];
+  topTags: TagListItem[];
+  recentTags: TagListItem[];
+}

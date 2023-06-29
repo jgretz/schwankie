@@ -1,15 +1,16 @@
-import * as R from 'ramda';
-
 type Param = [string, string | number | null | undefined];
 
 export function appendParams(url: string, params: Param[]) {
-  return params.reduce((acc, param) => {
-    const [key, value] = param;
-
+  const paramsObj = params.reduce((acc, [key, value]) => {
     if (!value) {
       return acc;
     }
 
-    return acc + new URLSearchParams({[key]: R.toString(value)});
-  }, url);
+    return {
+      ...acc,
+      [key]: value,
+    };
+  }, {});
+
+  return url + new URLSearchParams(paramsObj);
 }
