@@ -14,7 +14,7 @@ export interface LinkSearchResponseItem {
   description?: string;
   image_url?: string;
 
-  update_date: Date;
+  update_date: string;
 
   link_tag: [
     {

@@ -1,7 +1,7 @@
 import type {LinkSearchResponseItem} from '~/Types';
-import {LinkImage} from './link_image';
-import {LinkDecoration} from './link_decoration';
-import {LinkText} from './link_text';
+import {CardImage} from './card_image';
+import {CardDecoration} from './card_decoration';
+import {CardText} from './card_text';
 
 interface Props {
   link: LinkSearchResponseItem;
@@ -10,9 +10,9 @@ interface Props {
 export function Card({link}: Props) {
   return (
     <div className="w-full bg-fore_black rounded-lg mt-4 shadow-xl flex flex-row">
-      <LinkImage link={link} />
-      <LinkText link={link} />
-      <LinkDecoration link={link} />
+      <CardImage link={link} />
+      <CardText link={link} />
+      <CardDecoration link={link} />
     </div>
   );
 }

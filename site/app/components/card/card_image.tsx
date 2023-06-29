@@ -34,7 +34,7 @@ const handleUnknownImage = (id: number) => {
   return noImages[id % noImages.length];
 };
 
-export function LinkImage({link}: Props) {
+export function CardImage({link}: Props) {
   const {id, url, image_url} = link;
 
   const imageSrc = useMemo(() => {

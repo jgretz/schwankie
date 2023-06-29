@@ -1,11 +1,11 @@
 import type {LinkSearchResponseItem} from '~/Types';
-import {LinkTags} from './link_tags';
+import {CardTags} from './card_tags';
 
 interface Props {
   link: LinkSearchResponseItem;
 }
 
-export function LinkText({link}: Props) {
+export function CardText({link}: Props) {
   return (
     <div className="m-5 flex flex-col flex-grow">
       <div className="flex-grow line-clamp-3 font-bold text-lg">
@@ -13,7 +13,7 @@ export function LinkText({link}: Props) {
           {link.title}
         </a>
       </div>
-      <LinkTags link={link} />
+      <CardTags link={link} />
     </div>
   );
 }

@@ -13,7 +13,7 @@ function determineBgColor(link: LinkSearchResponseItem) {
   return `bg-${color}`;
 }
 
-export function LinkDecoration({link}: Props) {
+export function CardDecoration({link}: Props) {
   const bgColor = useMemo(() => determineBgColor(link), [link]);
 
   return <div className={`flex flex-row min-w-[15px] rounded-r-lg ${bgColor}`}></div>;

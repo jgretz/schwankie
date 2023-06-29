@@ -10,7 +10,7 @@ interface TagProps {
   displayComma: boolean;
 }
 
-function LinkTag({text, displayComma}: TagProps) {
+function CardTag({text, displayComma}: TagProps) {
   return (
     <Link to={`?query=${text}`}>
       <span>{text}</span>
@@ -19,13 +19,13 @@ function LinkTag({text, displayComma}: TagProps) {
   );
 }
 
-export function LinkTags({link}: Props) {
+export function CardTags({link}: Props) {
   const {link_tag} = link;
 
   return (
     <div className="flex flex-row">
       {link_tag.map(({tag}, index) => (
-        <LinkTag key={tag.id} text={tag.text} displayComma={index < link_tag.length - 1} />
+        <CardTag key={tag.id} text={tag.text} displayComma={index < link_tag.length - 1} />
       ))}
     </div>
   );
