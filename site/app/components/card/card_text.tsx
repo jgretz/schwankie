@@ -8,7 +8,7 @@ interface Props {
 export function CardText({link}: Props) {
   return (
     <div className="m-5 flex flex-col flex-grow">
-      <div className="flex-grow line-clamp-3 font-bold text-lg">
+      <div className="flex-grow font-bold text-lg line-clamp-3">
         <a href={link.url} target="_blank" rel="noreferrer">
           {link.title}
         </a>

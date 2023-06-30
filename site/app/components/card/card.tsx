@@ -9,7 +9,7 @@ interface Props {
 
 export function Card({link}: Props) {
   return (
-    <div className="w-full bg-fore_black rounded-lg mt-4 shadow-xl flex flex-row">
+    <div className="w-full bg-fore_black rounded-lg mt-5 mx-5 shadow-xl flex flex-row justify-between">
       <CardImage link={link} />
       <CardText link={link} />
       <CardDecoration link={link} />

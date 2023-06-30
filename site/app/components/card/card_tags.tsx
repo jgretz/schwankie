@@ -16,7 +16,7 @@ function CardTag({text, displayComma}: TagProps) {
 
   return (
     <Link to={linkTo}>
-      <span>{text}</span>
+      {text}
       {displayComma && <span>,&nbsp;</span>}
     </Link>
   );
@@ -26,7 +26,7 @@ export function CardTags({link}: Props) {
   const {link_tag} = link;
 
   return (
-    <div className="flex flex-row">
+    <div className="line-clamp-1">
       {link_tag.map(({tag}, index) => (
         <CardTag key={tag.id} text={tag.text} displayComma={index < link_tag.length - 1} />
       ))}

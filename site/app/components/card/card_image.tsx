@@ -41,13 +41,10 @@ export function CardImage({link}: Props) {
     return image_url ? handleKnownImage(url, image_url) : handleUnknownImage(id);
   }, [id, image_url, url]);
 
-  const imageAlt = useMemo(() => link.description || link.title, [link.description, link.title]);
-
   return (
-    <img
-      className="h-[100px] w-[100px] ml-5 my-5 rounded-md border"
-      src={imageSrc}
-      alt={imageAlt}
+    <div
+      style={{backgroundImage: `url('${imageSrc}')`}}
+      className={`min-h-[100px] min-w-[100px] h-[100px] w-[100px] ml-5 my-5 bg-center bg-no-repeat bg-cover rounded-lg`}
     />
   );
 }
