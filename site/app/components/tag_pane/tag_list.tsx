@@ -8,8 +8,8 @@ interface Props {
 
 export function TagList({title, items}: Props) {
   return (
-    <div className="flex flex-col items-center flex-1">
-      <h2 className="font-bold mb-2">{title}</h2>
+    <div className="flex flex-col items-center flex-grow">
+      <h2 className="font-bold mb-2 text-center">{title}</h2>
       <ul>
         {items.map((item) => (
           <li key={item.id}>

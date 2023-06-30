@@ -7,9 +7,9 @@ export function TagPane() {
   const {mainTags, topTags, recentTags} = useLoaderData<IndexLoaderData>();
 
   return (
-    <div className={`m-5`}>
+    <div className="mt-5">
       <Separator />
-      <div className="flex justify-between m-5">
+      <div className="flex justify-between mt-5 mx-3 xl:mx-5">
         <TagList title="Main Tags" items={mainTags} />
         <Separator orientation="vertical" />
         <TagList title="Top Tags" items={topTags} />
