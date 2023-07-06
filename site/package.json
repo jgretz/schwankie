@@ -26,6 +26,8 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "remix": "^1.18.0",
+    "remix-auth": "^3.5.0",
+    "remix-auth-google": "^1.2.0",
     "tailwind-merge": "^1.13.2",
     "tailwindcss-animate": "^1.0.6",
     "zod": "^3.21.4"

@@ -6,6 +6,10 @@ export interface TagListItem {
   support: string;
 }
 
+export interface User {
+  email: string;
+}
+
 // Response Types
 export interface LinkSearchResponseItem {
   id: number;
