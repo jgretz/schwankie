@@ -1,9 +1,9 @@
 import type {LoaderArgs} from '@remix-run/node';
 import {authenticator} from '~/services/auth.server';
 
-export let loader = ({request}: LoaderArgs) => {
+export function loader({request}: LoaderArgs) {
   return authenticator.authenticate('google', request, {
     successRedirect: '/admin/links',
     failureRedirect: '/admin/login',
   });
-};
+}

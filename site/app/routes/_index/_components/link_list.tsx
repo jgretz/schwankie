@@ -1,6 +1,6 @@
-import {Card} from '~/components/card/card';
 import {useLoaderData} from '@remix-run/react';
 import type {IndexLoaderData} from '~/Types';
+import {Card} from './card';
 
 export function LinkList() {
   const {links} = useLoaderData<IndexLoaderData>();

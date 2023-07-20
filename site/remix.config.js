@@ -15,4 +15,5 @@ module.exports = {
     v2_routeConvention: true,
   },
   tailwind: true,
+  postcss: true,
 };

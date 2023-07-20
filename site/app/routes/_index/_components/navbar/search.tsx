@@ -2,8 +2,8 @@ import {useNavigate, useSearchParams} from '@remix-run/react';
 import {Search as SearchIcon} from 'lucide-react';
 import type {FormEvent} from 'react';
 import {useCallback, useEffect, useState} from 'react';
-import {Button} from '~/components/ui/button';
-import {Input} from '~/components/ui/input';
+import {Button} from '~/components/button';
+import {Input} from '~/components/input';
 import {appendParams} from '~/services/util/appendParams';
 import {parseSearchParams} from '~/services/util/parseSearchParams';
 

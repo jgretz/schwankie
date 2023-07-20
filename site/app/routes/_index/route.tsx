@@ -2,14 +2,14 @@ import {json, type LoaderArgs, type V2_MetaFunction} from '@remix-run/node';
 
 import {parseSearchParams} from '~/services/util/parseSearchParams';
 
-import {Navbar} from '../../components/navbar';
-import {LinkList} from '~/components/link_list';
-import {LoadMore} from '~/components/load_more';
+import {Navbar} from './_components/navbar';
+import {LinkList} from './_components/link_list';
+import {LoadMore} from './_components/load_more';
 
-import {loadLinks} from '~/services/api/loadLinks';
-import {loadMainTags} from '~/services/api/loadMainTags';
-import {loadRecentTags} from '~/services/api/loadRecentTags';
-import {loadTopTags} from '~/services/api/loadTopTags';
+import {loadLinks} from '~/services/api/links/loadLinks';
+import {loadMainTags} from '~/services/api/tags/loadMainTags';
+import {loadRecentTags} from '~/services/api/tags/loadRecentTags';
+import {loadTopTags} from '~/services/api/tags/loadTopTags';
 
 export const meta: V2_MetaFunction = () => {
   return [

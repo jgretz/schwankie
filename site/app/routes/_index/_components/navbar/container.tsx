@@ -1,5 +1,5 @@
-import {Collapsible, CollapsibleContent, CollapsibleTrigger} from '~/components/ui/collapsible';
-import {ArrowToggle} from '~/components/arrow_toggle';
+import {Collapsible, CollapsibleContent, CollapsibleTrigger} from '~/components/collapsible';
+import {ArrowToggle} from './arrow_toggle';
 import {Search} from './search';
 import {TagPane} from './tag_pane';
 

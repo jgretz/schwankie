@@ -1,5 +1,5 @@
 import {TagListItem} from '~/Types';
-import {colorForTag} from '../util/colorForTag';
+import {colorForTag} from '../../util/colorForTag';
 
 const mainTags = ['food', 'tech', 'business', 'sports'];
 

@@ -1,3 +1,12 @@
-export const API_URL = 'https://schwankie-api.fly.dev';
-export const SEARCH_URL = `${API_URL}/search?`;
-export const TAGS_BASE_URL = `${API_URL}/tags`;
+export const URLS = {
+  API: process.env.API_URL,
+  SEARCH: `${process.env.API_URL}/search?`,
+  TAGS: `${process.env.API_URL}/tags`,
+  SAVE_LINK: `${process.env.API_URL}/crud/links`,
+};
+
+export const ROUTES = {
+  AUTH: '/admin/auth/google',
+  LOGIN: '/admin/login',
+  LINKS: '/admin/links',
+};

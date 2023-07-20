@@ -10,6 +10,15 @@ export interface User {
   email: string;
 }
 
+// Submission Types
+export interface SaveLink {
+  url: string;
+  title: string;
+  description?: string;
+  tags: string;
+  image_url?: string;
+}
+
 // Response Types
 export interface LinkSearchResponseItem {
   id: number;

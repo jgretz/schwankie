@@ -1,6 +1,6 @@
-import {SEARCH_URL} from '~/constants';
-import type {LinkSearchResponseItem} from '../../Types';
-import {appendParams} from '../util/appendParams';
+import {URLS} from '~/constants';
+import type {LinkSearchResponseItem} from '../../../Types';
+import {appendParams} from '../../util/appendParams';
 
 interface Params {
   query?: string;
@@ -8,7 +8,7 @@ interface Params {
 }
 
 export async function loadLinks({query, size}: Params) {
-  const URL = appendParams(SEARCH_URL, [
+  const URL = appendParams(URLS.SEARCH, [
     ['query', query],
     ['take', size],
   ]);

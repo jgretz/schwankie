@@ -1,9 +1,9 @@
-import {TAGS_BASE_URL} from '~/constants';
-import type {RecentTagsResponseItem, TagListItem} from '../../Types';
-import {colorForTag} from '../util/colorForTag';
+import {URLS} from '~/constants';
+import type {RecentTagsResponseItem, TagListItem} from '~/Types';
+import {colorForTag} from '~/services/util/colorForTag';
 
 export async function loadRecentTags(): Promise<TagListItem[]> {
-  const URL = `${TAGS_BASE_URL}/recent`;
+  const URL = `${URLS.TAGS}/recent`;
 
   const response = await fetch(URL, {
     headers: {
