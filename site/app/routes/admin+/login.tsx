@@ -1,5 +1,5 @@
 import {Form} from '@remix-run/react';
-import {Button} from '~/components/button';
+import {Button} from '~/components/ui/button';
 import {ROUTES} from '~/constants';
 
 export default function Login() {

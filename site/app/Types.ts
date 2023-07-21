@@ -11,6 +11,10 @@ export interface User {
 }
 
 // Submission Types
+export interface CrawlLink {
+  url: string;
+}
+
 export interface SaveLink {
   url: string;
   title: string;
@@ -20,6 +24,12 @@ export interface SaveLink {
 }
 
 // Response Types
+export interface LinkTag {
+  tag: {
+    id: number;
+    text: string;
+  };
+}
 export interface LinkSearchResponseItem {
   id: number;
   url: string;
@@ -29,14 +39,7 @@ export interface LinkSearchResponseItem {
 
   update_date: string;
 
-  link_tag: [
-    {
-      tag: {
-        id: number;
-        text: string;
-      };
-    },
-  ];
+  link_tag: LinkTag[];
 }
 
 export interface RecentTagsResponseItem {

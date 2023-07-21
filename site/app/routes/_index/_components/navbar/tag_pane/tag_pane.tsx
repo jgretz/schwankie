@@ -1,4 +1,4 @@
-import {Separator} from '~/components/separator';
+import {Separator} from '~/components/ui/separator';
 import {useLoaderData} from '@remix-run/react';
 import type {IndexLoaderData} from '~/Types';
 import {TagList} from './tag_list';

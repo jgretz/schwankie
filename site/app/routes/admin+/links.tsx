@@ -1,21 +1,22 @@
 import type {ActionArgs} from '@remix-run/node';
 import {TextInput} from './_components/text_input';
-import {useForm} from '@conform-to/react';
+import {conform, useForm} from '@conform-to/react';
 import {parse} from '@conform-to/zod';
 import {Form, useActionData} from '@remix-run/react';
-import {json} from '@remix-run/node';
 import {z} from 'zod';
 import {saveLink} from '~/services/api/links/saveLinks';
-import {Button} from '~/components/button';
-import {Separator} from '~/components/separator';
+import {Button} from '~/components/ui/button';
+import {Separator} from '~/components/ui/separator';
+import {crawlLink} from '~/services/api/links/crawlLink';
+import type {LinkSearchResponseItem, SaveLink} from '~/Types';
 
 const COMMANDS = {
   SaveLink: 'SaveLink',
-  SearchLink: 'SearchLink',
+  CrawlLink: 'CrawlLink',
 };
 
-const searchSchema = z.object({
-  searchUrl: z.string().min(1, 'Url is required').url('Valid URL is required'),
+const crawlSchema = z.object({
+  url: z.string().min(1, 'Url is required').url('Valid URL is required'),
 });
 
 const linkSchema = z.object({
@@ -23,49 +24,81 @@ const linkSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   description: z.string().optional(),
   tags: z.string().min(1, 'At least 1 tag is required'),
-  image: z.string().url('Valid URL is required').optional(),
+  image_url: z.string().url('Valid URL is required').optional(),
 });
 
 export async function action({request}: ActionArgs) {
   const formData = await request.formData();
-  const intent = formData.get('formName');
+  const intent = formData.get(conform.INTENT) || '';
 
-  switch (intent) {
-    case COMMANDS.SearchLink: {
-      const submission = parse(formData, {schema: searchSchema});
-      if (!submission.value) {
-        return json(submission, {status: 400});
-      }
+  const schema = intent === COMMANDS.CrawlLink ? crawlSchema : linkSchema;
+  const submission = parse(formData, {schema});
 
-      return await saveLink(submission.value);
-    }
-
-    case COMMANDS.SaveLink: {
-      const submission = parse(formData, {schema: linkSchema});
-      if (!submission.value) {
-        return json(submission, {status: 400});
-      }
-
-      return await saveLink(submission.value);
-    }
-
-    default: {
-      return json({}, {status: 500});
-    }
+  if (!submission.value) {
+    return {intent, payload: {}, error: {}};
   }
+
+  let response;
+  switch (intent) {
+    case COMMANDS.CrawlLink:
+      response = await crawlLink(submission.value);
+      break;
+
+    case COMMANDS.SaveLink:
+      response = await saveLink(submission.value as SaveLink);
+      break;
+
+    default:
+      return {intent, payload: {}, error: {}};
+  }
+
+  const payload = (await response.json()) as LinkSearchResponseItem;
+  const tags = payload.link_tag.map((i) => i.tag.text).join(', ');
+
+  return {
+    intent,
+    payload: {
+      ...payload,
+      tags,
+    },
+    error: {},
+  };
 }
 
-export default function Links() {
+function CrawlForm() {
   const lastSubmission = useActionData<typeof action>();
-
-  const [searchForm, {searchUrl}] = useForm({
+  const [form, {url}] = useForm({
     lastSubmission,
     onValidate({formData}) {
-      return parse(formData, {schema: searchSchema});
+      return parse(formData, {schema: crawlSchema});
     },
   });
 
-  const [linkForm, {url, title, description, tags, image}] = useForm({
+  return (
+    <div className="flex justify-center w-full">
+      <Form
+        method="post"
+        {...form.props}
+        className="flex flex-col justify-center w-full max-w-[600px]"
+      >
+        <TextInput label="Search For Url" {...url} />
+
+        <Button
+          type="submit"
+          name={conform.INTENT}
+          value={COMMANDS.CrawlLink}
+          className="mt-5 mx-auto"
+        >
+          Search
+        </Button>
+      </Form>
+    </div>
+  );
+}
+
+function LinkForm() {
+  const lastSubmission = useActionData<typeof action>();
+  const [form, {url, title, description, tags, image_url}] = useForm({
     lastSubmission,
     onValidate({formData}) {
       return parse(formData, {schema: linkSchema});
@@ -73,38 +106,37 @@ export default function Links() {
   });
 
   return (
+    <div className="flex justify-center w-full">
+      <Form
+        method="post"
+        {...form.props}
+        className="flex flex-col justify-center w-full max-w-[600px]"
+      >
+        <TextInput label="Url" {...url} />
+        <TextInput label="Title" {...title} />
+        <TextInput label="Description" {...description} />
+        <TextInput label="Tags" {...tags} />
+        <TextInput label="Image" {...image_url} />
+
+        <Button
+          type="submit"
+          name={conform.INTENT}
+          value={COMMANDS.SaveLink}
+          className="mt-5 mx-auto"
+        >
+          Save
+        </Button>
+      </Form>
+    </div>
+  );
+}
+
+export default function Links() {
+  return (
     <div className="flex flex-col items-center w-full">
-      <div className="flex justify-center w-full">
-        <Form
-          method="post"
-          {...searchForm.props}
-          className="flex flex-col justify-center w-full max-w-[600px]"
-        >
-          <TextInput label="Search For Url" {...searchUrl} />
-
-          <Button name={COMMANDS.SearchLink} className="mt-5 mx-auto">
-            Search
-          </Button>
-        </Form>
-      </div>
+      <CrawlForm />
       <Separator className="my-5 max-w-[600px]" />
-      <div className="flex justify-center w-full">
-        <Form
-          method="post"
-          {...linkForm.props}
-          className="flex flex-col justify-center w-full max-w-[600px]"
-        >
-          <TextInput label="Url" {...url} />
-          <TextInput label="Title" {...title} />
-          <TextInput label="Description" {...description} />
-          <TextInput label="Tags" {...tags} />
-          <TextInput label="Image" {...image} />
-
-          <Button name={COMMANDS.SaveLink} className="mt-5 mx-auto">
-            Save
-          </Button>
-        </Form>
-      </div>
+      <LinkForm />
     </div>
   );
 }

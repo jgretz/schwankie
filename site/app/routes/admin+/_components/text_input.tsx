@@ -1,3 +1,5 @@
+import {Input} from '~/components/ui/input';
+
 interface Props<T extends string | number | undefined> {
   label: string;
   name: string;
@@ -16,10 +18,10 @@ export function TextInput<T extends string | number | undefined>({
   error,
 }: Props<T>) {
   return (
-    <div className="flex mt-5 w-full">
+    <div className="flex flex-col mt-5 w-full">
       <div className="w-full">
         <label className="inline-block">{label}</label>
-        <input
+        <Input
           className="w-full"
           type={type || 'text'}
           name={name}
@@ -27,7 +29,7 @@ export function TextInput<T extends string | number | undefined>({
           defaultValue={defaultValue}
         />
       </div>
-      <div>{error}</div>
+      <div className="text-red-500">{error}</div>
     </div>
   );
 }
