@@ -1,4 +1,4 @@
-import type {ActionArgs} from '@remix-run/node';
+import {json, type ActionArgs} from '@remix-run/node';
 import {TextInput} from './_components/text_input';
 import {conform, useForm} from '@conform-to/react';
 import {parse} from '@conform-to/zod';
@@ -57,14 +57,14 @@ export async function action({request}: ActionArgs) {
   const payload = (await response.json()) as LinkSearchResponseItem;
   const tags = payload.link_tag.map((i) => i.tag.text).join(', ');
 
-  return {
+  return json({
     intent,
     payload: {
       ...payload,
       tags,
     },
     error: {},
-  };
+  });
 }
 
 function CrawlForm() {
