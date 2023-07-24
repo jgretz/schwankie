@@ -9,6 +9,8 @@ import {Button} from '~/components/ui/button';
 import {Separator} from '~/components/ui/separator';
 import {crawlLink} from '~/services/api/links/crawlLink';
 import type {LinkSearchResponseItem, SaveLink} from '~/Types';
+import {Spinner} from '~/components/ui/spinner';
+import {useIsSubmitting} from '~/hooks/useIsSubmitting';
 
 const COMMANDS = {
   SaveLink: 'SaveLink',
@@ -131,7 +133,16 @@ function LinkForm() {
   );
 }
 
+// TODO: Add Spinner when searching / saving
+// TODO: Add Toast
+
 export default function Links() {
+  const isSubmitting = useIsSubmitting();
+  console.log(isSubmitting ? 'YAY' : 'NO');
+  if (isSubmitting) {
+    return <Spinner />;
+  }
+
   return (
     <div className="flex flex-col items-center w-full">
       <CrawlForm />
