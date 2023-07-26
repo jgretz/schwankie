@@ -1,4 +1,4 @@
-import {URLS} from '~/constants';
+import {URLS} from '~/constants/urls';
 import type {SaveLink} from '~/Types';
 import {crawlLink} from './crawlLink';
 

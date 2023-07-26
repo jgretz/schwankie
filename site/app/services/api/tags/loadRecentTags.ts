@@ -1,4 +1,4 @@
-import {URLS} from '~/constants';
+import {URLS} from '~/constants/urls';
 import type {RecentTagsResponseItem, TagListItem} from '~/Types';
 import {colorForTag} from '~/services/util/colorForTag';
 

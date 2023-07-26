@@ -5,9 +5,3 @@ export const URLS = {
   SAVE_LINK: `${process.env.API_URL}/crud/links`,
   CRAWL_LINK: `${process.env.API_URL}/crawl`,
 };
-
-export const ROUTES = {
-  AUTH: '/admin/auth/google',
-  LOGIN: '/admin/login',
-  LINKS: '/admin/links',
-};

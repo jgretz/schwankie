@@ -1,4 +1,4 @@
-import {json, type ActionArgs} from '@remix-run/node';
+import {json, redirect, type ActionArgs, type LoaderArgs} from '@remix-run/node';
 import {TextInput} from './_components/text_input';
 import {conform, useForm} from '@conform-to/react';
 import {parse} from '@conform-to/zod';
@@ -11,6 +11,8 @@ import {crawlLink} from '~/services/api/links/crawlLink';
 import type {LinkSearchResponseItem, SaveLink} from '~/Types';
 import {Spinner} from '~/components/ui/spinner';
 import {useIsSubmitting} from '~/hooks/useIsSubmitting';
+import {requireUser} from '~/services/security/requireUser';
+import {ROUTES} from '~/constants/routes';
 
 const COMMANDS = {
   SaveLink: 'SaveLink',
@@ -37,7 +39,7 @@ export async function action({request}: ActionArgs) {
   const submission = parse(formData, {schema});
 
   if (!submission.value) {
-    return {intent, payload: {}, error: {}};
+    return json({intent, payload: {}, error: {}});
   }
 
   let response;
@@ -51,7 +53,7 @@ export async function action({request}: ActionArgs) {
       break;
 
     default:
-      return {intent, payload: {}, error: {}};
+      return json({intent, payload: {}, error: {}});
   }
 
   const payload = (await response.json()) as LinkSearchResponseItem;
@@ -102,10 +104,16 @@ function LinkForm() {
   const lastSubmission = useActionData<typeof action>();
   const [form, {url, title, description, tags, image_url}] = useForm({
     lastSubmission,
+    defaultValue: lastSubmission?.payload,
     onValidate({formData}) {
       return parse(formData, {schema: linkSchema});
     },
   });
+
+  const isSubmitting = useIsSubmitting();
+  if (isSubmitting) {
+    return <Spinner />;
+  }
 
   return (
     <div className="flex justify-center w-full">
@@ -132,17 +140,16 @@ function LinkForm() {
     </div>
   );
 }
-
-// TODO: Add Spinner when searching / saving
-// TODO: Add Toast
-
-export default function Links() {
-  const isSubmitting = useIsSubmitting();
-  console.log(isSubmitting ? 'YAY' : 'NO');
-  if (isSubmitting) {
-    return <Spinner />;
+export async function loader({request}: LoaderArgs) {
+  const user = await requireUser(request);
+  if (!user) {
+    return redirect(ROUTES.LOGIN);
   }
 
+  return json({});
+}
+
+export default function Links() {
   return (
     <div className="flex flex-col items-center w-full">
       <CrawlForm />
@@ -151,3 +158,5 @@ export default function Links() {
     </div>
   );
 }
+
+// TODO: Add Toast

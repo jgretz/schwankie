@@ -1,4 +1,4 @@
-import {URLS} from '~/constants';
+import {URLS} from '~/constants/urls';
 import type {LinkSearchResponseItem} from '../../../Types';
 import {appendParams} from '../../util/appendParams';
 

@@ -1,4 +1,4 @@
-import {URLS} from '~/constants';
+import {URLS} from '~/constants/urls';
 import type {CrawlLink} from '~/Types';
 
 export async function crawlLink(crawl: CrawlLink) {

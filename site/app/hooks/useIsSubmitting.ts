@@ -9,8 +9,6 @@ export function useIsSubmitting({
 } = {}) {
   const contextualFormAction = useFormAction();
   const navigation = useNavigation();
-
-  console.log(navigation);
   return (
     navigation.state === (formMethod === 'GET' ? 'loading' : 'submitting') &&
     navigation.formAction === (formAction ?? contextualFormAction) &&

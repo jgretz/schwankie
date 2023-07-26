@@ -1,6 +1,6 @@
 import type {ActionArgs} from '@remix-run/node';
 import {redirect} from '@remix-run/node';
-import {ROUTES} from '~/constants';
+import {ROUTES} from '~/constants/routes';
 import {authenticator} from '~/services/auth.server';
 
 export function loader() {
