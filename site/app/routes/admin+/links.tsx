@@ -13,8 +13,11 @@ import {Spinner} from '~/components/ui/spinner';
 import {useIsSubmitting} from '~/hooks/useIsSubmitting';
 import {requireUser} from '~/services/security/requireUser';
 import {ROUTES} from '~/constants/routes';
+import {Toaster} from '~/components/ui/toaster';
+import {useEffect} from 'react';
+import {useToast} from '~/components/ui/use-toast';
 
-const COMMANDS = {
+const INTENTS = {
   SaveLink: 'SaveLink',
   CrawlLink: 'CrawlLink',
 };
@@ -28,32 +31,32 @@ const linkSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   description: z.string().optional(),
   tags: z.string().min(1, 'At least 1 tag is required'),
-  image_url: z.string().url('Valid URL is required').optional(),
+  image_url: z.string().url('Valid URL is required').optional().or(z.literal('')),
 });
 
 export async function action({request}: ActionArgs) {
   const formData = await request.formData();
   const intent = formData.get(conform.INTENT) || '';
 
-  const schema = intent === COMMANDS.CrawlLink ? crawlSchema : linkSchema;
+  const schema = intent === INTENTS.CrawlLink ? crawlSchema : linkSchema;
   const submission = parse(formData, {schema});
 
   if (!submission.value) {
-    return json({intent, payload: {}, error: {}});
+    return json({intent, payload: {}, error: {}, success: false});
   }
 
   let response;
   switch (intent) {
-    case COMMANDS.CrawlLink:
+    case INTENTS.CrawlLink:
       response = await crawlLink(submission.value);
       break;
 
-    case COMMANDS.SaveLink:
+    case INTENTS.SaveLink:
       response = await saveLink(submission.value as SaveLink);
       break;
 
     default:
-      return json({intent, payload: {}, error: {}});
+      return json({intent, payload: {}, error: {}, success: false});
   }
 
   const payload = (await response.json()) as LinkSearchResponseItem;
@@ -66,6 +69,7 @@ export async function action({request}: ActionArgs) {
       tags,
     },
     error: {},
+    success: true,
   });
 }
 
@@ -90,7 +94,7 @@ function CrawlForm() {
         <Button
           type="submit"
           name={conform.INTENT}
-          value={COMMANDS.CrawlLink}
+          value={INTENTS.CrawlLink}
           className="mt-5 mx-auto"
         >
           Search
@@ -109,6 +113,15 @@ function LinkForm() {
       return parse(formData, {schema: linkSchema});
     },
   });
+
+  const {toast} = useToast();
+  useEffect(() => {
+    if (lastSubmission?.intent !== INTENTS.SaveLink || !lastSubmission?.success) {
+      return;
+    }
+
+    toast({description: 'Link Saved', variant: 'success'});
+  }, [lastSubmission, toast]);
 
   const isSubmitting = useIsSubmitting();
   if (isSubmitting) {
@@ -131,7 +144,7 @@ function LinkForm() {
         <Button
           type="submit"
           name={conform.INTENT}
-          value={COMMANDS.SaveLink}
+          value={INTENTS.SaveLink}
           className="mt-5 mx-auto"
         >
           Save
@@ -155,8 +168,8 @@ export default function Links() {
       <CrawlForm />
       <Separator className="my-5 max-w-[600px]" />
       <LinkForm />
+
+      <Toaster />
     </div>
   );
 }
-
-// TODO: Add Toast
