@@ -10,6 +10,7 @@ import {loadLinks} from '~/services/api/links/loadLinks';
 import {loadMainTags} from '~/services/api/tags/loadMainTags';
 import {loadRecentTags} from '~/services/api/tags/loadRecentTags';
 import {loadTopTags} from '~/services/api/tags/loadTopTags';
+import isbot from 'isbot';
 
 export const meta: V2_MetaFunction = () => {
   return [
@@ -18,7 +19,12 @@ export const meta: V2_MetaFunction = () => {
   ];
 };
 
-export async function loader({request}: LoaderArgs) {
+export async function loader({ request }: LoaderArgs) {
+  // prevent crawling all the links
+  if (isbot(request.headers.get('user-agent'))) {
+    return { links: [], mainTags: [], topTags: [], recentTags: [] };
+  }
+
   const url = new URL(request.url);
   const params = parseSearchParams(url.searchParams);
 
