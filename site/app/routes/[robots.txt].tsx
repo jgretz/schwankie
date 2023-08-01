@@ -1,12 +1,7 @@
 export const loader = () => {
   const robotText = `
-    User-agent: Googlebot
-    User-agent: Petalbot
-    User-agent: bingbot
-    Disallow: /
-
     User-agent: *
-    Allow: /
+    Disallow: /*?*
 
     Sitemap: http://www.schwankie.com/sitemap.xml
     `;
