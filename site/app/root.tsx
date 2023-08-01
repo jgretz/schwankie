@@ -1,11 +1,12 @@
 import type {LinksFunction} from '@remix-run/node';
 import {Links, LiveReload, Meta, Outlet, Scripts, ScrollRestoration} from '@remix-run/react';
+import { withSentry } from "@sentry/remix";
 
 import stylesheet from '~/tailwind.css';
 
 export const links: LinksFunction = () => [{rel: 'stylesheet', href: stylesheet}];
 
-export default function App() {
+function App() {
   return (
     <html lang="en">
       <head>
@@ -30,3 +31,6 @@ export default function App() {
     </html>
   );
 }
+
+
+export default withSentry(App);
