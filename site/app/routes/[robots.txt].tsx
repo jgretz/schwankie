@@ -3,6 +3,12 @@ export const loader = () => {
     User-agent: Googlebot
     Disallow: /nogooglebot/
 
+    User-agent: Petalbot
+    Disallow: /
+
+    User-agent: bingbot
+    Disallow: /
+
     User-agent: *
     Allow: /
 
