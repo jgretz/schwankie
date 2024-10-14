@@ -1,0 +1,17 @@
+{
+  "name": "schwankie",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest",
+    "prettier": "^3.3.3"
+  },
+  "peerDependencies": {
+    "typescript": "^5.6.3"
+  },
+  "workspaces": ["apps/**", "packages/**"],
+  "scripts": {
+    "deploy-api": "fly deploy --config ./deploy/api/fly.toml --dockerfile ./deploy/api/Dockerfile",
+    "deploy-www": "fly deploy --config ./deploy/www/fly.toml --dockerfile ./deploy/www/Dockerfile"
+  }
+}
