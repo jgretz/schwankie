@@ -9,9 +9,13 @@
   "peerDependencies": {
     "typescript": "^5.6.3"
   },
-  "workspaces": ["apps/**", "packages/**"],
+  "workspaces": [
+    "apps/**",
+    "packages/**"
+  ],
   "scripts": {
     "deploy-api": "fly deploy --config ./deploy/api/fly.toml --dockerfile ./deploy/api/Dockerfile",
-    "deploy-www": "fly deploy --config ./deploy/www/fly.toml --dockerfile ./deploy/www/Dockerfile"
+    "deploy-www": "fly deploy --config ./deploy/www/fly.toml --dockerfile ./deploy/www/Dockerfile",
+    "reset:lock": "bun x -y rimraf -g **/bun.lockb **/node_modules; bun install --force;"
   }
 }

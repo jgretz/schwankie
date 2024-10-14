@@ -1,12 +1,12 @@
 import {vitePlugin as remix} from '@remix-run/dev';
 import {defineConfig} from 'vite';
-import envOnly from 'vite-env-only';
 import tsconfigPaths from 'vite-tsconfig-paths';
 import {flatRoutes} from 'remix-flat-routes';
+import {envOnlyMacros} from 'vite-env-only';
 
 export default defineConfig({
   plugins: [
-    envOnly(),
+    envOnlyMacros(),
     tsconfigPaths({root: './'}),
     remix({
       ignoredRouteFiles: ['**/*'],
@@ -23,4 +23,7 @@ export default defineConfig({
       },
     }),
   ],
+  optimizeDeps: {
+    entries: ['./app/entry.client.tsx', './app/root.tsx', './app/routes/**/*'],
+  },
 });

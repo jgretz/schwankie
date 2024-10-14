@@ -1,11 +1,20 @@
-import {Links, Meta, Outlet, Scripts, ScrollRestoration} from '@remix-run/react';
+import {Links, Meta, Outlet, Scripts, ScrollRestoration, useLoaderData} from '@remix-run/react';
 import {Error} from './components/error';
+import {getClientEnv} from '@www/utils/env';
 
 import './globals.css';
 
 import {GlobalPendingIndicator} from './components/global-pending-indicator';
 
+export async function loader() {
+  return {
+    env: getClientEnv(),
+  };
+}
+
 function App({children}: {children: React.ReactNode}) {
+  const {env} = useLoaderData<typeof loader>();
+
   return (
     <html lang="en">
       <head>
@@ -17,6 +26,11 @@ function App({children}: {children: React.ReactNode}) {
       <body>
         <GlobalPendingIndicator />
         {children}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.ENV = ${JSON.stringify(env)}`,
+          }}
+        />
         <ScrollRestoration />
         <Scripts />
       </body>
