@@ -5,6 +5,8 @@ import {DATABASE, DomainDependencyEnv} from './Types';
 
 export * from './api';
 
+export type {Links, Link} from './queries';
+
 export function setupDomain() {
   const env = parseEnv(DomainDependencyEnv);
 

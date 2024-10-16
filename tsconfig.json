@@ -28,7 +28,12 @@
     // Import
     "paths": {
       "@api": ["./apps/api/src/index.ts"],
+
       "@www/*": ["./apps/www/app/*"],
+      "@www/icon-name": [
+        "./apps/www/app/components/ui/icons/name.d.ts",
+        "./apps/www/app/types/icon-name.d.ts"
+      ],
 
       "database": ["./packages/database/index.ts"],
 

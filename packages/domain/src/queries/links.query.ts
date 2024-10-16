@@ -1,5 +1,6 @@
 import {InjectIn} from 'injectx';
 import type {DomainDependencies} from '../Types';
+import {Links} from '@remix-run/react';
 
 interface LinksQuery {
   page: number;
@@ -14,5 +15,8 @@ function query({database}: DomainDependencies) {
     });
   };
 }
+
+export type Links = Awaited<ReturnType<ReturnType<typeof query>>>;
+export type Link = Links[number];
 
 export const linksQuery = InjectIn(query);

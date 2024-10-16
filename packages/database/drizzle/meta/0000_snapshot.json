@@ -132,12 +132,8 @@
           "tableFrom": "link_tag",
           "tableTo": "link",
           "schemaTo": "public",
-          "columnsFrom": [
-            "link_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["link_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "cascade"
         },
@@ -146,12 +142,8 @@
           "tableFrom": "link_tag",
           "tableTo": "tag",
           "schemaTo": "public",
-          "columnsFrom": [
-            "tag_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tag_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "cascade"
         }

@@ -1,4 +1,4 @@
-import {cn} from '@www/lib/styles';
+import {cn} from '@www/utils/cn';
 import {type ReactNode} from 'react';
 
 interface Props {

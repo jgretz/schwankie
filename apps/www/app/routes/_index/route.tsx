@@ -6,6 +6,9 @@ import {description, title} from '@www/constants/seo.constants';
 import {queryLinks} from '@www/services/domain/links.query';
 import {useCallback, useEffect, useState} from 'react';
 import {match} from 'ts-pattern';
+import {LinkList} from './_components/link-list';
+import ThemeSwitch from '../resources+/theme-switch';
+import {useTheme} from '@www/hooks/useTheme';
 
 export const meta: MetaFunction = () => {
   return [{title: title()}, {name: 'description', content: description()}];
@@ -55,15 +58,14 @@ export default function Index() {
 
   const loading = fetcher.state === 'loading';
 
+  const theme = useTheme();
+
   return (
-    <InfiniteScroller loadNext={loadNext} loading={loading}>
-      <ul>
-        {links.map((link) => (
-          <li key={link.id}>
-            {link.title} - {link.url}
-          </li>
-        ))}
-      </ul>
-    </InfiniteScroller>
+    <>
+      <ThemeSwitch userPreference={theme} />
+      <InfiniteScroller loadNext={loadNext} loading={loading}>
+        <LinkList links={links} />
+      </InfiniteScroller>
+    </>
   );
 }

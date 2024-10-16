@@ -16,6 +16,7 @@
   "scripts": {
     "deploy-api": "fly deploy --config ./deploy/api/fly.toml --dockerfile ./deploy/api/Dockerfile",
     "deploy-www": "fly deploy --config ./deploy/www/fly.toml --dockerfile ./deploy/www/Dockerfile",
+    "format": "prettier --write apps packages",
     "reset:lock": "bun x -y rimraf -g **/bun.lockb **/node_modules; bun install --force;"
   }
 }
