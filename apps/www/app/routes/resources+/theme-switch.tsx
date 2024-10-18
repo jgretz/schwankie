@@ -1,7 +1,6 @@
 import {useForm, getFormProps} from '@conform-to/react';
 import {useFetcher} from '@remix-run/react';
 import {json, type ActionFunctionArgs} from '@remix-run/node';
-import {Icon} from '@www/components/ui/icon';
 import {setTheme} from '@www/utils/theme.server';
 
 import {parseWithZod} from '@conform-to/zod';
@@ -9,6 +8,7 @@ import {invariantResponse} from '@epic-web/invariant';
 import {z} from 'zod';
 import {match} from 'ts-pattern';
 import type {Theme} from '@www/types';
+import {Sun, Moon} from 'lucide-react';
 
 interface Props {
   userPreference?: Theme;
@@ -47,16 +47,8 @@ export default function ThemeSwitch({userPreference}: Props) {
     .otherwise(() => 'light');
 
   const modeLabel = {
-    light: (
-      <Icon name="sun">
-        <span className="sr-only">Light</span>
-      </Icon>
-    ),
-    dark: (
-      <Icon name="moon">
-        <span className="sr-only">Dark</span>
-      </Icon>
-    ),
+    light: <Sun />,
+    dark: <Moon />,
   };
 
   return (

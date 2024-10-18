@@ -7,10 +7,7 @@ interface Props {
 }
 
 export default function Page({className, children}: Props) {
-  const classes = cn(
-    'p-5 min-h-screen w-full max-w-7xl sm:flex sm:flex-col sm:justify-center',
-    className,
-  );
+  const classes = cn('p-5 w-full', className);
 
   return <div className={classes}>{children}</div>;
 }

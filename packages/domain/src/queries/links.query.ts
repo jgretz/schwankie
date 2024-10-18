@@ -12,6 +12,7 @@ function query({database}: DomainDependencies) {
     return database.query.link.findMany({
       limit: size,
       offset: page * size,
+      orderBy: (link, {desc}) => [desc(link.updateDate)],
     });
   };
 }

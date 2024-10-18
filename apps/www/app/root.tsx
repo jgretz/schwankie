@@ -11,6 +11,7 @@ import {ClientHintCheck, getHints} from './utils/client-hints';
 import {getTheme} from '@www/utils/theme.server';
 import {useTheme} from './hooks/useTheme';
 import type {Theme} from './types';
+import TopBar from './components/top-bar';
 
 export async function loader({request}: LoaderFunctionArgs) {
   return {
@@ -38,6 +39,7 @@ function App({children, theme = 'light'}: {children: React.ReactNode; theme?: Th
       </head>
       <body>
         <GlobalPendingIndicator />
+        <TopBar />
         {children}
         <script
           dangerouslySetInnerHTML={{

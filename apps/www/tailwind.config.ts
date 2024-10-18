@@ -7,16 +7,18 @@ export default {
   plugins: [
     createThemes({
       light: {
-        background: '#F7F7F5',
-        primary: '#3B82F6',
-        accent: '#F59E0B',
-        text: '#1F2937',
+        background: '#D8C3A5',
+        primary: '#B99A75',
+        secondary: '#8D8D8A',
+        accent: '#A6A57A',
+        text: '#EAE7DC',
       },
       dark: {
-        background: '#1E293B',
-        primary: '#60A5FA',
-        accent: '#FBBF24',
-        text: '#F9FAFB',
+        background: '#1D3557',
+        primary: '#457B9D',
+        secondary: '#A8DADC',
+        accent: '#A8A7C7',
+        text: '#F1FAEE',
       },
     }),
   ],

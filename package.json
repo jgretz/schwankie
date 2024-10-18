@@ -4,6 +4,7 @@
   "private": true,
   "devDependencies": {
     "@types/bun": "latest",
+    "concurrently": "^9.0.1",
     "prettier": "^3.3.3"
   },
   "peerDependencies": {
@@ -17,6 +18,7 @@
     "deploy-api": "fly deploy --config ./deploy/api/fly.toml --dockerfile ./deploy/api/Dockerfile",
     "deploy-www": "fly deploy --config ./deploy/www/fly.toml --dockerfile ./deploy/www/Dockerfile",
     "format": "prettier --write apps packages",
-    "reset:lock": "bun x -y rimraf -g **/bun.lockb **/node_modules; bun install --force;"
+    "reset:lock": "bun x -y rimraf -g **/bun.lockb **/node_modules; bun install --force;",
+    "proxy": "concurrently \"fly proxy 5432 -a schwankie-db\" \"fly proxy 8983 -a schwankie-solr\""
   }
 }

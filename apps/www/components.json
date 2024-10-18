@@ -12,6 +12,6 @@
   },
   "aliases": {
     "components": "@www/components",
-    "utils": "@www/lib/styles"
+    "utils": "@www/utils/cn"
   }
 }
