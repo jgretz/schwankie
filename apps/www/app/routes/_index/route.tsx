@@ -9,6 +9,7 @@ import {match} from 'ts-pattern';
 import {LinkList} from './_components/link-list';
 import Search from './_components/search';
 import Page from '@www/components/page';
+import {Loading} from './_components/loading';
 
 export const meta: MetaFunction = () => {
   return [{title: title()}, {name: 'description', content: description()}];
@@ -58,13 +59,12 @@ export default function Index() {
 
   const loading = fetcher.state === 'loading';
 
-  // TODO: Implement loading ... UI at the bottom
-
   return (
     <Page>
       <Search />
       <InfiniteScroller loadNext={loadNext} loading={loading}>
         <LinkList links={links} />
+        <Loading display={loading} />
       </InfiniteScroller>
     </Page>
   );

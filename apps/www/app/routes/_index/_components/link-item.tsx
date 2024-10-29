@@ -6,6 +6,15 @@ interface Props {
   link: Link;
 }
 
+function LinkTag({tag, comma = true}: {tag: string; comma: boolean}) {
+  return (
+    <span key={tag} className="text-sm">
+      {tag}
+      {comma && ', '}
+    </span>
+  );
+}
+
 export function LinkItem({link}: Props) {
   return (
     <li className="flex flex-col bg-accent shadow-md border-1 rounded overflow-hidden p-2">
@@ -17,10 +26,8 @@ export function LinkItem({link}: Props) {
       </div>
       <div>
         <div>
-          {link.tags?.map((tag) => (
-            <span key={tag} className="text-sm">
-              {tag},
-            </span>
+          {link.tags?.map((tag, index) => (
+            <LinkTag key={tag} tag={tag} comma={index < (link.tags?.length || 0) - 1} />
           ))}
         </div>
         <div className="text-sm">
