@@ -9,6 +9,7 @@
     "typescript": "^5.6.3"
   },
   "dependencies": {
+    "drizzle-orm": "^0.34.1",
     "injectx": "^1.0.4",
     "zod": "^3.23.8"
   }

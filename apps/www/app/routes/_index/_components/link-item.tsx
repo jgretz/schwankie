@@ -16,7 +16,13 @@ export function LinkItem({link}: Props) {
         </a>
       </div>
       <div>
-        <div></div>
+        <div>
+          {link.tags?.map((tag) => (
+            <span key={tag} className="text-sm">
+              {tag},
+            </span>
+          ))}
+        </div>
         <div className="text-sm">
           Last Updated: {format(new Date(link.updateDate), 'MMM dd, yyyy')}
         </div>

@@ -9,3 +9,5 @@ export function createDatabase(databaseUrl: string): Database {
   const queryClient = postgres(databaseUrl);
   return drizzle(queryClient, {schema: Schema});
 }
+
+export {Schema};

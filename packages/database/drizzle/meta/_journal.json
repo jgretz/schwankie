@@ -8,6 +8,13 @@
       "when": 1728928152429,
       "tag": "0000_serious_centennial",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1730227598431,
+      "tag": "0001_dashing_praxagora",
+      "breakpoints": true
     }
   ]
 }

@@ -7,7 +7,6 @@ import {queryLinks} from '@www/services/domain/links.query';
 import {useCallback, useEffect, useState} from 'react';
 import {match} from 'ts-pattern';
 import {LinkList} from './_components/link-list';
-import {useTheme} from '@www/hooks/useTheme';
 import Search from './_components/search';
 import Page from '@www/components/page';
 
@@ -58,6 +57,8 @@ export default function Index() {
   }, [fetcher.data]);
 
   const loading = fetcher.state === 'loading';
+
+  // TODO: Implement loading ... UI at the bottom
 
   return (
     <Page>
