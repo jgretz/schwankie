@@ -1,5 +1,5 @@
 # Adjust BUN_VERSION as desired
-ARG BUN_VERSION=1.1.12
+ARG BUN_VERSION=1.1.33
 FROM oven/bun:${BUN_VERSION}-slim as base
 
 LABEL fly_launch_runtime="Bun"
@@ -29,11 +29,11 @@ RUN cd apps/www && bun run build
 # Finally, build the production image with minimal footprint
 FROM base
 
-COPY --from=build /app/apps/www/node_modules /app/node_modules
+COPY --from=build /app/node_modules /app/node_modules
 COPY --from=build /app/apps/www/build /app/build
 COPY --from=build /app/apps/www/package.json /app/package.json
 COPY --from=build /app/apps/www/server.js /app/server.js
 
 # Start the server by default, this can be overwritten at runtime
 EXPOSE 3000
-CMD bun start
+CMD ["bun", "start"]
