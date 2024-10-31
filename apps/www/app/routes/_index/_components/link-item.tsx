@@ -1,14 +1,20 @@
 import type {Link} from 'schwankie-domain';
 import LinkImage from './link-image';
 import {format} from 'date-fns';
+import {useCallback} from 'react';
 
 interface Props {
   link: Link;
 }
 
 function LinkTag({tag, comma = true}: {tag: string; comma: boolean}) {
+  // remix didnt refresh with a standard link, not sure why, but also this avoids using a rel=nofollow
+  const handleClick = useCallback(() => {
+    window.location.href = `?query=${tag}`;
+  }, [tag]);
+
   return (
-    <span key={tag} className="text-sm">
+    <span key={tag} className="text-sm cursor-pointer" onClick={handleClick}>
       {tag}
       {comma && ', '}
     </span>

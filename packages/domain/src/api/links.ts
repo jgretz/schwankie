@@ -1,10 +1,10 @@
 import {Elysia, t} from 'elysia';
-import {linksQuery} from '../queries';
+import {linksQuery, type Links} from '../queries';
 
 export const LinksApi = new Elysia({prefix: 'links'}).get(
   '/',
-  async function ({query: {page, size}}) {
-    const links = await linksQuery({page, size});
+  async function ({query: {page, size, query}}): Promise<Links> {
+    const links = await linksQuery({page, size, query});
 
     return links;
   },
@@ -12,6 +12,7 @@ export const LinksApi = new Elysia({prefix: 'links'}).get(
     query: t.Object({
       page: t.Number(),
       size: t.Number(),
+      query: t.String(),
     }),
   },
 );

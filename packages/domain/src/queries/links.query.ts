@@ -1,18 +1,25 @@
 import {InjectIn} from 'injectx';
 import type {DomainDependencies} from '../Types';
-import {Links} from '@remix-run/react';
+import {ilike, or, sql} from 'drizzle-orm';
+import {Schema} from 'database';
 
 interface LinksQuery {
   page: number;
   size: number;
+  query?: string;
 }
 
 function query({database}: DomainDependencies) {
-  return async function ({page, size}: LinksQuery) {
-    return database.query.link.findMany({
+  return async function ({page, size, query}: LinksQuery) {
+    return await database.query.link.findMany({
       limit: size,
       offset: page * size,
       orderBy: (link, {desc}) => [desc(link.updateDate)],
+      where: or(
+        ilike(Schema.link.title, `%${query}%`),
+        ilike(Schema.link.description, `%${query}%`),
+        sql`tags::jsonb ? ${query}`,
+      ),
     });
   };
 }
