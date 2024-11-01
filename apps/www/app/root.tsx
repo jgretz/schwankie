@@ -25,8 +25,9 @@ export async function loader({request}: LoaderFunctionArgs) {
   };
 }
 
-function App({children, theme = 'light'}: {children: React.ReactNode; theme?: Theme}) {
+function App({children}: {children: React.ReactNode}) {
   const {env} = useLoaderData<typeof loader>();
+  const theme = useTheme();
 
   return (
     <html lang="en" className={`${theme} bg-background text-text`}>
@@ -54,10 +55,8 @@ function App({children, theme = 'light'}: {children: React.ReactNode; theme?: Th
 }
 
 export default function Root() {
-  const theme = useTheme();
-
   return (
-    <App theme={theme}>
+    <App>
       <Outlet />
     </App>
   );

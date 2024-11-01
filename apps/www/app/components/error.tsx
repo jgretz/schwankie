@@ -4,6 +4,7 @@ export function Error() {
   const error = useRouteError();
   let status = 500;
   let message = 'An unexpected error occurred.';
+
   if (isRouteErrorResponse(error)) {
     status = error.status;
     switch (error.status) {

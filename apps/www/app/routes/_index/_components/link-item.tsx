@@ -1,4 +1,4 @@
-import type {Link} from 'schwankie-domain';
+import type {Link} from 'domain/schwankie';
 import LinkImage from './link-image';
 import {format} from 'date-fns';
 import {useCallback} from 'react';

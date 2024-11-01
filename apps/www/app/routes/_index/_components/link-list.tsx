@@ -1,4 +1,4 @@
-import type {Links} from 'schwankie-domain';
+import type {Links} from 'domain/schwankie';
 import {LinkItem} from './link-item';
 
 interface Props {

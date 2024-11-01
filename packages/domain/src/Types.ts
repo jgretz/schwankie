@@ -1,4 +1,5 @@
-import type {Database} from 'database';
+import {Schema, type Database} from 'database';
+import {createSelectSchema} from 'drizzle-zod';
 import {z} from 'zod';
 
 export const DomainDependencyEnv = z.object({
@@ -10,3 +11,7 @@ export const DATABASE = 'database';
 export interface DomainDependencies {
   [DATABASE]: Database;
 }
+
+const selectLinkSchema = createSelectSchema(Schema.link);
+export type Link = z.infer<typeof selectLinkSchema>;
+export type Links = Link[];

@@ -37,7 +37,8 @@
 
       "database": ["./packages/database/index.ts"],
 
-      "schwankie-domain": ["./packages/domain/src/index.ts"],
+      "domain/schwankie": ["./packages/domain/src/index.ts"],
+      "crawl": ["./packages/crawl/src/index.ts"],
 
       "utility-env": ["./packages/utility/env/src/index.ts"],
       "utility-iocdi": ["./packages/utility/iocdi/src/index.ts"]
@@ -47,7 +48,8 @@
   "references": [
     {"database": "./packages/database"},
 
-    {"schwankie-domain": "./packages/domain"},
+    {"domain/schwankie": "./packages/domain"},
+    {"crawl": "./packages/crawl"},
 
     {"utility-env": "./packages/utility/env"},
     {"utility-iocdi": "./packages/utility/iocdi"}

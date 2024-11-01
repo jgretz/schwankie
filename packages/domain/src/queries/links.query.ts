@@ -24,7 +24,4 @@ function query({database}: DomainDependencies) {
   };
 }
 
-export type Links = Awaited<ReturnType<ReturnType<typeof query>>>;
-export type Link = Links[number];
-
 export const linksQuery = InjectIn(query);
