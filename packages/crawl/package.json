@@ -16,7 +16,6 @@
     "metascraper-instagram": "^5.45.25",
     "metascraper-logo": "^5.45.25",
     "metascraper-title": "^5.45.25",
-    "metascraper-youtube": "^5.45.25",
-    "puppeteer": "^23.6.1"
+    "metascraper-youtube": "^5.45.25"
   }
 }

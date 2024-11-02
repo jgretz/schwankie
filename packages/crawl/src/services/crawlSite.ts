@@ -1,17 +1,13 @@
 import type {CrawlResult} from '../Types';
-import puppeteer from 'puppeteer';
 
 async function fetchHtml(url: string) {
-  const browser = await puppeteer.launch();
+  const result = await fetch(url);
 
-  try {
-    const page = await browser.newPage();
-    await page.goto(url);
-
-    return await page.content();
-  } finally {
-    browser.close();
+  if (!result.ok) {
+    throw new Error(`Failed to fetch ${url}`);
   }
+
+  return await result.text();
 }
 
 export async function crawlSite(url: string): Promise<CrawlResult> {
