@@ -14,6 +14,10 @@ import Spinner from '@www/components/spinner';
 import {match, P} from 'ts-pattern';
 import type {CrawlResult} from 'crawl';
 import type {Link} from 'domain/schwankie';
+import {postLink} from '@www/services/domain/link.post';
+import type {SubmissionResultSuccess} from '@www/types';
+import {Toaster} from '@www/components/ui/toaster';
+import {useToast} from '@www/components/ui/use-toast';
 
 const schema = z.object({
   id: z.number().optional(),
@@ -23,6 +27,8 @@ const schema = z.object({
   tags: z.string().optional(),
   imageUrl: z.string().url('A valid url is required').optional().or(z.literal('')),
 });
+
+type SubmissionSuccessForForm = SubmissionResultSuccess<{data: z.infer<typeof schema>}>;
 
 export async function loader({request}: LoaderFunctionArgs) {
   const user = await requireUser(request);
@@ -41,14 +47,27 @@ export async function action({request}: ActionFunctionArgs) {
     return json(submission.reply());
   }
 
-  return json({});
+  await postLink(submission.value);
+
+  return json({
+    status: 'success',
+    result: {
+      data: submission.value,
+    },
+  } as SubmissionSuccessForForm);
 }
 
 const isNumber = (x: unknown): x is number => typeof x === 'number';
 
 export default function Index() {
   const lastResult = useActionData<typeof action>();
+
+  const {data} = match(lastResult)
+    .with({status: 'success'}, (data) => (data as SubmissionSuccessForForm).result)
+    .otherwise(() => ({url: '', data: null}));
+
   const [form, fields] = useForm({
+    defaultValue: data,
     lastResult,
 
     constraint: getZodConstraint(schema),
@@ -95,6 +114,15 @@ export default function Index() {
     form.update({name: 'imageUrl', value: searchValue.imageUrl || undefined});
   }, [searchData[0]]);
 
+  const {toast} = useToast();
+  useEffect(() => {
+    if (lastResult?.status !== 'success') {
+      return;
+    }
+
+    toast({description: 'Link Saved', variant: 'success'});
+  }, [lastResult, toast]);
+
   const disableForm = !form.valid;
 
   const LinkForm = (
@@ -127,6 +155,8 @@ export default function Index() {
 
       {searchStatus[0] === 'idle' && LinkForm}
       {searchStatus[0] === 'loading' && <Spinner className="mt-3" />}
+
+      <Toaster />
     </div>
   );
 }

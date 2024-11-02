@@ -19,6 +19,8 @@ interface Props {
   searchContext: SearchContext;
 }
 
+type SubmissionSuccessForSearch = SubmissionResultSuccess<{url: string; data: CrawlResult}>;
+
 export async function action({request}: ActionFunctionArgs) {
   const formData = await request.formData();
   const submission = parseWithZod(formData, {schema});
@@ -35,7 +37,7 @@ export async function action({request}: ActionFunctionArgs) {
       url,
       data,
     },
-  } as SubmissionResultSuccess);
+  } as SubmissionSuccessForSearch);
 }
 
 export default function UrlSearch({searchContext: context}: Props) {
@@ -47,7 +49,7 @@ export default function UrlSearch({searchContext: context}: Props) {
   const fetcher = useFetcher<typeof action>();
 
   const {url, data} = match(fetcher.data)
-    .with({status: 'success'}, (data) => (data as SubmissionResultSuccess).result)
+    .with({status: 'success'}, (data) => (data as SubmissionSuccessForSearch).result)
     .otherwise(() => ({url: '', data: null}));
 
   const [form, fields] = useForm({

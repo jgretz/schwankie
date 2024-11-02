@@ -1,6 +1,9 @@
 import {Elysia, t} from 'elysia';
 import {linksQuery, linkByUrlQuery} from '../queries';
 import type {Link, Links} from '../Types';
+import {upsertLink} from '../services';
+import {createInsertSchema} from 'drizzle-typebox';
+import {Schema} from 'database';
 
 export const LinksApi = new Elysia({prefix: 'links'})
   .get(
@@ -29,5 +32,19 @@ export const LinksApi = new Elysia({prefix: 'links'})
       query: t.Object({
         url: t.String(),
       }),
+    },
+  )
+  .post(
+    '/',
+    async function ({body}) {
+      const result = await upsertLink(body);
+
+      return result;
+    },
+    {
+      body: t.Omit(t.Object(createInsertSchema(Schema.link).properties), [
+        'createDate',
+        'updateDate',
+      ]),
     },
   );

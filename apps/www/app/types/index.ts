@@ -7,9 +7,6 @@ export type HasChildrenProps = {
 
 export type Theme = 'light' | 'dark';
 
-export type SubmissionResultSuccess = SubmissionResult & {
-  result: {
-    url: string;
-    data: unknown;
-  };
+export type SubmissionResultSuccess<T> = SubmissionResult & {
+  result: T;
 };

@@ -3,7 +3,7 @@ import type {DomainDependencies} from '../Types';
 import {prepareInsertObject} from './util/prepareInsertObj';
 import {InjectIn} from 'injectx';
 
-type LinkInsert = typeof Schema.link.$inferInsert;
+type LinkInsert = Omit<typeof Schema.link.$inferInsert, 'createDate' | 'updateDate'>;
 
 function command({database}: DomainDependencies) {
   return async function (link: LinkInsert) {

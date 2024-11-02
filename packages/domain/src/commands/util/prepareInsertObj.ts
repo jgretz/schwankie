@@ -1,8 +1,10 @@
-export function prepareInsertObject<T extends object>(obj: T): T {
+export function prepareInsertObject<T extends object>(
+  obj: T,
+): T & {createDate: string; updateDate: string} {
   return {
     ...obj,
 
-    createDate: new Date(),
-    updateDate: new Date(),
+    createDate: new Date().toUTCString(),
+    updateDate: new Date().toUTCString(),
   };
 }

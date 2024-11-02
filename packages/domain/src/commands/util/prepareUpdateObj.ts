@@ -12,6 +12,6 @@ export function prepareUpdateObject<T extends object>(obj: T): Partial<T> {
 
   return {
     ...result,
-    updateDate: new Date(),
+    updateDate: new Date().toISOString(),
   };
 }
