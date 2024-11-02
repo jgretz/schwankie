@@ -1,0 +1,22 @@
+{
+  "name": "crawl",
+  "module": "src/index.ts",
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "metascraper": "^5.45.25",
+    "metascraper-author": "^5.45.25",
+    "metascraper-description": "^5.45.25",
+    "metascraper-image": "^5.45.25",
+    "metascraper-instagram": "^5.45.25",
+    "metascraper-logo": "^5.45.25",
+    "metascraper-title": "^5.45.25",
+    "metascraper-youtube": "^5.45.25",
+    "puppeteer": "^23.6.1"
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+
+    // Enable latest features
+    "lib": ["ESNext", "DOM"],
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleDetection": "force",
+    "jsx": "react-jsx",
+    "allowJs": true,
+
+    // Bundler mode
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "noEmit": true,
+
+    // Best practices
+    "strict": true,
+    "skipLibCheck": true,
+
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noPropertyAccessFromIndexSignature": false,
+
+    // Import
+    "paths": {
+      "@api": ["./apps/api/src/index.ts"],
+
+      "@www/*": ["./apps/www/app/*"],
+      "@www/icon-name": [
+        "./apps/www/app/components/ui/icons/name.d.ts",
+        "./apps/www/app/types/icon-name.d.ts"
+      ],
+
+      "database": ["./packages/database/index.ts"],
+
+      "domain/schwankie": ["./packages/domain/src/index.ts"],
+      "crawl": ["./packages/crawl/src/index.ts"],
+
+      "utility-env": ["./packages/utility/env/src/index.ts"],
+      "utility-iocdi": ["./packages/utility/iocdi/src/index.ts"]
+    }
+  },
+
+  "references": [
+    {"database": "./packages/database"},
+
+    {"domain/schwankie": "./packages/domain"},
+    {"crawl": "./packages/crawl"},
+
+    {"utility-env": "./packages/utility/env"},
+    {"utility-iocdi": "./packages/utility/iocdi"}
+  ]
+}
