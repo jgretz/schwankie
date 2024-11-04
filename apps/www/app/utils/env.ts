@@ -18,6 +18,7 @@ function pick<Data extends object, Keys extends keyof Data>(
 // server env - should be everything in the .env file
 const serverEnvSchema = z.object({
   API_URL: z.string(),
+  API_KEY: z.string(),
 });
 type ServerEnv = z.infer<typeof serverEnvSchema>;
 
