@@ -35,7 +35,8 @@ FROM base
 
 # Copy built application
 COPY --from=build /app/out /app
+COPY --from=build /app/node_modules /app/node_modules
 
 # Start the server by default, this can be overwritten at runtime
 EXPOSE 3001
-CMD bun run index.js
+CMD ["bun", "run", "index.js"]

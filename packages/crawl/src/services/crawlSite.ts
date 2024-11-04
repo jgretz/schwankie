@@ -1,5 +1,14 @@
 import type {CrawlResult} from '../Types';
 
+import metascraper from 'metascraper';
+import metascraperAuthor from 'metascraper-author';
+import metascraperDescription from 'metascraper-description';
+import metascraperImage from 'metascraper-image';
+import metascraperLogo from 'metascraper-logo';
+import metascraperTitle from 'metascraper-title';
+import metascraperInstagram from 'metascraper-instagram';
+import metascraperYoutube from 'metascraper-youtube';
+
 async function fetchHtml(url: string) {
   const result = await fetch(url);
 
@@ -13,17 +22,17 @@ async function fetchHtml(url: string) {
 export async function crawlSite(url: string): Promise<CrawlResult> {
   const html = await fetchHtml(url);
 
-  const metascraper = require('metascraper')([
-    require('metascraper-author')(),
-    require('metascraper-description')(),
-    require('metascraper-image')(),
-    require('metascraper-logo')(),
-    require('metascraper-title')(),
-    require('metascraper-instagram')(),
-    require('metascraper-youtube')(),
+  const scraper = metascraper([
+    metascraperAuthor(),
+    metascraperDescription(),
+    metascraperImage(),
+    metascraperLogo(),
+    metascraperTitle(),
+    metascraperInstagram(),
+    metascraperYoutube(),
   ]);
 
-  const metadata = await metascraper({html, url});
+  const metadata = await scraper({html, url});
 
   const tags = [];
   if (metadata.author) {
