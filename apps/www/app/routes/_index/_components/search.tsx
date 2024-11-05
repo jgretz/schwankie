@@ -26,11 +26,16 @@ export default function Search({initialQuery}: Props) {
   return (
     <form className="flex flex-row pb-3" onSubmit={handleSearch}>
       <input
-        className="w-full rounded-md text-primary px-1"
+        className="w-full rounded-md border-primary border  text-primary px-1"
         defaultValue={search}
         onChange={handleSearchTextChange}
+        aria-label="search"
       />
-      <button className="ml-2 bg-primary text-text rounded-md p-2" type="submit">
+      <button
+        className="ml-2 bg-primary text-text rounded-md p-2"
+        type="submit"
+        aria-label="submit search"
+      >
         Search
       </button>
     </form>

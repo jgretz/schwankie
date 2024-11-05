@@ -8,7 +8,7 @@ export default function TopBar() {
   const theme = useTheme();
 
   return (
-    <div className="flex flex-row justify-between px-5 py-2 bg-primary b-shad">
+    <div className="flex flex-row justify-between px-5 pt-2 pb-1 bg-primary b-shad text-text">
       <div>
         <Link to="/">{description()}</Link>
       </div>

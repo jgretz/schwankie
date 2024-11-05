@@ -55,7 +55,9 @@ export default function ThemeSwitch({userPreference}: Props) {
     <fetcher.Form method="POST" {...getFormProps(form)} action="/resources/theme-switch">
       <input type="hidden" name="theme" value={nextMode} />
       <div>
-        <button type="submit">{modeLabel[mode]}</button>
+        <button type="submit" aria-label="switch site theme">
+          {modeLabel[mode]}
+        </button>
       </div>
     </fetcher.Form>
   );
