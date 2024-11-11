@@ -6,7 +6,7 @@ import {parseEnv} from 'utility-env';
 
 import {setupDomain, Api as DomainApi} from 'domain/schwankie';
 import {Api as CrawlApi} from 'crawl';
-import enforceApiKey from './services/enforceApiKey';
+import {ApiKeyPlugin, setupSecurity} from 'security';
 
 // global variables
 const envSchema = z.object({
@@ -15,20 +15,12 @@ const envSchema = z.object({
 
 const env = parseEnv(envSchema);
 setupDomain();
+setupSecurity();
 
 // boot app
 const app = new Elysia()
   .use(swagger())
-  .group('api', (app) =>
-    app
-      .onBeforeHandle({}, ({request: {headers}}) => {
-        if (!enforceApiKey(headers.get('Authorization'))) {
-          throw new Error('Unauthorized');
-        }
-      })
-      .use(DomainApi)
-      .use(CrawlApi),
-  )
+  .group('api', (app) => app.use(ApiKeyPlugin).use(DomainApi).use(CrawlApi))
   .listen(env.PORT || 3001);
 
 console.log(`Schwankie API is running at ${app.server?.hostname}:${app.server?.port}`);

@@ -10,6 +10,7 @@ import {match} from 'ts-pattern';
 import type {SubmissionResultSuccess} from '@www/types';
 import type {SearchContext} from '../Types';
 import type {CrawlResult} from 'crawl';
+import {useEffect} from 'react';
 
 const schema = z.object({
   url: z.string().min(1, 'Url is required').url('A valid url is required'),
@@ -73,10 +74,15 @@ export default function UrlSearch({searchContext: context}: Props) {
     },
   });
 
-  if (fetcher.state === 'idle' && data) {
-    setSearchStatus('idle');
-    setSearchData(data as CrawlResult);
-  }
+  useEffect(
+    function () {
+      if (fetcher.state === 'idle' && data) {
+        setSearchStatus('idle');
+        setSearchData(data as CrawlResult);
+      }
+    },
+    [fetcher.state, data],
+  );
 
   const disableSearch = fetcher.state === 'loading' || !form.valid;
 
