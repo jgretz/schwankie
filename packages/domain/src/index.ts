@@ -4,6 +4,8 @@ import {setDependency} from 'utility-iocdi';
 import {DATABASE, DomainDependencyEnv} from './Types';
 
 export * from './api';
+export * from './queries';
+export * from './commands';
 
 export type {Links, Link} from './Types';
 

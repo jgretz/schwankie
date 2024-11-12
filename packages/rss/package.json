@@ -1,0 +1,16 @@
+{
+  "name": "rss",
+  "module": "src/index.ts",
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "metascraper": "^5.45.25",
+    "metascraper-image": "^5.45.25",
+    "rss-parser": "^3.13.0"
+  }
+}

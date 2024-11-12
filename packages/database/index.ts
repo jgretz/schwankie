@@ -1,7 +1,10 @@
 import {drizzle, type PostgresJsDatabase} from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 
-import * as Schema from './schema/links.schema';
+import * as LinkSchema from './schema/links.schema';
+import * as RssSchema from './schema/rss.schema';
+
+const Schema = {...LinkSchema, ...RssSchema};
 
 export type Database = PostgresJsDatabase<typeof Schema>;
 

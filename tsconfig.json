@@ -39,6 +39,7 @@
 
       "domain/schwankie": ["./packages/domain/src/index.ts"],
       "crawl": ["./packages/crawl/src/index.ts"],
+      "rss": ["./packages/rss/src/index.ts"],
       "security": ["./packages/security/src/index.ts"],
 
       "utility-env": ["./packages/utility/env/src/index.ts"],
@@ -51,6 +52,7 @@
 
     {"domain/schwankie": "./packages/domain"},
     {"crawl": "./packages/crawl"},
+    {"rss": "./packages/rss"},
     {"security": "./packages/security"},
 
     {"utility-env": "./packages/utility/env"},

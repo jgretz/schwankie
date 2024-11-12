@@ -15,6 +15,13 @@
       "when": 1730227598431,
       "tag": "0001_dashing_praxagora",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1731353897488,
+      "tag": "0002_abandoned_power_pack",
+      "breakpoints": true
     }
   ]
 }
