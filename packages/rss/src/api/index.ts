@@ -1,17 +1,5 @@
-import {Elysia, t} from 'elysia';
-import type {RssFeedItem} from '../Types';
-import {buildFeedItemList} from '../services/buildFeedItemList';
+import {Elysia} from 'elysia';
+import {GetApi} from './get';
+import {PostApi} from './post';
 
-export const Api = new Elysia({prefix: 'rss'}).get(
-  '/',
-  async function ({query: {includeRead}}): Promise<RssFeedItem[]> {
-    const result = await buildFeedItemList(Boolean(includeRead));
-
-    return result;
-  },
-  {
-    query: t.Object({
-      includeRead: t.String(),
-    }),
-  },
-);
+export const Api = new Elysia({prefix: 'rss'}).use(GetApi).use(PostApi);

@@ -7,7 +7,7 @@ export * from './api';
 export * from './queries';
 export * from './commands';
 
-export type {Links, Link} from './Types';
+export type {Links, Link, Feed, FeedItem, FeedStats} from './Types';
 
 export function setupDomain() {
   const env = parseEnv(DomainDependencyEnv);

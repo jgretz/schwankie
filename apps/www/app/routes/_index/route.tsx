@@ -9,7 +9,8 @@ import {match} from 'ts-pattern';
 import {LinkList} from './_components/link-list';
 import Search from './_components/search';
 import Page from '@www/components/page';
-import {Loading} from './_components/loading';
+import {Loading} from '@www/components/loading';
+import {encodeQueryStringFromJsonObject} from 'utility-util';
 
 export const meta: MetaFunction = () => {
   return [{title: title()}, {name: 'description', content: description()}];
@@ -60,8 +61,9 @@ export default function Index() {
   const loadNext = useCallback(() => {
     const page = fetcher.data ? fetcher.data.page + 1 : initialData.page + 1;
     const query = fetcher.data ? fetcher.data.query : initialData.query;
+    const queryString = encodeQueryStringFromJsonObject({page, query});
 
-    fetcher.load(`?index&page=${page}&query=${query}`);
+    fetcher.load(`?index&${queryString}`);
   }, [fetcher.data]);
 
   const loading = fetcher.state === 'loading';

@@ -22,6 +22,55 @@
       "when": 1731353897488,
       "tag": "0002_abandoned_power_pack",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1731450080140,
+      "tag": "0003_elite_red_ghost",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1731450134890,
+      "tag": "0004_parallel_mongu",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1731452388012,
+      "tag": "0005_minor_mojo",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1731453051223,
+      "tag": "0006_cloudy_miracleman",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1731533037821,
+      "tag": "0007_blue_squadron_supreme",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1731537616813,
+      "tag": "0008_abandoned_toad",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1731540631574,
+      "tag": "0009_luxuriant_tattoo",
+      "breakpoints": true
     }
   ]
 }

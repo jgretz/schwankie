@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX IF NOT EXISTS "guid_idx" ON "feed_item" USING btree ("guid");

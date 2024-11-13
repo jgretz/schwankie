@@ -1,0 +1,1 @@
+ALTER TABLE "feed_item" ALTER COLUMN "content" SET DEFAULT '{}';

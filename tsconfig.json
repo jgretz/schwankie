@@ -43,7 +43,8 @@
       "security": ["./packages/security/src/index.ts"],
 
       "utility-env": ["./packages/utility/env/src/index.ts"],
-      "utility-iocdi": ["./packages/utility/iocdi/src/index.ts"]
+      "utility-iocdi": ["./packages/utility/iocdi/src/index.ts"],
+      "utility-util": ["./packages/utility/util/src/index.ts"]
     }
   },
 
@@ -56,6 +57,7 @@
     {"security": "./packages/security"},
 
     {"utility-env": "./packages/utility/env"},
-    {"utility-iocdi": "./packages/utility/iocdi"}
+    {"utility-iocdi": "./packages/utility/iocdi"},
+    {"utility-util": "./packages/utility/util"}
   ]
 }
