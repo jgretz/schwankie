@@ -2,7 +2,7 @@ import {feedItemBulkInsert, feedsQuery, updateFeedStatsLastLoad} from 'domain/sc
 import {buildRssFeedItem} from './buildRssFeedItem';
 import type {ParseRssFeed, ParseRssItem, RssFeedItem} from '../Types';
 import type Parser from 'rss-parser';
-import {fetchNewItemsForFeed} from './fetchNewItemsForFeed';
+import {fetchNewItemsForFeeds} from './fetchNewItemsForFeed';
 import {mapRssFeedItemToFeedItem} from './maps/rssFeedItemToFeedItem.map';
 
 async function buildRssFeedItems(feed: ParseRssFeed & Parser.Output<ParseRssItem>) {
@@ -23,8 +23,9 @@ function dedupeRssItems() {
 }
 
 export async function refreshFeeds() {
+  console.time('refreshFeeds');
   const feeds = await feedsQuery();
-  const feedsWithOnlyNewItems = await Promise.all(feeds.map(fetchNewItemsForFeed));
+  const feedsWithOnlyNewItems = await fetchNewItemsForFeeds(feeds);
   const feedsWithRssFeedItems = await Promise.all(feedsWithOnlyNewItems.map(buildRssFeedItems));
   const rssFeedItems = feedsWithRssFeedItems.flatMap((items) => items).filter(dedupeRssItems());
 
@@ -37,6 +38,8 @@ export async function refreshFeeds() {
 
   await feedItemBulkInsert(feedItems);
   await updateFeedStatsLastLoad();
+
+  console.timeEnd('refreshFeeds');
 
   return {
     newFeedItems: feedItems.length,

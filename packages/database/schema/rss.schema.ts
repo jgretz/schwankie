@@ -1,4 +1,4 @@
-import {boolean, pgTable, serial, text, timestamp, uniqueIndex, varchar} from 'drizzle-orm/pg-core';
+import {boolean, index, pgTable, serial, text, timestamp, varchar} from 'drizzle-orm/pg-core';
 import {dates} from './dates';
 
 export const feed = pgTable('feed', {
@@ -25,7 +25,7 @@ export const feedItem = pgTable(
   },
   (table) => {
     return {
-      guidIdx: uniqueIndex('guid_idx').on(table.guid),
+      existingIdx: index('existing_idx').on(table.feedId, table.guid),
     };
   },
 );

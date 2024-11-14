@@ -71,6 +71,20 @@
       "when": 1731540631574,
       "tag": "0009_luxuriant_tattoo",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1731615490689,
+      "tag": "0010_harsh_gamora",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1731615581039,
+      "tag": "0011_white_shockwave",
+      "breakpoints": true
     }
   ]
 }

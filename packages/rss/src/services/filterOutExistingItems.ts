@@ -1,16 +1,13 @@
 import type Parser from 'rss-parser';
 import type {ParseRssFeed, ParseRssItem} from '../Types';
-import {asyncParallelFilter} from 'utility-util';
-import {feedItemByGuidQuery} from 'domain/schwankie';
+import {existingFeedItemQuery} from 'domain/schwankie';
 
-export async function filterOutExistingItems(feed: Parser.Output<ParseRssItem>) {
-  const items = await asyncParallelFilter(feed.items, async (item) => {
-    if (!item.guid) {
-      console.log('Item has no guid', feed.title, item);
-    }
+export async function filterOutExistingItems(feed: ParseRssFeed & Parser.Output<ParseRssItem>) {
+  const guids = feed.items.map((item) => item.guid);
+  const existing = await existingFeedItemQuery({guids, feedId: feed.feedId});
 
-    const existing = await feedItemByGuidQuery({guid: item.guid});
-    return !existing;
+  const items = feed.items.filter((item) => {
+    return !existing.some((existingItem) => existingItem.guid === item.guid);
   });
 
   return {

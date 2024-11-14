@@ -6,6 +6,8 @@
 app = "schwankie-api"
 primary_region = "bos"
 
+swap_size_mb = 512
+
 [http_service]
   internal_port = 3001
   force_https = true
