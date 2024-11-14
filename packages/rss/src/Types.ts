@@ -1,4 +1,5 @@
 export interface RssFeedItem {
+  id?: number;
   feedId: number;
   feed: string;
   guid: string;

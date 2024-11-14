@@ -7,6 +7,7 @@ export function mapFeedItemToRssFeedItem(feedItem: FeedItem): RssFeedItem {
   return {
     ...content,
 
+    id: feedItem.id,
     feedId: feedItem.feedId,
     guid: feedItem.guid,
     read: feedItem.read,

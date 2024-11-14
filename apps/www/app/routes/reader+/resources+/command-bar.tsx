@@ -1,13 +1,17 @@
 import {getFormProps, useForm} from '@conform-to/react';
 import {json, useFetcher, useLoaderData} from '@remix-run/react';
 import {queryFeedStats} from '@www/services/domain/feedStats.query';
+import {markAsRead} from '@www/services/rss/markAsRead.post';
 import {refreshFeed} from '@www/services/rss/refreshFeed.post';
-import {formatDistanceToNow} from 'date-fns';
+import {formatDistanceToNow, parseISO} from 'date-fns';
 import {RefreshCw, CheckCheck} from 'lucide-react';
 import {useEffect, useState} from 'react';
 import {match} from 'ts-pattern';
 
 interface Props {
+  mostRecentItemId?: number;
+
+  setWorking: (working: boolean) => void;
   refresh: () => void;
 }
 
@@ -28,7 +32,12 @@ export async function action({request}: {request: Request}) {
     .with('refreshFeed', async () => {
       return await refreshFeed();
     })
-    .with('markAsRead', async () => {})
+    .with('markAsRead', async () => {
+      const mostRecentItemId = Number(formData.get('mostRecentItemId'));
+      await markAsRead(mostRecentItemId);
+
+      return {};
+    })
     .exhaustive();
 
   return {
@@ -40,10 +49,10 @@ export async function action({request}: {request: Request}) {
 function formatLastUpdate(lastLoad?: string) {
   return match(lastLoad)
     .with(undefined, () => 'never')
-    .otherwise((x) => formatDistanceToNow(new Date(x)));
+    .otherwise((x) => formatDistanceToNow(parseISO(x), {addSuffix: true}));
 }
 
-export default function CommandBar({refresh}: Props) {
+export default function CommandBar({refresh, setWorking, mostRecentItemId}: Props) {
   // stats
   const initialData = useLoaderData<typeof loader>();
   const statsFetcher = useFetcher<typeof loader>();
@@ -59,25 +68,35 @@ export default function CommandBar({refresh}: Props) {
     }
   }, [statsFetcher.data]);
 
-  // refresh feed
-  const refreshFeedFetcher = useFetcher<typeof action>();
+  // commands
+  const [commandForm] = useForm({
+    onSubmit: async () => {
+      setWorking(true);
+    },
+  });
+
+  const commandFetcher = useFetcher<typeof action>();
   useEffect(() => {
     refresh();
 
     statsFetcher.load('/reader/resources/command-bar');
-  }, [refreshFeedFetcher.data]);
+  }, [commandFetcher.data]);
+
+  const markAsReadEnabled = (mostRecentItemId ?? 0) > 0;
 
   // JSX
   return (
     <div className="flex flex-row justify-between items-center w-full h-[50px] bg-primary px-5">
       <div>Last Update: {lastLoad}</div>
 
-      <refreshFeedFetcher.Form
+      <commandFetcher.Form
+        {...getFormProps(commandForm)}
         method="POST"
         action="/reader/resources/command-bar"
         className="flex flex-row"
       >
-        <button type="submit" name="intent" value="markAsRead">
+        <input type="hidden" name="mostRecentItemId" value={mostRecentItemId} />
+        <button type="submit" name="intent" value="markAsRead" disabled={!markAsReadEnabled}>
           <CheckCheck size={24} />
         </button>
         <div className="bg-secondary mx-2 w-[2px]"></div>
@@ -85,7 +104,7 @@ export default function CommandBar({refresh}: Props) {
         <button type="submit" name="intent" value="refreshFeed">
           <RefreshCw size={24} />
         </button>
-      </refreshFeedFetcher.Form>
+      </commandFetcher.Form>
     </div>
   );
 }
