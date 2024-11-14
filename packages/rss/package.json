@@ -11,6 +11,7 @@
   "dependencies": {
     "metascraper": "^5.45.25",
     "metascraper-image": "^5.45.25",
-    "rss-parser": "^3.13.0"
+    "rss-parser": "^3.13.0",
+    "ts-pattern": "^5.5.0"
   }
 }
