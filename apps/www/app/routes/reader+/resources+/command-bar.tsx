@@ -3,7 +3,7 @@ import {json, useFetcher, useLoaderData} from '@remix-run/react';
 import {queryFeedStats} from '@www/services/domain/feedStats.query';
 import {markAsRead} from '@www/services/rss/markAsRead.post';
 import {refreshFeed} from '@www/services/rss/refreshFeed.post';
-import {formatDistanceToNow, parseISO} from 'date-fns';
+import {formatDistanceToNow} from 'date-fns';
 import {RefreshCw, CheckCheck} from 'lucide-react';
 import {useEffect, useState} from 'react';
 import {match} from 'ts-pattern';
@@ -49,7 +49,7 @@ export async function action({request}: {request: Request}) {
 function formatLastUpdate(lastLoad?: string) {
   return match(lastLoad)
     .with(undefined, () => 'never')
-    .otherwise((x) => formatDistanceToNow(parseISO(x), {addSuffix: true}));
+    .otherwise((x) => formatDistanceToNow(new Date(x), {addSuffix: true}));
 }
 
 export default function CommandBar({refresh, setWorking, mostRecentItemId}: Props) {

@@ -1,14 +1,10 @@
 import {InjectIn} from 'injectx';
 import type {DomainDependencies} from '../Types';
 import {Schema} from 'database';
-import {formatISO} from 'date-fns';
 
 function command({database}: DomainDependencies) {
   return async function () {
-    return database
-      .update(Schema.feedStats)
-      .set({lastLoad: formatISO(new Date())})
-      .execute();
+    return database.update(Schema.feedStats).set({lastLoad: new Date().toUTCString()}).execute();
   };
 }
 
