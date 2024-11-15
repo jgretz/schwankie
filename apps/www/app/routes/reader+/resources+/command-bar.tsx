@@ -16,12 +16,18 @@ interface Props {
 }
 
 type Intents = 'refreshFeed' | 'markAsRead';
+type LoaderStats = {
+  lastLoad: Date | undefined;
+  unreadCount: number;
+};
 
 export async function loader() {
   const stats = await queryFeedStats();
+
   return json({
     lastLoad: stats?.lastLoad ?? undefined,
-  });
+    unreadCount: stats?.unreadCount ?? 0,
+  } as LoaderStats);
 }
 
 export async function action({request}: {request: Request}) {
@@ -46,17 +52,17 @@ export async function action({request}: {request: Request}) {
   } as {success: boolean; data: unknown};
 }
 
-function formatLastUpdate(lastLoad?: string) {
-  return match(lastLoad)
+function formatLastUpdate(date?: Date | string | undefined) {
+  return match(date)
     .with(undefined, () => 'never')
-    .otherwise((x) => formatDistanceToNow(new Date(x), {addSuffix: true}));
+    .otherwise((x) => formatDistanceToNow(x, {addSuffix: true}));
 }
 
 export default function CommandBar({refresh, setWorking, mostRecentItemId}: Props) {
   // stats
-  const initialData = useLoaderData<typeof loader>();
-  const statsFetcher = useFetcher<typeof loader>();
-  const [lastLoad, setLastLoad] = useState(formatLastUpdate(initialData.lastLoad));
+  const initialData = useLoaderData<LoaderStats>();
+  const statsFetcher = useFetcher<LoaderStats>();
+  const [stats, setStats] = useState(initialData);
 
   useEffect(() => {
     if (!statsFetcher.data || statsFetcher.state === 'loading') {
@@ -64,7 +70,7 @@ export default function CommandBar({refresh, setWorking, mostRecentItemId}: Prop
     }
 
     if (statsFetcher.data) {
-      setLastLoad(formatLastUpdate(statsFetcher.data.lastLoad));
+      setStats(statsFetcher.data);
     }
   }, [statsFetcher.data]);
 
@@ -87,7 +93,10 @@ export default function CommandBar({refresh, setWorking, mostRecentItemId}: Prop
   // JSX
   return (
     <div className="flex flex-row justify-between items-center w-full h-[50px] bg-primary px-5">
-      <div>Last Update: {lastLoad}</div>
+      <div>
+        <span className="mr-1">Updated {formatLastUpdate(stats.lastLoad)}</span>
+        <span className="pl-1 border-l border-secondary">{stats.unreadCount} Unread Articles</span>
+      </div>
 
       <commandFetcher.Form
         {...getFormProps(commandForm)}

@@ -1,4 +1,4 @@
-import {feedItemBulkInsert, feedsQuery, updateFeedStatsLastLoad} from 'domain/schwankie';
+import {feedItemBulkInsert, feedsQuery, updateFeedStats} from 'domain/schwankie';
 import {buildRssFeedItem} from './buildRssFeedItem';
 import type {ParseRssFeed, ParseRssItem, RssFeedItem} from '../Types';
 import type Parser from 'rss-parser';
@@ -23,25 +23,30 @@ function dedupeRssItems() {
 }
 
 export async function refreshFeeds() {
-  console.time('refreshFeeds');
-  const feeds = await feedsQuery();
-  const feedsWithOnlyNewItems = await fetchNewItemsForFeeds(feeds);
-  const feedsWithRssFeedItems = await Promise.all(feedsWithOnlyNewItems.map(buildRssFeedItems));
-  const rssFeedItems = feedsWithRssFeedItems.flatMap((items) => items).filter(dedupeRssItems());
+  try {
+    console.time('refreshFeeds');
+    const feeds = await feedsQuery();
+    const feedsWithOnlyNewItems = await fetchNewItemsForFeeds(feeds);
+    const feedsWithRssFeedItems = await Promise.all(feedsWithOnlyNewItems.map(buildRssFeedItems));
+    const rssFeedItems = feedsWithRssFeedItems.flatMap((items) => items).filter(dedupeRssItems());
 
-  const feedItems = rssFeedItems.map(mapRssFeedItemToFeedItem);
-  if (feedItems.length === 0) {
+    const feedItems = rssFeedItems.map(mapRssFeedItemToFeedItem);
+    if (feedItems.length === 0) {
+      return {
+        newFeedItems: 0,
+      };
+    }
+
+    await feedItemBulkInsert(feedItems);
+    await updateFeedStats();
+
+    console.timeEnd('refreshFeeds');
+
     return {
-      newFeedItems: 0,
+      newFeedItems: feedItems.length,
     };
+  } catch (error) {
+    console.error('Error refreshing feeds', error);
+    throw error;
   }
-
-  await feedItemBulkInsert(feedItems);
-  await updateFeedStatsLastLoad();
-
-  console.timeEnd('refreshFeeds');
-
-  return {
-    newFeedItems: feedItems.length,
-  };
 }

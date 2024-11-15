@@ -16,7 +16,7 @@ export function mapRssFeedItemToFeedItem(rssFeedItem: RssFeedItem): FeedItem {
     guid: rssFeedItem.guid,
     read: false,
     content,
-    createDate: rssFeedItem.pubDate,
-    updateDate: rssFeedItem.pubDate,
+    createDate: new Date(rssFeedItem.pubDate),
+    updateDate: new Date(rssFeedItem.pubDate),
   } as FeedItem;
 }

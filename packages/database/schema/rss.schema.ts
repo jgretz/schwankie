@@ -1,4 +1,13 @@
-import {boolean, index, pgTable, serial, text, timestamp, varchar} from 'drizzle-orm/pg-core';
+import {
+  boolean,
+  index,
+  integer,
+  pgTable,
+  serial,
+  text,
+  timestamp,
+  varchar,
+} from 'drizzle-orm/pg-core';
 import {dates} from './dates';
 
 export const feed = pgTable('feed', {
@@ -32,5 +41,6 @@ export const feedItem = pgTable(
 
 export const feedStats = pgTable('feed_stats', {
   id: serial().primaryKey().notNull(),
-  lastLoad: timestamp('last_load', {precision: 6, mode: 'string'}).notNull(),
+  lastLoad: timestamp('last_load', {precision: 6, mode: 'date'}).notNull(),
+  unreadCount: integer('unread_count').notNull().default(0),
 });
