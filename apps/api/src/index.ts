@@ -21,7 +21,16 @@ setupSecurity();
 // boot app
 const app = new Elysia()
   .use(swagger())
-  .group('api', (app) => app.use(ApiKeyPlugin).use(DomainApi).use(CrawlApi).use(RssApi))
+  .group('api', (app) =>
+    app
+      .use(ApiKeyPlugin)
+      .use(DomainApi)
+      .use(CrawlApi)
+      .use(RssApi)
+      .onError((error) => {
+        console.error(error);
+      }),
+  )
   .listen({port: env.PORT || 3001, idleTimeout: 120});
 
 console.log(`Schwankie API is running at ${app.server?.hostname}:${app.server?.port}`);

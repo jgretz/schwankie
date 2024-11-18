@@ -29,6 +29,7 @@ export const feedItem = pgTable(
     guid: varchar({length: 500}).notNull(),
     content: text().notNull(),
     read: boolean().default(false).notNull(),
+    clicked: boolean().default(false).notNull(),
 
     ...dates,
   },

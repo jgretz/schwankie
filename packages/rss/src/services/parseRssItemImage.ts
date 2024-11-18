@@ -10,28 +10,33 @@ async function scrapeImage(html: string, url: string) {
 }
 
 export async function parseRssItemImage(feed: ParseRssFeed, item: ParseRssItem) {
-  // good feed gave us an image
-  const image = item.enclosure?.url ?? feed.image?.url;
-  if (image) {
-    return image;
-  }
-
-  // Try to scrape the image from the content
-  const sources = [item.content, item.contentSnippet, item.description, item.summary];
-  for (let x = 0; x < sources.length; x++) {
-    const html = sources[x];
-    if (!html) {
-      continue;
+  try {
+    // good feed gave us an image
+    const image = item.enclosure?.url ?? feed.image?.url;
+    if (image) {
+      return image;
     }
 
-    const imageUrl = await scrapeImage(html, item.link);
-    if (imageUrl) {
-      return imageUrl;
-    }
-  }
+    // Try to scrape the image from the content
+    const sources = [item.content, item.contentSnippet, item.description, item.summary];
+    for (let x = 0; x < sources.length; x++) {
+      const html = sources[x];
+      if (!html) {
+        continue;
+      }
 
-  // Fallback to fetching the site
-  const siteResponse = await fetch(item.link);
-  const siteHtml = await siteResponse.text();
-  return await scrapeImage(siteHtml, item.link);
+      const imageUrl = await scrapeImage(html, item.link);
+      if (imageUrl) {
+        return imageUrl;
+      }
+    }
+
+    // Fallback to fetching the site
+    const siteResponse = await fetch(item.link);
+    const siteHtml = await siteResponse.text();
+    return await scrapeImage(siteHtml, item.link);
+  } catch (error) {
+    console.error(`Error Parsing Image - ${item.link}`, error);
+    return undefined;
+  }
 }
