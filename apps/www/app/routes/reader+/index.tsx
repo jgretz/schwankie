@@ -1,8 +1,7 @@
 import type {LoaderFunctionArgs} from '@remix-run/node';
-import {redirect, useFetcher, useLoaderData} from '@remix-run/react';
+import {useFetcher, useLoaderData} from '@remix-run/react';
 import {queryRssFeedItems} from '@www/services/rss/feedItems.query';
 import {requireUser} from '@www/services/security/requireUser';
-import {ADMIN_ROUTES} from '../admin+/constants';
 import {match} from 'ts-pattern';
 import {InfiniteScroller} from '@www/components/infinite-scroller';
 import {Loading} from '@www/components/loading';
@@ -10,7 +9,6 @@ import {useCallback, useEffect, useState} from 'react';
 import {FeedList} from './_components/feed-list';
 import CommandBar from './resources+/command-bar';
 import {encodeQueryStringFromJsonObject} from 'utility-util';
-import {feed} from 'packages/database/schema/rss.schema';
 
 type FeedItemResponse = Awaited<ReturnType<typeof fetchFeedItems>>;
 
@@ -26,10 +24,7 @@ async function fetchFeedItems(page: number, includeRead?: boolean, feedId?: numb
 }
 
 export async function loader({request}: LoaderFunctionArgs) {
-  const user = await requireUser(request);
-  if (!user) {
-    return redirect(ADMIN_ROUTES.LOGIN);
-  }
+  await requireUser(request, 'google-reader');
 
   const url = new URL(request.url);
   const page = match(url.searchParams.get('page'))

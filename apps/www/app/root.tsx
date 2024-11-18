@@ -63,9 +63,5 @@ export default function Root() {
 }
 
 export function ErrorBoundary() {
-  return (
-    <App>
-      <Error />
-    </App>
-  );
+  return <Error />;
 }

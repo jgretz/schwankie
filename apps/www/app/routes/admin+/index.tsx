@@ -1,11 +1,10 @@
-import {Form, json, redirect, useActionData} from '@remix-run/react';
-import {ADMIN_ROUTES} from './constants';
+import {Form, json, useActionData} from '@remix-run/react';
 import type {ActionFunctionArgs, LoaderFunctionArgs} from '@remix-run/node';
 import {Button} from '@www/components/ui/button';
 import {requireUser} from '@www/services/security/requireUser';
 import {useForm} from '@conform-to/react';
 import {z} from 'zod';
-import {TextInput} from './_components/TextInput';
+import {TextInput} from '../../components/TextInput';
 import {getZodConstraint, parseWithZod} from '@conform-to/zod';
 import UrlSearch from './resources+/url-search';
 import {useEffect, useState} from 'react';
@@ -31,10 +30,7 @@ const schema = z.object({
 type SubmissionSuccessForForm = SubmissionResultSuccess<{data: z.infer<typeof schema>}>;
 
 export async function loader({request}: LoaderFunctionArgs) {
-  const user = await requireUser(request);
-  if (!user) {
-    return redirect(ADMIN_ROUTES.LOGIN);
-  }
+  await requireUser(request, 'google-admin');
 
   return json({});
 }

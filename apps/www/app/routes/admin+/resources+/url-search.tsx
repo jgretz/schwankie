@@ -2,7 +2,7 @@ import {useForm} from '@conform-to/react';
 import {json, useFetcher} from '@remix-run/react';
 import {Button} from '@www/components/ui/button';
 import {z} from 'zod';
-import {TextInput} from '../_components/TextInput';
+import {TextInput} from '../../../components/TextInput';
 import {getZodConstraint, parseWithZod} from '@conform-to/zod';
 import type {ActionFunctionArgs} from '@remix-run/node';
 import {searchByUrl} from '@www/services/search/searchForUrl';
