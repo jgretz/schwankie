@@ -3,7 +3,8 @@
   "scripts": {
     "generate": "drizzle-kit generate",
     "push": "drizzle-kit push",
-    "pull": "drizzle-kit pull"
+    "pull": "drizzle-kit pull",
+    "migrate": "drizzle-kit migrate"
   },
   "devDependencies": {
     "@types/bun": "latest",

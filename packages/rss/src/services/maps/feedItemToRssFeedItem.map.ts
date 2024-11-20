@@ -1,4 +1,4 @@
-import type {FeedItem} from 'domain/schwankie';
+import type {FeedItem} from 'domain/feeds';
 import type {FeedItemContent, RssFeedItem} from '../../Types';
 
 export function mapFeedItemToRssFeedItem(feedItem: FeedItem): RssFeedItem {

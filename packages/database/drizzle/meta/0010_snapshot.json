@@ -200,12 +200,8 @@
           "name": "feed_item_feedId_feed_id_fk",
           "tableFrom": "feed_item",
           "tableTo": "feed",
-          "columnsFrom": [
-            "feedId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["feedId"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }

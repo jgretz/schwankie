@@ -11,12 +11,17 @@ import Search from './_components/search';
 import Page from '@www/components/page';
 import {Loading} from '@www/components/loading';
 import {encodeQueryStringFromJsonObject} from 'utility-util';
+import type {Link} from 'domain/links';
 
 export const meta: MetaFunction = () => {
   return [{title: title()}, {name: 'description', content: description()}];
 };
 
-type LinkResponse = Awaited<ReturnType<typeof fetchLinks>>;
+type LinkResponse = {
+  page: number;
+  query: string;
+  links: Link[];
+};
 
 async function fetchLinks(page: number, query: string) {
   const links = await queryLinks(page, query);
@@ -45,7 +50,7 @@ export default function Index() {
   const initialData = useLoaderData<LinkResponse>();
   const fetcher = useFetcher<LinkResponse>();
 
-  const [links, setLinks] = useState(initialData.links);
+  const [links, setLinks] = useState<Link[]>(initialData.links as unknown as Link[]);
 
   useEffect(() => {
     if (!fetcher.data || fetcher.state === 'loading') {
@@ -53,7 +58,7 @@ export default function Index() {
     }
 
     if (fetcher.data) {
-      const newLinks = fetcher.data.links;
+      const newLinks = fetcher.data.links as unknown as Link[];
       setLinks((prevLinks) => [...prevLinks, ...newLinks]);
     }
   }, [fetcher.data]);

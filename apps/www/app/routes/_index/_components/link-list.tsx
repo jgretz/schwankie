@@ -1,8 +1,8 @@
-import type {Links} from 'domain/schwankie';
+import type {Link} from 'domain/links';
 import {LinkItem} from './link-item';
 
 interface Props {
-  links: Links;
+  links: Link[];
 }
 
 export function LinkList({links}: Props) {

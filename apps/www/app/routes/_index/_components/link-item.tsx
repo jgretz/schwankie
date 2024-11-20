@@ -1,4 +1,4 @@
-import type {Link} from 'domain/schwankie';
+import type {Link} from 'domain/links';
 import LinkImage from './link-image';
 import {format} from 'date-fns';
 import {useCallback} from 'react';
@@ -22,6 +22,8 @@ function LinkTag({tag, comma = true}: {tag: string; comma: boolean}) {
 }
 
 export function LinkItem({link}: Props) {
+  const tags = (link.tags as string[]) ?? [];
+
   return (
     <li className="flex flex-col bg-accent shadow-md border-1 rounded overflow-hidden p-2">
       <div>
@@ -32,8 +34,8 @@ export function LinkItem({link}: Props) {
       </div>
       <div>
         <div>
-          {link.tags?.map((tag, index) => (
-            <LinkTag key={tag} tag={tag} comma={index < (link.tags?.length || 0) - 1} />
+          {tags.map((tag, index) => (
+            <LinkTag key={tag} tag={tag} comma={index < tags.length - 1} />
           ))}
         </div>
         <div className="text-sm">

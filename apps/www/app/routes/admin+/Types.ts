@@ -1,5 +1,5 @@
 import type {CrawlResult} from 'crawl';
-import type {Link} from 'domain/schwankie';
+import type {Link} from 'domain/links';
 
 export type SearchStatus = 'idle' | 'loading';
 export type SearchData = Link | CrawlResult | undefined;

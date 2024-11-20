@@ -10,7 +10,6 @@ import {GlobalPendingIndicator} from './components/global-pending-indicator';
 import {ClientHintCheck, getHints} from './utils/client-hints';
 import {getTheme} from '@www/utils/theme.server';
 import {useTheme} from './hooks/useTheme';
-import type {Theme} from './types';
 import TopBar from './components/top-bar';
 
 export async function loader({request}: LoaderFunctionArgs) {

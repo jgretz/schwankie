@@ -12,7 +12,7 @@ import type {SearchData, SearchStatus} from './Types';
 import Spinner from '@www/components/spinner';
 import {match, P} from 'ts-pattern';
 import type {CrawlResult} from 'crawl';
-import type {Link} from 'domain/schwankie';
+import type {Link} from 'domain/links';
 import {postLink} from '@www/services/domain/link.post';
 import type {SubmissionResultSuccess} from '@www/types';
 import {Toaster} from '@www/components/ui/toaster';

@@ -2,7 +2,7 @@ import {getFormProps, useForm} from '@conform-to/react';
 import {json, useFetcher, useLoaderData} from '@remix-run/react';
 import {queryFeedStats} from '@www/services/domain/feedStats.query';
 import {markAsRead} from '@www/services/rss/markAsRead.post';
-import {refreshFeed} from '@www/services/rss/refreshFeed.post';
+import {importLatestFromAllFeeds} from '@www/services/rss/importLatestFromAllFeeds.post';
 import {formatDistanceToNow} from 'date-fns';
 import {RefreshCw, CheckCheck} from 'lucide-react';
 import {useEffect, useState} from 'react';
@@ -15,9 +15,9 @@ interface Props {
   refresh: () => void;
 }
 
-type Intents = 'refreshFeed' | 'markAsRead';
+type Intents = 'importLatestFromAllFeeds' | 'markAsRead';
 type LoaderStats = {
-  lastLoad: Date | undefined;
+  lastUpdate: Date | undefined;
   unreadCount: number;
 };
 
@@ -25,7 +25,7 @@ export async function loader() {
   const stats = await queryFeedStats();
 
   return json({
-    lastLoad: stats?.lastLoad ?? undefined,
+    lastUpdate: stats?.lastUpdate ?? undefined,
     unreadCount: stats?.unreadCount ?? 0,
   } as LoaderStats);
 }
@@ -35,8 +35,8 @@ export async function action({request}: {request: Request}) {
   const intent = formData.get('intent') as Intents;
 
   const data = await match(intent)
-    .with('refreshFeed', async () => {
-      return await refreshFeed();
+    .with('importLatestFromAllFeeds', async () => {
+      return await importLatestFromAllFeeds();
     })
     .with('markAsRead', async () => {
       const mostRecentItemId = Number(formData.get('mostRecentItemId'));
@@ -94,7 +94,7 @@ export default function CommandBar({refresh, setWorking, mostRecentItemId}: Prop
   return (
     <div className="flex flex-row justify-between items-center w-full h-[50px] bg-primary px-5">
       <div>
-        <span className="mr-1">Updated {formatLastUpdate(stats.lastLoad)}</span>
+        <span className="mr-1">Updated {formatLastUpdate(stats.lastUpdate)}</span>
         <span className="pl-1 border-l border-secondary">{stats.unreadCount} Unread Articles</span>
       </div>
 
@@ -110,7 +110,7 @@ export default function CommandBar({refresh, setWorking, mostRecentItemId}: Prop
         </button>
         <div className="bg-secondary mx-2 w-[2px]"></div>
 
-        <button type="submit" name="intent" value="refreshFeed">
+        <button type="submit" name="intent" value="importLatestFromAllFeeds">
           <RefreshCw size={24} />
         </button>
       </commandFetcher.Form>

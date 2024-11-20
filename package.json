@@ -19,6 +19,7 @@
     "deploy:www": "fly deploy --config ./deploy/www/fly.toml --dockerfile ./deploy/www/Dockerfile",
     "deploy": "concurrently bun:deploy:*",
     "format": "prettier --write apps packages",
+    "typecheck": "tsc --noEmit",
     "reset:lock": "bun x -y rimraf -g **/bun.lockb **/node_modules; bun install --force;",
     "proxy": "fly proxy 5432 -a schwankie-db",
     "dev:api": "cd apps/api && bun run dev",

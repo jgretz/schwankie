@@ -4,7 +4,9 @@ import {Elysia} from 'elysia';
 
 import {parseEnv} from 'utility-env';
 
-import {setupDomain, Api as DomainApi} from 'domain/schwankie';
+import {setupLinksDomain, Api as LinksApi} from 'domain/links';
+import {setupFeedsDomain, Api as FeedsApi} from 'domain/feeds';
+
 import {Api as CrawlApi} from 'crawl';
 import {ApiKeyPlugin, setupSecurity} from 'security';
 import {Api as RssApi} from 'rss';
@@ -15,7 +17,8 @@ const envSchema = z.object({
 });
 
 const env = parseEnv(envSchema);
-setupDomain();
+setupLinksDomain();
+setupFeedsDomain();
 setupSecurity();
 
 // boot app
@@ -24,7 +27,8 @@ const app = new Elysia()
   .group('api', (app) =>
     app
       .use(ApiKeyPlugin)
-      .use(DomainApi)
+      .use(LinksApi)
+      .use(FeedsApi)
       .use(CrawlApi)
       .use(RssApi)
       .onError((error) => {

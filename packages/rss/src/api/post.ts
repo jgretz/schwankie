@@ -1,12 +1,24 @@
 import {Elysia, t} from 'elysia';
-import {refreshFeeds} from '../services/refreshFeeds';
 import {markAsRead} from '../services/markAsRead';
 import {markAsClicked} from '../services/markAsClicked';
+import {importLatestFromAllFeeds} from '../services/feedImport/importLatestFromAllFeeds';
+import {importLatestFromFeedById} from '../services/feedImport/importLatestFromFeed';
 
 export const PostApi = new Elysia()
-  .post('/refresh', async function () {
-    return await refreshFeeds();
+  .post('/importLatestFromAllFeeds', async function () {
+    return await importLatestFromAllFeeds();
   })
+  .post(
+    'importLatestFromFeed',
+    async function ({body: {id}}) {
+      return await importLatestFromFeedById(id);
+    },
+    {
+      body: t.Object({
+        id: t.Number(),
+      }),
+    },
+  )
   .post(
     '/markAsRead',
     async function ({body: {mostRecentId}}) {

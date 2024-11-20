@@ -37,7 +37,10 @@
 
       "database": ["./packages/database/index.ts"],
 
-      "domain/schwankie": ["./packages/domain/src/index.ts"],
+      "domain/feeds": ["./packages/domain/feeds/src/index.ts"],
+      "domain/links": ["./packages/domain/links/src/index.ts"],
+      "domain/util": ["./packages/domain/util/src/index.ts"],
+
       "crawl": ["./packages/crawl/src/index.ts"],
       "rss": ["./packages/rss/src/index.ts"],
       "security": ["./packages/security/src/index.ts"],
@@ -51,7 +54,10 @@
   "references": [
     {"database": "./packages/database"},
 
-    {"domain/schwankie": "./packages/domain"},
+    {"domain/feeds": "./packages/domain/feeds"},
+    {"domain/links": "./packages/domain/links"},
+    {"domain/util": "./packages/domain/util"},
+
     {"crawl": "./packages/crawl"},
     {"rss": "./packages/rss"},
     {"security": "./packages/security"},
