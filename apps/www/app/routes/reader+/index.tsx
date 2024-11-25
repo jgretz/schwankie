@@ -8,7 +8,7 @@ import {Loading} from '@www/components/loading';
 import {useCallback, useEffect, useState} from 'react';
 import {FeedList} from './_components/feed-list';
 import CommandBar from './resources+/command-bar';
-import {encodeQueryStringFromJsonObject} from 'utility-util';
+import {dedupe, encodeQueryStringFromJsonObject} from 'utility-util';
 import Spinner from '@www/components/spinner';
 import {queryFeedStats} from '@www/services/domain/feedStats.query';
 import {Button} from '@www/components/ui/button';
@@ -95,7 +95,7 @@ export default function RSS() {
 
     if (fetcher.data) {
       const newFeedItems = fetcher.data.feedItems;
-      setFeedItems((prevItems) => [...prevItems, ...newFeedItems]);
+      setFeedItems((prevItems) => dedupe([...prevItems, ...newFeedItems], (x) => x.id));
 
       const newTotalFeedItems = fetcher.data.totalFeedItems;
       setTotalFeedItems(newTotalFeedItems);

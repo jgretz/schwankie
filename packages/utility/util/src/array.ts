@@ -15,3 +15,16 @@ export async function asyncParallelFilter<T>(
 
   return filtered;
 }
+
+export function dedupe<T, K>(items: T[], extractKey: (i: T) => K): T[] {
+  const seen = new Set<K>();
+  return items.filter((item) => {
+    const key = extractKey(item);
+    if (seen.has(key)) {
+      return false;
+    }
+
+    seen.add(key);
+    return true;
+  });
+}
