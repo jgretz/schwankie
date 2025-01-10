@@ -5,10 +5,14 @@ import {Elysia} from 'elysia';
 import {parseEnv} from 'utility-env';
 
 import {setupLinksDomain, Api as LinksApi} from 'domain/links';
+import {setupMiscDomain, Api as MiscApi} from 'domain/misc';
 import {setupFeedsDomain, Api as FeedsApi} from 'domain/feeds';
 
-import {Api as CrawlApi} from 'crawl';
 import {ApiKeyPlugin, setupSecurity} from 'security';
+import {setupMail} from 'mail';
+
+import {Api as CrawlApi} from 'crawl';
+import {Api as MailApi} from 'mail';
 import {Api as RssApi} from 'rss';
 
 // global variables
@@ -18,8 +22,10 @@ const envSchema = z.object({
 
 const env = parseEnv(envSchema);
 setupLinksDomain();
+setupMiscDomain();
 setupFeedsDomain();
 setupSecurity();
+setupMail();
 
 // boot app
 const app = new Elysia()
@@ -28,8 +34,10 @@ const app = new Elysia()
     app
       .use(ApiKeyPlugin)
       .use(LinksApi)
+      .use(MiscApi)
       .use(FeedsApi)
       .use(CrawlApi)
+      .use(MailApi)
       .use(RssApi)
       .onError((error) => {
         console.error(error);

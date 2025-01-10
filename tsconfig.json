@@ -38,10 +38,12 @@
       "database": ["./packages/database/index.ts"],
 
       "domain/feeds": ["./packages/domain/feeds/src/index.ts"],
+      "domain/misc": ["./packages/domain/misc/src/index.ts"],
       "domain/links": ["./packages/domain/links/src/index.ts"],
       "domain/util": ["./packages/domain/util/src/index.ts"],
 
       "crawl": ["./packages/crawl/src/index.ts"],
+      "mail": ["./packages/mail/src/index.ts"],
       "rss": ["./packages/rss/src/index.ts"],
       "security": ["./packages/security/src/index.ts"],
 
@@ -56,9 +58,11 @@
 
     {"domain/feeds": "./packages/domain/feeds"},
     {"domain/links": "./packages/domain/links"},
+    {"domain/misc": "./packages/domain/misc"},
     {"domain/util": "./packages/domain/util"},
 
     {"crawl": "./packages/crawl"},
+    {"mail": "./packages/mail"},
     {"rss": "./packages/rss"},
     {"security": "./packages/security"},
 
