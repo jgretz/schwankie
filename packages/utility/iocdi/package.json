@@ -6,10 +6,8 @@
     "@types/bun": "latest"
   },
   "peerDependencies": {
-    "typescript": "^5.6.3"
-  },
-  "dependencies": {
+    "typescript": "^5.6.3",
     "injectx": "^1.0.4",
-    "zod": "^3.23.8"
+    "zod": "^3.24.1"
   }
 }

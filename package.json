@@ -22,7 +22,7 @@
     "typecheck": "tsc --noEmit",
     "reset:lock": "bun x -y rimraf -g **/bun.lockb **/node_modules; bun install --force;",
     "proxy": "fly proxy 5432 -a schwankie-db",
-    "dev:import-feeds": "cd tasks/import-feeds && bun run dev",
+    "tasks:import-feeds": "cd tasks/import-feeds && bun run dev",
     "dev:api": "cd apps/api && bun run dev",
     "dev:www": "cd apps/www && bun run dev",
     "dev": "concurrently bun:dev:*"
