@@ -2,7 +2,9 @@ import {parseEnv} from 'utility-env';
 import {z} from 'zod';
 import {treaty} from '@elysiajs/eden';
 import type {App} from '@api';
+import {match} from 'ts-pattern';
 
+// environment schema
 const envSchema = z.object({
   PORT: z.string().optional(),
   API_URL: z.string(),
@@ -11,6 +13,11 @@ const envSchema = z.object({
 
 const env = parseEnv(envSchema);
 
+// constants
+const FEEDS_FINISHED = 'Finished Importing feeds...';
+const FLY = 'Now the fly runner can be happy...';
+
+// main logic
 async function main() {
   console.log('Importing feeds...');
 
@@ -21,22 +28,31 @@ async function main() {
   });
 
   await client.api.rss.importLatestFromAllFeeds.post();
+
+  console.log(FEEDS_FINISHED);
+}
+
+// server
+async function importResponse() {
+  await main();
+
+  setTimeout(() => {
+    server.stop();
+  }, 1000);
+
+  return new Response(FEEDS_FINISHED);
+}
+
+function standardResponse() {
+  console.log(FLY);
+  return new Response(FLY);
 }
 
 const server = Bun.serve({
   port: env.PORT || 3005,
   async fetch(req) {
-    if (req.url === '/') {
-      return new Response('Now the fly runner can be happy...');
-    }
-
-    await main();
-
-    setTimeout(() => {
-      server.stop();
-    }, 1000);
-
-    return new Response('Finished Importing feeds...');
+    const url = new URL(req.url);
+    return await match(url.pathname).with('/import', importResponse).otherwise(standardResponse);
   },
 });
 
