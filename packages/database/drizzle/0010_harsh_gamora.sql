@@ -1,1 +1,0 @@
-CREATE INDEX IF NOT EXISTS "existing_idx" ON "feed_item" USING btree ("feedId","guid");

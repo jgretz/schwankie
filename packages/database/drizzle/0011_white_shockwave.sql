@@ -1,1 +1,0 @@
-DROP INDEX IF EXISTS "guid_idx";

@@ -1,1 +1,0 @@
-ALTER TABLE "feed_stats" ADD COLUMN "unread_count" integer DEFAULT 0 NOT NULL;
