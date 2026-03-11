@@ -1,0 +1,33 @@
+{
+  "name": "schwankie",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest",
+    "concurrently": "^9.1.2",
+    "prettier": "^3.3.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5.4.5"
+  },
+  "workspaces": [
+    "apps/**",
+    "packages/**"
+  ],
+  "scripts": {
+    "dev": "concurrently bun:dev:*",
+    "dev:api": "bun run --cwd apps/api dev",
+    "dev:www": "bun run --cwd apps/www dev",
+    "dev:tasks": "bun run --cwd apps/tasks dev",
+    "build": "concurrently bun:build:*",
+    "build:www": "cd apps/www && bun run build",
+    "typecheck": "concurrently bun:typecheck:*",
+    "typecheck:www": "cd apps/www && bun run typecheck",
+    "start": "concurrently bun:start:*",
+    "start:api": "cd apps/api && bun run start",
+    "start:www": "cd apps/www && bun run start",
+    "start:tasks": "cd apps/tasks && bun run start",
+    "db:generate": "bun run --cwd packages/database generate",
+    "db:migrate": "bun run --cwd packages/database migrate"
+  }
+}

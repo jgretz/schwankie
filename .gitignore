@@ -1,6 +1,7 @@
 # compiled output
-/dist
+dist
 node_modules
+bun.lock
 
 # Secrets
 .env
@@ -36,3 +37,16 @@ lerna-debug.log*
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+CLAUDE-WORKING.md
+.mcp.json
+.worksite/
+.claude/hooks/
+.claude/settings.local.json
+.claude/rules/worksite-worker.md
+.claude/rules/worksite-verification.md
+.claude/rules/worksite-debugging.md
+.claude/rules/worksite-deduplication.md
+.claude/rules/worksite-planning.md
+.claude/rules/worksite-docs.md
+.claude/commands/commit.md
+.claude/reviews/

@@ -1,0 +1,45 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project
+
+Schwankie v5 — a "second memory" link store at https://www.schwankie.com. Bun monorepo.
+
+## Commands
+
+```bash
+bun install                 # Install deps (from root)
+bun run dev                 # www (3000) + api (3001)
+bun run dev:api             # API only (port 3001)
+bun run dev:www             # WWW only (port 3000)
+bun run dev:tasks           # Task runner
+
+bun run typecheck           # Typecheck all
+cd apps/www && bun run lint # Biome lint
+
+cd packages/database
+bun run generate --name <descriptive-name>  # drizzle-kit generate
+bun run migrate                             # drizzle-kit migrate
+```
+
+## Apps
+
+- **api** — Hono REST API (port 3001). Bearer auth middleware. Routes in `src/routes/`. Exports `fetch: app.fetch` for Bun server.
+- **www** — TanStack Start + Vite + Tailwind. File-based routing in `src/routes/`. Do NOT edit `routeTree.gen.ts`.
+- **tasks** — Bun polling task runner.
+
+## Packages
+
+- **database** — Drizzle ORM + PostgreSQL. Schema in `schema/`. `createDatabase()`.
+- **env** — Zod env parsing via `parseEnv()`.
+
+## Key Patterns
+
+- **Path Aliases**: tsconfig aliases — `database`, `env`, `@api`, `@www/*`.
+- **API Client**: Manual fetch wrapper (no Hono RPC). Typed request/response via shared types.
+- **Design System**: Parchment/terracotta theme. CSS custom properties for colors. Lora (serif) for headings/titles, DM Sans for UI chrome.
+
+## Prettier
+
+Config in `.prettierrc`: single quotes, semicolons, trailing commas, no bracket spacing, 100 char width.
