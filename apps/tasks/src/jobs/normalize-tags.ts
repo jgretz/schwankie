@@ -46,43 +46,45 @@ async function mergeTag(
   aliasText: string,
   canonicalTagId: number,
 ): Promise<void> {
-  // Find link_tag rows pointing to the alias
-  const aliasLinkTags = await db
-    .select({linkId: linkTag.linkId})
-    .from(linkTag)
-    .where(eq(linkTag.tagId, aliasTagId));
-
-  for (const {linkId} of aliasLinkTags) {
-    // Check if canonical already linked to this link
-    const existing = await db
-      .select({id: linkTag.id})
+  await db.transaction(async (tx) => {
+    // Find link_tag rows pointing to the alias
+    const aliasLinkTags = await tx
+      .select({linkId: linkTag.linkId})
       .from(linkTag)
-      .where(and(eq(linkTag.linkId, linkId), eq(linkTag.tagId, canonicalTagId)))
-      .limit(1);
+      .where(eq(linkTag.tagId, aliasTagId));
 
-    if (existing.length > 0) {
-      // Duplicate — delete the alias link_tag
-      await db
-        .delete(linkTag)
-        .where(and(eq(linkTag.linkId, linkId), eq(linkTag.tagId, aliasTagId)));
-    } else {
-      // Reassign to canonical
-      await db
-        .update(linkTag)
-        .set({tagId: canonicalTagId})
-        .where(and(eq(linkTag.linkId, linkId), eq(linkTag.tagId, aliasTagId)));
+    for (const {linkId} of aliasLinkTags) {
+      // Check if canonical already linked to this link
+      const existing = await tx
+        .select({id: linkTag.id})
+        .from(linkTag)
+        .where(and(eq(linkTag.linkId, linkId), eq(linkTag.tagId, canonicalTagId)))
+        .limit(1);
+
+      if (existing.length > 0) {
+        // Duplicate — delete the alias link_tag
+        await tx
+          .delete(linkTag)
+          .where(and(eq(linkTag.linkId, linkId), eq(linkTag.tagId, aliasTagId)));
+      } else {
+        // Reassign to canonical
+        await tx
+          .update(linkTag)
+          .set({tagId: canonicalTagId})
+          .where(and(eq(linkTag.linkId, linkId), eq(linkTag.tagId, aliasTagId)));
+      }
     }
-  }
 
-  // Insert audit row
-  await db.insert(tagAlias).values({
-    aliasText,
-    canonicalTagId,
-    source: 'ollama',
+    // Insert audit row
+    await tx.insert(tagAlias).values({
+      aliasText,
+      canonicalTagId,
+      source: 'ollama',
+    });
+
+    // Delete the alias tag
+    await tx.delete(tag).where(eq(tag.id, aliasTagId));
   });
-
-  // Delete the alias tag
-  await db.delete(tag).where(eq(tag.id, aliasTagId));
 }
 
 export async function normalizeTags(

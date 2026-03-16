@@ -1,12 +1,14 @@
 import {eq, and, isNull, ne} from 'drizzle-orm';
-import type {Database} from 'database';
+import type {Database, LinkStatus} from 'database';
 import {link} from 'database';
+
+const TRASHED: LinkStatus = 'trashed';
 
 export async function enrichContent(db: Database, cfBrowserRenderingUrl: string): Promise<void> {
   const links = await db
     .select({id: link.id, url: link.url})
     .from(link)
-    .where(and(isNull(link.content), ne(link.status, 'trashed')))
+    .where(and(isNull(link.content), ne(link.status, TRASHED)))
     .limit(5);
 
   for (const row of links) {
