@@ -1,9 +1,20 @@
 import {HeadContent, Outlet, Scripts, createRootRoute} from '@tanstack/react-router';
+import {createServerFn} from '@tanstack/react-start';
 import {AppShell} from '@www/components/shell/app-shell';
 import '../globals.css';
+import {destroySession, getAuthState} from '../lib/session';
+
+const logout = createServerFn({method: 'POST'}).handler(async () => {
+  await destroySession();
+  throw new Response(null, {status: 302, headers: {Location: '/'}});
+});
 
 export const Route = createRootRoute({
   notFoundComponent: NotFound,
+  beforeLoad: async () => {
+    const auth = await getAuthState();
+    return {auth};
+  },
   head: () => ({
     meta: [{charSet: 'utf-8'}, {name: 'viewport', content: 'width=device-width, initial-scale=1'}],
     links: [
