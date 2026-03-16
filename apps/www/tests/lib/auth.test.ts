@@ -1,20 +1,20 @@
 import {beforeAll, describe, expect, it, mock} from 'bun:test';
 
-mock.module('../../src/lib/env', () => ({
-  env: {
+mock.module('../../src/lib/env.server', () => ({
+  getEnv: () => ({
     ALLOWED_EMAIL: 'admin@example.com',
     GOOGLE_CLIENT_ID: 'test-client-id',
     GOOGLE_CLIENT_SECRET: 'test-secret',
     GOOGLE_CALLBACK_URL: 'http://localhost:3000/auth/callback',
     SESSION_SECRET: 'a'.repeat(32),
     API_KEY: 'test-api-key',
-  },
+  }),
 }));
 
 let isAllowedEmail: (email: string) => boolean;
 
 beforeAll(async function () {
-  const mod = await import('../../src/lib/auth');
+  const mod = await import('../../src/lib/auth.server');
   isAllowedEmail = mod.isAllowedEmail;
 });
 

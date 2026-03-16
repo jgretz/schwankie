@@ -1,6 +1,6 @@
 import {createFileRoute, redirect} from '@tanstack/react-router';
-import {exchangeCodeForTokens, fetchGoogleUserInfo, isAllowedEmail} from '../../lib/auth';
-import {createSession} from '../../lib/session';
+import {exchangeCodeForTokens, fetchGoogleUserInfo, isAllowedEmail} from '../../lib/auth.server';
+import {createSession} from '../../lib/session.server';
 
 async function processOAuthCode(code: string): Promise<{error: string | null}> {
   'use server';

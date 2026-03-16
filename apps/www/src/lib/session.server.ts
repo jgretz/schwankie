@@ -1,6 +1,6 @@
 import {createServerFn} from '@tanstack/react-start';
 import {getCookie, setCookie} from '@tanstack/react-start/server';
-import {getEnv} from './env';
+import {getEnv} from './env.server';
 
 const SESSION_COOKIE = 'schwankie_session';
 const MAX_AGE = 60 * 60 * 24 * 7; // 7 days

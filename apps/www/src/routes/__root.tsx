@@ -14,7 +14,7 @@ import {useTags} from '@www/hooks/use-tags';
 import {parseTagIds} from '@www/lib/parse-tag-ids';
 import type {FeedSearch} from '@www/routes/index';
 import '../globals.css';
-import {destroySession, getAuthState} from '../lib/session';
+import {destroySession, getAuthState} from '../lib/session.server';
 
 export const logout = createServerFn({method: 'POST'}).handler(async () => {
   await destroySession();
