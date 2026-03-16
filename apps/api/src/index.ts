@@ -6,6 +6,7 @@ import {authMiddleware} from './middleware/auth';
 import {healthRoutes} from './routes/health';
 import {helloRoutes} from './routes/hello';
 import {tagsRouter} from './routes/tags';
+import {linksRoutes} from './routes/links';
 import {metadataRoutes} from './routes/metadata';
 
 const envSchema = z.object({
@@ -21,6 +22,9 @@ app.use('/*', cors());
 // public
 app.route('/', healthRoutes);
 app.route('/', tagsRouter);
+
+// links — handles its own auth (GET is public, mutations are protected)
+app.route('/', linksRoutes);
 
 // protected
 app.use('/api/*', authMiddleware());
