@@ -15,9 +15,9 @@ export const linkTag = pgTable(
       .references(() => tag.id, {onDelete: 'cascade'}),
     createDate: timestamp('create_date', {precision: 6, withTimezone: true}).notNull().defaultNow(),
   },
-  (table) => [
-    index('idx_link_tag_link_id').on(table.linkId),
-    index('idx_link_tag_tag_id').on(table.tagId),
-    uniqueIndex('idx_link_tag_unique').on(table.linkId, table.tagId),
-  ],
+  (table) => ({
+    linkIdIdx: index('idx_link_tag_link_id').on(table.linkId),
+    tagIdIdx: index('idx_link_tag_tag_id').on(table.tagId),
+    uniqueIdx: uniqueIndex('idx_link_tag_unique').on(table.linkId, table.tagId),
+  }),
 );

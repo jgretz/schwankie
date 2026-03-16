@@ -14,8 +14,8 @@ export const link = pgTable(
     content: text('content'),
     ...dates,
   },
-  (table) => [
-    index('idx_link_status').on(table.status),
-    index('idx_link_create_date').on(table.createDate),
-  ],
+  (table) => ({
+    statusIdx: index('idx_link_status').on(table.status),
+    createDateIdx: index('idx_link_create_date').on(table.createDate),
+  }),
 );
