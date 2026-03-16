@@ -1,4 +1,5 @@
 import {HeadContent, Outlet, Scripts, createRootRoute} from '@tanstack/react-router';
+import {AppShell} from '@www/components/shell/app-shell';
 import '../globals.css';
 
 export const Route = createRootRoute({
@@ -36,7 +37,17 @@ function RootComponent() {
         <HeadContent />
       </head>
       <body>
-        <Outlet />
+        <AppShell
+          tags={[]}
+          selectedTagIds={[]}
+          onTagToggle={() => {}}
+          searchValue=""
+          onSearchChange={() => {}}
+          showAddButton={false}
+          onAddClick={() => {}}
+        >
+          <Outlet />
+        </AppShell>
         <Scripts />
       </body>
     </html>
