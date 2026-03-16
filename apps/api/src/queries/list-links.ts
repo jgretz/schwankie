@@ -1,6 +1,6 @@
 import type {Database} from 'database';
 import {link, tag, linkTag} from 'database';
-import {eq, and, ilike, or, inArray, desc, sql, count} from 'drizzle-orm';
+import {eq, and, ilike, or, inArray, desc, sql, count, isNull, ne} from 'drizzle-orm';
 
 export type ListLinksParams = {
   limit: number;
@@ -8,6 +8,7 @@ export type ListLinksParams = {
   status?: 'saved' | 'queued' | 'archived';
   tags?: string;
   q?: string;
+  needs_enrichment?: boolean;
 };
 
 type LinkWithTags = typeof link.$inferSelect & {
@@ -22,9 +23,14 @@ export type ListLinksResult = {
 };
 
 export async function listLinks(db: Database, params: ListLinksParams): Promise<ListLinksResult> {
-  const {limit, offset, status, tags: tagsParam, q} = params;
+  const {limit, offset, status, tags: tagsParam, q, needs_enrichment} = params;
 
   const conditions = [];
+
+  if (needs_enrichment) {
+    conditions.push(isNull(link.content));
+    conditions.push(ne(link.status, 'trashed'));
+  }
 
   if (status) {
     conditions.push(eq(link.status, status));
