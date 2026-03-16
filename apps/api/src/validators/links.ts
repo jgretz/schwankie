@@ -1,0 +1,27 @@
+import {z} from 'zod';
+
+export const createLinkSchema = z.object({
+  url: z.string().url(),
+  title: z.string().min(1),
+  description: z.string().optional(),
+  imageUrl: z.string().url().optional(),
+  status: z.enum(['saved', 'queued']).optional(),
+  tags: z.array(z.string()).optional(),
+});
+
+export const updateLinkSchema = z.object({
+  url: z.string().url().optional(),
+  title: z.string().min(1).optional(),
+  description: z.string().optional(),
+  imageUrl: z.string().url().optional(),
+  status: z.enum(['saved', 'queued', 'archived']).optional(),
+  tags: z.array(z.string()).optional(),
+});
+
+export const listLinksParamsSchema = z.object({
+  limit: z.coerce.number().min(1).max(100).default(50),
+  offset: z.coerce.number().min(0).default(0),
+  status: z.enum(['saved', 'queued', 'archived']).optional(),
+  tags: z.string().optional(),
+  q: z.string().optional(),
+});
