@@ -1,8 +1,10 @@
 import {useInfiniteQuery} from '@tanstack/react-query';
 import {fetchLinks} from '@www/lib/api-client';
 
+type LinkStatus = 'saved' | 'archived';
+
 type UseInfiniteLinksParams = {
-  status: string;
+  status: LinkStatus;
   tags?: string;
   q?: string;
 };

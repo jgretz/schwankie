@@ -123,6 +123,7 @@ function ShellWithData() {
 
   const handleTagToggle = useCallback(
     (tagId: number) => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
       const next = selectedTagIds.includes(tagId)
         ? selectedTagIds.filter((id) => id !== tagId)
         : [...selectedTagIds, tagId];
