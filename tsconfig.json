@@ -31,7 +31,8 @@
       "@www/*": ["./apps/www/src/*"],
 
       "env": ["./packages/env/src/index.ts"],
-      "database": ["./packages/database/index.ts"]
+      "database": ["./packages/database/index.ts"],
+      "metadata": ["./packages/metadata/src/index.ts"]
     }
   }
 }
