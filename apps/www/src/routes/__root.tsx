@@ -1,6 +1,18 @@
-import {HeadContent, Outlet, Scripts, createRootRoute} from '@tanstack/react-router';
+import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
+import {
+  HeadContent,
+  Outlet,
+  Scripts,
+  createRootRoute,
+  useNavigate,
+  useSearch,
+} from '@tanstack/react-router';
 import {createServerFn} from '@tanstack/react-start';
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {AppShell} from '@www/components/shell/app-shell';
+import {useTags} from '@www/hooks/use-tags';
+import {parseTagIds} from '@www/lib/parse-tag-ids';
+import type {FeedSearch} from '@www/routes/index';
 import '../globals.css';
 import {destroySession, getAuthState} from '../lib/session';
 
@@ -42,25 +54,97 @@ function NotFound() {
 }
 
 function RootComponent() {
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            staleTime: 30_000,
+            refetchOnWindowFocus: false,
+          },
+        },
+      }),
+  );
+
   return (
     <html lang="en">
       <head>
         <HeadContent />
       </head>
       <body>
-        <AppShell
-          tags={[]}
-          selectedTagIds={[]}
-          onTagToggle={() => {}}
-          searchValue=""
-          onSearchChange={() => {}}
-          showAddButton={false}
-          onAddClick={() => {}}
-        >
-          <Outlet />
-        </AppShell>
+        <QueryClientProvider client={queryClient}>
+          <ShellWithData />
+        </QueryClientProvider>
         <Scripts />
       </body>
     </html>
+  );
+}
+
+function ShellWithData() {
+  const navigate = useNavigate();
+
+  const search = useSearch({strict: false}) as FeedSearch;
+  const tagsParam = search.tags;
+  const qParam = search.q ?? '';
+
+  const selectedTagIds = useMemo(() => parseTagIds(tagsParam), [tagsParam]);
+
+  const {data: tags} = useTags('saved');
+
+  // Debounced search
+  const [searchValue, setSearchValue] = useState(qParam);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    setSearchValue(qParam);
+  }, [qParam]);
+
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, []);
+
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      setSearchValue(value);
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => {
+        navigate({
+          to: '/',
+          search: {tags: tagsParam, q: value || undefined},
+        });
+      }, 300);
+    },
+    [navigate, tagsParam],
+  );
+
+  const handleTagToggle = useCallback(
+    (tagId: number) => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      const next = selectedTagIds.includes(tagId)
+        ? selectedTagIds.filter((id) => id !== tagId)
+        : [...selectedTagIds, tagId];
+      navigate({
+        to: '/',
+        search: {tags: next.length > 0 ? next.join(',') : undefined, q: search.q},
+      });
+    },
+    [selectedTagIds, navigate, search.q],
+  );
+
+  return (
+    <AppShell
+      tags={tags ?? []}
+      selectedTagIds={selectedTagIds}
+      onTagToggle={handleTagToggle}
+      searchValue={searchValue}
+      onSearchChange={handleSearchChange}
+      showAddButton={false}
+      onAddClick={() => {}}
+    >
+      <Outlet />
+    </AppShell>
   );
 }
