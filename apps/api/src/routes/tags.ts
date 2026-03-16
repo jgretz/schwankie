@@ -1,5 +1,5 @@
 import {Hono} from 'hono';
-import {createDatabase, getTagsWithCount, linkStatusEnum} from 'database';
+import {createDatabase, getTagsWithCount, linkStatusEnum, type LinkStatus} from 'database';
 import {parseEnv} from 'env';
 import z from 'zod';
 
@@ -18,10 +18,7 @@ tagsRouter.get('/api/tags', async (c) => {
     return c.json({error: 'Invalid status value'}, 400);
   }
 
-  const tags = await getTagsWithCount(
-    db,
-    status as (typeof linkStatusEnum.enumValues)[number] | undefined,
-  );
+  const tags = await getTagsWithCount(db, status as LinkStatus | undefined);
 
   return c.json({tags});
 });
