@@ -10,5 +10,5 @@ export const tag = pgTable(
     normalizedAt: timestamp('normalized_at', {withTimezone: true}),
     ...dates,
   },
-  (table) => [uniqueIndex('idx_tag_text').on(table.text)],
+  (table) => ({textIdx: uniqueIndex('idx_tag_text').on(table.text)}),
 );

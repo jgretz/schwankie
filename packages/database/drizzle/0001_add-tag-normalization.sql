@@ -15,3 +15,4 @@ END $$;
 --> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "idx_tag_alias_canonical" ON "tag_alias" ("canonical_tag_id");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "idx_tag_alias_source" ON "tag_alias" ("source");
+

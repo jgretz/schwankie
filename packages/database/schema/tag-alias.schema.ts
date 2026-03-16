@@ -13,8 +13,8 @@ export const tagAlias = pgTable(
     source: varchar('source', {length: 20}).notNull(),
     createdAt: timestamp('created_at', {withTimezone: true}).notNull().defaultNow(),
   },
-  (table) => [
-    index('idx_tag_alias_canonical').on(table.canonicalTagId),
-    index('idx_tag_alias_source').on(table.source),
-  ],
+  (table) => ({
+    canonicalIdx: index('idx_tag_alias_canonical').on(table.canonicalTagId),
+    sourceIdx: index('idx_tag_alias_source').on(table.source),
+  }),
 );

@@ -118,7 +118,7 @@ export async function normalizeTags(
       const prompt = buildPrompt(canonicalTags, row.text);
       const result = await callOllama(ollamaUrl, ollamaModel, prompt);
 
-      if (result.merge) {
+      if (result.merge && result.canonical) {
         // Find the canonical tag in the DB
         const [canonicalRow] = await db
           .select({id: tag.id})
