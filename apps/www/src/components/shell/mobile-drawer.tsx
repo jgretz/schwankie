@@ -1,6 +1,6 @@
 import {useEffect, useRef} from 'react';
 import {cn} from '@www/lib/utils';
-import {TagList} from './sidebar';
+import {TagList} from './tag-list';
 import type {Tag} from './types';
 
 type MobileDrawerProps = {

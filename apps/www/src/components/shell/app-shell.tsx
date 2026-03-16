@@ -38,7 +38,7 @@ export function AppShell({
         onMenuClick={() => setDrawerOpen(true)}
       />
 
-      <div className="mx-auto flex min-h-[calc(100vh-56px)] max-w-[1200px]">
+      <div className="mx-auto flex min-h-[calc(100vh-3.5rem)] max-w-[1200px]">
         <Sidebar tags={tags} selectedTagIds={selectedTagIds} onTagToggle={onTagToggle} />
 
         <main className="min-w-0 flex-1">{children}</main>

@@ -10,11 +10,8 @@ type TopbarProps = {
   showMenuButton?: boolean;
 };
 
-// Routes that don't exist yet use string cast — will resolve when route files are added
-const navLinks: {to: string; label: string; exact: boolean}[] = [
+const navLinks: {to: '/'; label: string; exact: boolean}[] = [
   {to: '/', label: 'Feed', exact: true},
-  {to: '/queue', label: 'Queue', exact: false},
-  {to: '/about', label: 'About', exact: false},
 ];
 
 export function Topbar({
@@ -80,7 +77,7 @@ export function Topbar({
         {navLinks.map(({to, label, exact}) => (
           <Link
             key={to}
-            to={to as '/'}
+            to={to}
             className="rounded-[5px] px-3 py-1.5 text-[0.8rem] font-medium text-text-muted transition-colors hover:bg-bg-subtle hover:text-text"
             activeProps={{className: '!text-accent'}}
             activeOptions={{exact}}
