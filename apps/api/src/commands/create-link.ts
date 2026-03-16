@@ -18,23 +18,25 @@ export async function createLink(
   const normalizedTags = resolveTags(input.tags);
   const tagRecords = await upsertTags(db, normalizedTags);
 
-  const [created] = await db
-    .insert(link)
-    .values({
-      url: input.url,
-      title: input.title,
-      description: input.description,
-      imageUrl: input.imageUrl,
-      status: input.status ?? 'saved',
-    })
-    .returning();
+  return db.transaction(async (tx) => {
+    const [created] = await tx
+      .insert(link)
+      .values({
+        url: input.url,
+        title: input.title,
+        description: input.description,
+        imageUrl: input.imageUrl,
+        status: input.status ?? 'saved',
+      })
+      .returning();
 
-  if (tagRecords.length > 0) {
-    await db.insert(linkTag).values(tagRecords.map((t) => ({linkId: created!.id, tagId: t.id})));
-  }
+    if (tagRecords.length > 0) {
+      await tx.insert(linkTag).values(tagRecords.map((t) => ({linkId: created!.id, tagId: t.id})));
+    }
 
-  return {
-    ...created!,
-    tags: tagRecords.map((t) => ({id: t.id, text: t.text})),
-  };
+    return {
+      ...created!,
+      tags: tagRecords.map((t) => ({id: t.id, text: t.text})),
+    };
+  });
 }

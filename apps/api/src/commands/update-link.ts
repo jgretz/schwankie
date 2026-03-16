@@ -28,30 +28,38 @@ export async function updateLink(
     updateDate: new Date(),
   };
 
-  const [updated] = await db.update(link).set(updateValues).where(eq(link.id, id)).returning();
-
-  if (!updated) return null;
-
-  let tagRecords: Array<{id: number; text: string}> = [];
-
+  // pre-upsert tags outside transaction (idempotent, operates on tag table only)
+  let newTagRecords: Array<{id: number; text: string}> = [];
   if (rawTags !== undefined) {
-    // replace tags: delete existing, insert new
-    await db.delete(linkTag).where(eq(linkTag.linkId, id));
-
     const normalizedTags = resolveTags(rawTags);
-    tagRecords = await upsertTags(db, normalizedTags);
-
-    if (tagRecords.length > 0) {
-      await db.insert(linkTag).values(tagRecords.map((t) => ({linkId: id, tagId: t.id})));
-    }
-  } else {
-    // fetch existing tags
-    tagRecords = await db
-      .select({id: tag.id, text: tag.text})
-      .from(linkTag)
-      .innerJoin(tag, eq(linkTag.tagId, tag.id))
-      .where(eq(linkTag.linkId, id));
+    newTagRecords = await upsertTags(db, normalizedTags);
   }
 
-  return {...updated, tags: tagRecords};
+  return db.transaction(async (tx) => {
+    const [updated] = await tx.update(link).set(updateValues).where(eq(link.id, id)).returning();
+
+    if (!updated) return null;
+
+    let tagRecords: Array<{id: number; text: string}> = [];
+
+    if (rawTags !== undefined) {
+      // replace tags: delete existing, insert new
+      await tx.delete(linkTag).where(eq(linkTag.linkId, id));
+
+      if (newTagRecords.length > 0) {
+        await tx.insert(linkTag).values(newTagRecords.map((t) => ({linkId: id, tagId: t.id})));
+      }
+
+      tagRecords = newTagRecords;
+    } else {
+      // fetch existing tags
+      tagRecords = await tx
+        .select({id: tag.id, text: tag.text})
+        .from(linkTag)
+        .innerJoin(tag, eq(linkTag.tagId, tag.id))
+        .where(eq(linkTag.linkId, id));
+    }
+
+    return {...updated, tags: tagRecords};
+  });
 }
