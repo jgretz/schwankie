@@ -122,7 +122,11 @@ linksRoutes.get('/api/links', async (c) => {
 });
 
 linksRoutes.post('/api/links', auth, async (c) => {
-  const body = createLinkSchema.parse(await c.req.json());
+  const parsed = createLinkSchema.safeParse(await c.req.json());
+  if (!parsed.success) {
+    return c.json({error: 'Invalid request body', details: parsed.error.flatten()}, 400);
+  }
+  const body = parsed.data;
 
   const normalizedTags = resolveTags(body.tags);
   const tagRecords = await upsertTags(normalizedTags);
@@ -156,13 +160,21 @@ linksRoutes.patch('/api/links/:id', auth, async (c) => {
   if (Number.isNaN(id)) {
     return c.json({error: 'Invalid link ID'}, 400);
   }
-  const body = updateLinkSchema.parse(await c.req.json());
+  const parsed = updateLinkSchema.safeParse(await c.req.json());
+  if (!parsed.success) {
+    return c.json({error: 'Invalid request body', details: parsed.error.flatten()}, 400);
+  }
+  const body = parsed.data;
 
   const {tags: rawTags, ...fields} = body;
 
-  const updateValues: Record<string, unknown> = {
-    ...fields,
-    updateDate: new Date().toISOString(),
+  const updateValues = {
+    ...(fields.url !== undefined && {url: fields.url}),
+    ...(fields.title !== undefined && {title: fields.title}),
+    ...(fields.description !== undefined && {description: fields.description}),
+    ...(fields.imageUrl !== undefined && {imageUrl: fields.imageUrl}),
+    ...(fields.status !== undefined && {status: fields.status}),
+    updateDate: new Date(),
   };
 
   const [updated] = await db.update(link).set(updateValues).where(eq(link.id, id)).returning();
