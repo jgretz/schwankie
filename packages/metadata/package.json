@@ -1,0 +1,16 @@
+{
+  "name": "metadata",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "metascraper": "^5",
+    "metascraper-title": "^5",
+    "metascraper-description": "^5",
+    "metascraper-image": "^5",
+    "metascraper-author": "^5",
+    "metascraper-url": "^5"
+  }
+}

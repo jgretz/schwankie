@@ -5,6 +5,7 @@ import {parseEnv} from 'env';
 import {authMiddleware} from './middleware/auth';
 import {healthRoutes} from './routes/health';
 import {helloRoutes} from './routes/hello';
+import {metadataRoutes} from './routes/metadata';
 
 const envSchema = z.object({
   PORT: z.string().default('3001'),
@@ -22,6 +23,7 @@ app.route('/', healthRoutes);
 // protected
 app.use('/api/*', authMiddleware());
 app.route('/api/hello', helloRoutes);
+app.route('/api/metadata', metadataRoutes);
 
 app.onError((err, c) => {
   const message = err instanceof Error ? err.message : 'Internal server error';
