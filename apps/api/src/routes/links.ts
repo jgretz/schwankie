@@ -32,11 +32,17 @@ const updateLinkSchema = z.object({
 
 export const linksRoutes = new Hono();
 
-// GET is public — no auth
+const statusParamSchema = z.enum(['saved', 'queued', 'archived']).optional();
+const auth = authMiddleware();
+
 linksRoutes.get('/api/links', async (c) => {
   const limitParam = Math.min(Number(c.req.query('limit') || '50'), 100);
   const offset = Number(c.req.query('offset') || '0');
-  const status = c.req.query('status') as 'saved' | 'queued' | 'archived' | undefined;
+  const statusResult = statusParamSchema.safeParse(c.req.query('status') || undefined);
+  if (!statusResult.success) {
+    return c.json({error: 'Invalid status parameter. Must be: saved, queued, or archived'}, 400);
+  }
+  const status = statusResult.data;
   const tagsParam = c.req.query('tags');
   const q = c.req.query('q');
 
@@ -110,16 +116,12 @@ linksRoutes.get('/api/links', async (c) => {
   return c.json({
     items: itemsWithTags,
     hasMore: offset + limitParam < total,
-    nextOffset: offset + limitParam,
+    nextOffset: Math.min(offset + limitParam, total),
     total,
   });
 });
 
-// POST/PATCH/DELETE require auth
-linksRoutes.use('/api/links/*', authMiddleware());
-linksRoutes.use('/api/links', authMiddleware());
-
-linksRoutes.post('/api/links', async (c) => {
+linksRoutes.post('/api/links', auth, async (c) => {
   const body = createLinkSchema.parse(await c.req.json());
 
   const normalizedTags = resolveTags(body.tags);
@@ -149,8 +151,11 @@ linksRoutes.post('/api/links', async (c) => {
   );
 });
 
-linksRoutes.patch('/api/links/:id', async (c) => {
+linksRoutes.patch('/api/links/:id', auth, async (c) => {
   const id = Number(c.req.param('id'));
+  if (Number.isNaN(id)) {
+    return c.json({error: 'Invalid link ID'}, 400);
+  }
   const body = updateLinkSchema.parse(await c.req.json());
 
   const {tags: rawTags, ...fields} = body;
@@ -191,8 +196,11 @@ linksRoutes.patch('/api/links/:id', async (c) => {
   return c.json({...updated, tags: tagRecords});
 });
 
-linksRoutes.delete('/api/links/:id', async (c) => {
+linksRoutes.delete('/api/links/:id', auth, async (c) => {
   const id = Number(c.req.param('id'));
+  if (Number.isNaN(id)) {
+    return c.json({error: 'Invalid link ID'}, 400);
+  }
 
   const [deleted] = await db.delete(link).where(eq(link.id, id)).returning();
 
@@ -214,15 +222,11 @@ function resolveTags(rawTags: string[] | undefined): string[] {
 async function upsertTags(tags: string[]): Promise<Array<{id: number; text: string}>> {
   if (tags.length === 0) return [];
 
-  const results: Array<{id: number; text: string}> = [];
+  await db
+    .insert(tag)
+    .values(tags.map((text) => ({text})))
+    .onConflictDoNothing();
+  const rows = await db.select().from(tag).where(inArray(tag.text, tags));
 
-  for (const text of tags) {
-    await db.insert(tag).values({text}).onConflictDoNothing();
-    const [row] = await db.select().from(tag).where(eq(tag.text, text));
-    if (row) {
-      results.push({id: row.id, text: row.text});
-    }
-  }
-
-  return results;
+  return rows.map((r) => ({id: r.id, text: r.text}));
 }
