@@ -9,22 +9,20 @@ const searchSchema = z.object({
   q: z.string().optional().catch(undefined),
 });
 
-export type FeedSearch = z.infer<typeof searchSchema>;
-
-export const Route = createFileRoute('/')({
+export const Route = createFileRoute('/queue')({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
-      {title: 'schwankie'},
-      {name: 'description', content: 'Your second memory — a well-indexed collection of links.'},
+      {title: 'Queue — schwankie'},
+      {name: 'description', content: 'Queued links — your second memory.'},
     ],
   }),
-  component: IndexPage,
+  component: QueuePage,
 });
 
-function IndexPage() {
+function QueuePage() {
   const {tags, q} = Route.useSearch();
-  const navigate = useNavigate({from: '/'});
+  const navigate = useNavigate({from: '/queue'});
 
   const selectedTagIds = useMemo(() => parseTagIds(tags), [tags]);
 
@@ -51,8 +49,8 @@ function IndexPage() {
 
   return (
     <FeedPage
-      status="saved"
-      title="Recent links"
+      status="queued"
+      title="Queue"
       tags={tags}
       q={q}
       onTagClick={handleTagClick}

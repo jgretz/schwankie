@@ -1,6 +1,6 @@
 const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3001';
 
-export type LinkStatus = 'saved' | 'archived';
+export type LinkStatus = 'queued' | 'saved' | 'archived';
 
 export type LinkData = {
   id: number;

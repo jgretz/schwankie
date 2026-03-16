@@ -10,8 +10,9 @@ type TopbarProps = {
   showMenuButton?: boolean;
 };
 
-const navLinks: {to: '/'; label: string; exact: boolean}[] = [
+const navLinks: {to: '/' | '/queue'; label: string; exact: boolean}[] = [
   {to: '/', label: 'Feed', exact: true},
+  {to: '/queue', label: 'Queue', exact: true},
 ];
 
 export function Topbar({
