@@ -50,3 +50,5 @@ CLAUDE-WORKING.md
 .claude/rules/worksite-docs.md
 .claude/commands/commit.md
 .claude/reviews/
+.claude/rules/worksite-reviewer.md
+.claude/rules/worksite-planner.md
