@@ -79,7 +79,7 @@ Audit trail for semantic merges:
 CREATE TABLE tag_alias (
   id SERIAL PRIMARY KEY,
   alias_text VARCHAR(200) NOT NULL,
-  canonical_tag_id INTEGER NOT NULL REFERENCES tag(id) ON DELETE CASCADE,
+  canonical_tag_id INTEGER NOT NULL REFERENCES tag(id) ON DELETE RESTRICT,
   source VARCHAR(20) NOT NULL CHECK (source IN ('ollama', 'manual')),
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
