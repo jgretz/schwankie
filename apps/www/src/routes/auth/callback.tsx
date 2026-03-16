@@ -15,8 +15,7 @@ async function processOAuthCode(code: string): Promise<{error: string | null}> {
 
     await createSession(userInfo.email);
     return {error: null};
-  } catch (err) {
-    console.error('OAuth callback error:', err);
+  } catch {
     return {error: 'auth_failed'};
   }
 }

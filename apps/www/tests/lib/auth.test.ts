@@ -1,4 +1,4 @@
-import {describe, expect, it, mock} from 'bun:test';
+import {beforeAll, describe, expect, it, mock} from 'bun:test';
 
 mock.module('../../src/lib/env', () => ({
   env: {
@@ -11,11 +11,12 @@ mock.module('../../src/lib/env', () => ({
   },
 }));
 
-type AuthModule = typeof import('../../src/lib/auth');
-let isAllowedEmail: AuthModule['isAllowedEmail'];
+let isAllowedEmail: (email: string) => boolean;
 
-const mod = await import('../../src/lib/auth');
-isAllowedEmail = mod.isAllowedEmail;
+beforeAll(async function () {
+  const mod = await import('../../src/lib/auth');
+  isAllowedEmail = mod.isAllowedEmail;
+});
 
 describe('isAllowedEmail', function () {
   it('should return true for exact match', function () {

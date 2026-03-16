@@ -1,4 +1,4 @@
-import {afterEach, beforeEach, describe, expect, it, mock} from 'bun:test';
+import {beforeAll, beforeEach, describe, expect, it, mock} from 'bun:test';
 
 const SESSION_SECRET = 'a'.repeat(32);
 const cookies: Record<string, string> = {};
@@ -25,15 +25,16 @@ mock.module('../../src/lib/env', () => ({
   },
 }));
 
-type SessionModule = typeof import('../../src/lib/session');
-let createSession: SessionModule['createSession'];
-let getSession: SessionModule['getSession'];
-let destroySession: SessionModule['destroySession'];
+let createSession: (email: string) => Promise<void>;
+let getSession: () => Promise<{email: string; authenticated: boolean} | null>;
+let destroySession: () => Promise<void>;
 
-const mod = await import('../../src/lib/session');
-createSession = mod.createSession;
-getSession = mod.getSession;
-destroySession = mod.destroySession;
+beforeAll(async function () {
+  const mod = await import('../../src/lib/session');
+  createSession = mod.createSession;
+  getSession = mod.getSession;
+  destroySession = mod.destroySession;
+});
 
 beforeEach(function () {
   for (const key of Object.keys(cookies)) {

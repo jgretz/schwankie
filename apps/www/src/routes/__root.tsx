@@ -4,7 +4,7 @@ import {AppShell} from '@www/components/shell/app-shell';
 import '../globals.css';
 import {destroySession, getAuthState} from '../lib/session';
 
-const logout = createServerFn({method: 'POST'}).handler(async () => {
+export const logout = createServerFn({method: 'POST'}).handler(async () => {
   await destroySession();
   throw new Response(null, {status: 302, headers: {Location: '/'}});
 });
