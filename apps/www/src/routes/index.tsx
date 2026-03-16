@@ -31,11 +31,12 @@ function FeedPage() {
     [tagsParam],
   );
 
-  const {data, hasNextPage, fetchNextPage, isFetchingNextPage, isLoading} = useInfiniteLinks({
-    status: 'saved',
-    tags: tagsParam,
-    q,
-  });
+  const {data, hasNextPage, fetchNextPage, isFetchingNextPage, isLoading, isError} =
+    useInfiniteLinks({
+      status: 'saved',
+      tags: tagsParam,
+      q,
+    });
 
   const {data: allTags} = useTags('saved');
 
@@ -90,6 +91,16 @@ function FeedPage() {
         .filter((t): t is {id: number; text: string; count: number} => t != null),
     [selectedTagIds, allTags],
   );
+
+  if (isError) {
+    return (
+      <div className="px-6 py-10">
+        <p className="py-12 text-center font-sans text-[0.9rem] text-red-600">
+          Failed to load links. Please try again later.
+        </p>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (

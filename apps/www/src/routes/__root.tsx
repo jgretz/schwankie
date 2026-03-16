@@ -101,6 +101,12 @@ function ShellWithData() {
     setSearchValue(qParam);
   }, [qParam]);
 
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, []);
+
   const handleSearchChange = useCallback(
     (value: string) => {
       setSearchValue(value);

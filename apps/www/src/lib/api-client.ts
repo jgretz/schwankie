@@ -1,6 +1,6 @@
 const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3001';
 
-export type LinkItem = {
+export type LinkData = {
   id: number;
   url: string;
   title: string;
@@ -13,7 +13,7 @@ export type LinkItem = {
 };
 
 export type LinksResponse = {
-  items: LinkItem[];
+  items: LinkData[];
   hasMore: boolean;
   nextOffset: number;
   total: number;
