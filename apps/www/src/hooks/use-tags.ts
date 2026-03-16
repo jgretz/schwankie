@@ -1,7 +1,6 @@
 import {useQuery} from '@tanstack/react-query';
+import type {LinkStatus} from '@www/lib/api-client';
 import {fetchTags} from '@www/lib/api-client';
-
-type LinkStatus = 'saved' | 'archived';
 
 export function useTags(status: LinkStatus) {
   return useQuery({
