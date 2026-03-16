@@ -9,8 +9,11 @@ import {
 } from '@tanstack/react-router';
 import {createServerFn} from '@tanstack/react-start';
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {LinkModal} from '@www/components/modal/link-modal';
+import {LinkModalProvider} from '@www/components/modal/link-modal-context';
 import {AppShell} from '@www/components/shell/app-shell';
 import {useTags} from '@www/hooks/use-tags';
+import type {LinkData} from '@www/lib/api-client';
 import {parseTagIds} from '@www/lib/parse-tag-ids';
 import type {FeedSearch} from '@www/routes/index';
 import '../globals.css';
@@ -53,6 +56,11 @@ function NotFound() {
   );
 }
 
+type ModalState =
+  | {open: false}
+  | {open: true; mode: 'add'}
+  | {open: true; mode: 'edit'; link: LinkData};
+
 function RootComponent() {
   const [queryClient] = useState(
     () =>
@@ -83,6 +91,8 @@ function RootComponent() {
 
 function ShellWithData() {
   const navigate = useNavigate();
+  const {auth} = Route.useRouteContext();
+  const isAuthenticated = auth.authenticated;
 
   const search = useSearch({strict: false}) as FeedSearch;
   const tagsParam = search.tags;
@@ -134,17 +144,40 @@ function ShellWithData() {
     [selectedTagIds, navigate, search.q],
   );
 
+  // Modal state
+  const [modal, setModal] = useState<ModalState>({open: false});
+
+  const openAddModal = useCallback(() => setModal({open: true, mode: 'add'}), []);
+  const openEditModal = useCallback(
+    (link: LinkData) => setModal({open: true, mode: 'edit', link}),
+    [],
+  );
+  const closeModal = useCallback(() => setModal({open: false}), []);
+
+  const modalContext = useMemo(() => ({openEdit: openEditModal}), [openEditModal]);
+
   return (
-    <AppShell
-      tags={tags ?? []}
-      selectedTagIds={selectedTagIds}
-      onTagToggle={handleTagToggle}
-      searchValue={searchValue}
-      onSearchChange={handleSearchChange}
-      showAddButton={false}
-      onAddClick={() => {}}
-    >
-      <Outlet />
-    </AppShell>
+    <LinkModalProvider value={modalContext}>
+      <AppShell
+        tags={tags ?? []}
+        selectedTagIds={selectedTagIds}
+        onTagToggle={handleTagToggle}
+        searchValue={searchValue}
+        onSearchChange={handleSearchChange}
+        showAddButton={isAuthenticated}
+        onAddClick={openAddModal}
+      >
+        <Outlet />
+      </AppShell>
+
+      {isAuthenticated && (
+        <LinkModal
+          mode={modal.open ? modal.mode : 'add'}
+          isOpen={modal.open}
+          onClose={closeModal}
+          editLink={modal.open && modal.mode === 'edit' ? modal.link : undefined}
+        />
+      )}
+    </LinkModalProvider>
   );
 }

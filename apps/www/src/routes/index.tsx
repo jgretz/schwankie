@@ -3,6 +3,7 @@ import {useCallback, useEffect, useMemo, useRef} from 'react';
 import {z} from 'zod';
 import {FilterStrip} from '@www/components/feed/filter-strip';
 import {LinkItem} from '@www/components/feed/link-item';
+import {useLinkModal} from '@www/components/modal/link-modal-context';
 import {useInfiniteLinks} from '@www/hooks/use-infinite-links';
 import {useTags} from '@www/hooks/use-tags';
 import {parseTagIds} from '@www/lib/parse-tag-ids';
@@ -28,6 +29,9 @@ export const Route = createFileRoute('/')({
 function FeedPage() {
   const {tags: tagsParam, q} = Route.useSearch();
   const navigate = useNavigate({from: '/'});
+  const {auth} = Route.useRouteContext();
+  const isAuthenticated = auth.authenticated;
+  const {openEdit} = useLinkModal();
 
   const selectedTagIds = useMemo(() => parseTagIds(tagsParam), [tagsParam]);
 
@@ -92,6 +96,14 @@ function FeedPage() {
     [selectedTagIds, allTags],
   );
 
+  const handleEditClick = useCallback(
+    (linkId: number) => {
+      const link = items.find((item) => item.id === linkId);
+      if (link) openEdit(link);
+    },
+    [items, openEdit],
+  );
+
   if (isError) {
     return (
       <div className="px-6 py-10">
@@ -146,8 +158,8 @@ function FeedPage() {
               tags={item.tags}
               activeTagIds={selectedTagIds}
               onTagClick={handleTagClick}
-              showEditButton={false}
-              onEditClick={() => {}}
+              showEditButton={isAuthenticated}
+              onEditClick={handleEditClick}
             />
           ))}
         </div>
