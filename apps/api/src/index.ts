@@ -5,6 +5,7 @@ import {parseEnv} from 'env';
 import {authMiddleware} from './middleware/auth';
 import {healthRoutes} from './routes/health';
 import {helloRoutes} from './routes/hello';
+import {linksRoutes} from './routes/links';
 
 const envSchema = z.object({
   PORT: z.string().default('3001'),
@@ -18,6 +19,9 @@ app.use('/*', cors());
 
 // public
 app.route('/', healthRoutes);
+
+// links — handles its own auth (GET is public, mutations are protected)
+app.route('/', linksRoutes);
 
 // protected
 app.use('/api/*', authMiddleware());
