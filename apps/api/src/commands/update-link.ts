@@ -28,13 +28,6 @@ export async function updateLink(
     updateDate: new Date(),
   };
 
-  // pre-upsert tags outside transaction (idempotent, operates on tag table only)
-  let newTagRecords: Array<{id: number; text: string}> = [];
-  if (rawTags !== undefined) {
-    const normalizedTags = resolveTags(rawTags);
-    newTagRecords = await upsertTags(db, normalizedTags);
-  }
-
   return db.transaction(async (tx) => {
     const [updated] = await tx.update(link).set(updateValues).where(eq(link.id, id)).returning();
 
@@ -43,14 +36,15 @@ export async function updateLink(
     let tagRecords: Array<{id: number; text: string}> = [];
 
     if (rawTags !== undefined) {
+      const normalizedTags = resolveTags(rawTags);
+      tagRecords = await upsertTags(tx, normalizedTags);
+
       // replace tags: delete existing, insert new
       await tx.delete(linkTag).where(eq(linkTag.linkId, id));
 
-      if (newTagRecords.length > 0) {
-        await tx.insert(linkTag).values(newTagRecords.map((t) => ({linkId: id, tagId: t.id})));
+      if (tagRecords.length > 0) {
+        await tx.insert(linkTag).values(tagRecords.map((t) => ({linkId: id, tagId: t.id})));
       }
-
-      tagRecords = newTagRecords;
     } else {
       // fetch existing tags
       tagRecords = await tx

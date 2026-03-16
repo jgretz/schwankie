@@ -3,6 +3,9 @@ import {tag} from 'database';
 import {inArray} from 'drizzle-orm';
 import {normalizeTag} from './normalize-tag';
 
+// Structural type covering both Database and PgTransaction — both support insert/select
+type DbLike = Pick<Database, 'insert' | 'select'>;
+
 export function resolveTags(rawTags: string[] | undefined): string[] {
   if (!rawTags) return [];
   const normalized = rawTags.map(normalizeTag).filter((t): t is string => t !== null);
@@ -10,7 +13,7 @@ export function resolveTags(rawTags: string[] | undefined): string[] {
 }
 
 export async function upsertTags(
-  db: Database,
+  db: DbLike,
   tags: string[],
 ): Promise<Array<{id: number; text: string}>> {
   if (tags.length === 0) return [];

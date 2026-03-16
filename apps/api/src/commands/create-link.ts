@@ -16,9 +16,10 @@ export async function createLink(
   input: CreateLinkInput,
 ): Promise<typeof link.$inferSelect & {tags: Array<{id: number; text: string}>}> {
   const normalizedTags = resolveTags(input.tags);
-  const tagRecords = await upsertTags(db, normalizedTags);
 
   return db.transaction(async (tx) => {
+    const tagRecords = await upsertTags(tx, normalizedTags);
+
     const [created] = await tx
       .insert(link)
       .values({

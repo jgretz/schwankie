@@ -10,15 +10,7 @@ export type ListLinksParams = {
   q?: string;
 };
 
-type LinkWithTags = {
-  id: number;
-  url: string;
-  title: string;
-  description: string | null;
-  imageUrl: string | null;
-  status: string;
-  createDate: Date;
-  updateDate: Date;
+type LinkWithTags = typeof link.$inferSelect & {
   tags: Array<{id: number; text: string}>;
 };
 
