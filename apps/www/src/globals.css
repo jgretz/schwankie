@@ -33,7 +33,6 @@
     --secondary-foreground: #2c2118;
     --muted: #f0e9df;
     --muted-foreground: #5c4a38;
-    --accent-shadcn: #f0e9df;
     --accent-foreground: #2c2118;
     --destructive: #dc2626;
     --destructive-foreground: #ffffff;
@@ -73,7 +72,6 @@
       --secondary-foreground: #e8ddd3;
       --muted: #241a13;
       --muted-foreground: #c4aa92;
-      --accent-shadcn: #241a13;
       --accent-foreground: #e8ddd3;
       --destructive: #dc2626;
       --destructive-foreground: #ffffff;
@@ -82,9 +80,7 @@
       --radius: 0.5rem;
     }
   }
-}
 
-@layer base {
   * {
     border-color: var(--border);
   }
