@@ -16,21 +16,26 @@ type SessionPayload = {
   sig: string;
 };
 
-async function sign(value: string): Promise<string> {
-  const key = await crypto.subtle.importKey(
+async function importKey(usage: 'sign' | 'verify'): Promise<CryptoKey> {
+  return crypto.subtle.importKey(
     'raw',
     new TextEncoder().encode(env.SESSION_SECRET),
     {name: 'HMAC', hash: 'SHA-256'},
     false,
-    ['sign'],
+    [usage],
   );
+}
+
+async function sign(value: string): Promise<string> {
+  const key = await importKey('sign');
   const signature = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(value));
   return btoa(String.fromCharCode(...new Uint8Array(signature)));
 }
 
 async function verify(value: string, signature: string): Promise<boolean> {
-  const expected = await sign(value);
-  return expected === signature;
+  const key = await importKey('verify');
+  const sigBytes = Uint8Array.from(atob(signature), (c) => c.charCodeAt(0));
+  return crypto.subtle.verify('HMAC', key, sigBytes, new TextEncoder().encode(value));
 }
 
 export async function createSession(email: string): Promise<void> {
