@@ -5,11 +5,14 @@ import {FilterStrip} from '@www/components/feed/filter-strip';
 import {LinkItem} from '@www/components/feed/link-item';
 import {useInfiniteLinks} from '@www/hooks/use-infinite-links';
 import {useTags} from '@www/hooks/use-tags';
+import {parseTagIds} from '@www/lib/parse-tag-ids';
 
 const searchSchema = z.object({
   tags: z.string().optional().catch(undefined),
   q: z.string().optional().catch(undefined),
 });
+
+export type FeedSearch = z.infer<typeof searchSchema>;
 
 export const Route = createFileRoute('/')({
   validateSearch: searchSchema,
@@ -26,10 +29,7 @@ function FeedPage() {
   const {tags: tagsParam, q} = Route.useSearch();
   const navigate = useNavigate({from: '/'});
 
-  const selectedTagIds = useMemo(
-    () => (tagsParam ? tagsParam.split(',').map(Number).filter(Boolean) : []),
-    [tagsParam],
-  );
+  const selectedTagIds = useMemo(() => parseTagIds(tagsParam), [tagsParam]);
 
   const {data, hasNextPage, fetchNextPage, isFetchingNextPage, isLoading, isError} =
     useInfiniteLinks({

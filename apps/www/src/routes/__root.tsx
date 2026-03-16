@@ -11,6 +11,8 @@ import {createServerFn} from '@tanstack/react-start';
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {AppShell} from '@www/components/shell/app-shell';
 import {useTags} from '@www/hooks/use-tags';
+import {parseTagIds} from '@www/lib/parse-tag-ids';
+import type {FeedSearch} from '@www/routes/index';
 import '../globals.css';
 import {destroySession, getAuthState} from '../lib/session';
 
@@ -82,14 +84,11 @@ function RootComponent() {
 function ShellWithData() {
   const navigate = useNavigate();
 
-  const search = useSearch({strict: false}) as {tags?: string; q?: string};
+  const search = useSearch({strict: false}) as FeedSearch;
   const tagsParam = search.tags;
   const qParam = search.q ?? '';
 
-  const selectedTagIds = useMemo(
-    () => (tagsParam ? tagsParam.split(',').map(Number).filter(Boolean) : []),
-    [tagsParam],
-  );
+  const selectedTagIds = useMemo(() => parseTagIds(tagsParam), [tagsParam]);
 
   const {data: tags} = useTags('saved');
 
