@@ -17,7 +17,7 @@
     "@tanstack/react-query": "^5.90.21",
     "@tanstack/react-router": "1.140.0",
     "@tanstack/react-start": "1.140.0",
-    "@vitejs/plugin-react": "^4.7.0",
+    "@vitejs/plugin-react": "^6.0.1",
     "class-variance-authority": "0.7.0",
     "clsx": "2.1.0",
     "env": "workspace:*",
@@ -38,7 +38,6 @@
     "postcss": "8.4.35",
     "tailwindcss": "3.4.1",
     "typescript": "5.3.3",
-    "vite": "^6.0.0",
-    "vite-tsconfig-paths": "^5.1.4"
+    "vite": "^8.0.0"
   }
 }
