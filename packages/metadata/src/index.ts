@@ -31,6 +31,11 @@ export async function extractMetadata(url: string): Promise<LinkMetadata> {
       signal: AbortSignal.timeout(10_000),
     });
 
+    if (!response.ok) {
+      console.warn(`[metadata] fetch failed: ${response.status} ${response.statusText} for ${url}`);
+      return fallback;
+    }
+
     const html = await response.text();
     const data = await scraper({html, url});
 
@@ -41,7 +46,8 @@ export async function extractMetadata(url: string): Promise<LinkMetadata> {
       imageUrl: data.image ?? null,
       tags: data.author ? [data.author] : [],
     };
-  } catch {
+  } catch (error) {
+    console.warn(`[metadata] extraction error for ${url}:`, error);
     return fallback;
   }
 }

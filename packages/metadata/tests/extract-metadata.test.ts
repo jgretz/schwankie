@@ -67,6 +67,26 @@ describe('extractMetadata', function () {
     expect(result.tags).toEqual(['Jane Doe']);
   });
 
+  it('should return fallback when response is not ok', async function () {
+    global.fetch = mock(
+      async () =>
+        ({
+          ok: false,
+          status: 404,
+          statusText: 'Not Found',
+          text: async () => '<html><title>Page Not Found</title></html>',
+        }) as unknown as Response,
+    ) as unknown as typeof fetch;
+
+    const result = await callExtract('https://example.com/missing');
+
+    expect(result.url).toBe('https://example.com/missing');
+    expect(result.title).toBe('https://example.com/missing');
+    expect(result.description).toBeNull();
+    expect(result.imageUrl).toBeNull();
+    expect(result.tags).toEqual([]);
+  });
+
   it('should return fallback when fetch fails', async function () {
     global.fetch = mock(async () => {
       throw new Error('Network error');
