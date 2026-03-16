@@ -3,7 +3,6 @@ import metascraperAuthor from 'metascraper-author';
 import metascraperDescription from 'metascraper-description';
 import metascraperImage from 'metascraper-image';
 import metascraperTitle from 'metascraper-title';
-import metascraperUrl from 'metascraper-url';
 
 export type LinkMetadata = {
   url: string;
@@ -18,7 +17,6 @@ const scraper = metascraper([
   metascraperDescription(),
   metascraperImage(),
   metascraperTitle(),
-  metascraperUrl(),
 ]);
 
 export async function extractMetadata(url: string): Promise<LinkMetadata> {

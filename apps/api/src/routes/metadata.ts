@@ -9,7 +9,13 @@ const fetchBodySchema = z.object({
 export const metadataRoutes = new Hono();
 
 metadataRoutes.post('/fetch', async (c) => {
-  const body = await c.req.json();
+  let body: unknown;
+  try {
+    body = await c.req.json();
+  } catch {
+    return c.json({error: 'Invalid JSON body'}, 400);
+  }
+
   const parsed = fetchBodySchema.safeParse(body);
 
   if (!parsed.success) {
