@@ -1,4 +1,4 @@
-import {env} from './env';
+import {getEnv} from './env';
 
 const GOOGLE_AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
@@ -21,8 +21,8 @@ type GoogleUserInfo = {
 
 export function buildGoogleAuthUrl(): string {
   const params = new URLSearchParams({
-    client_id: env.GOOGLE_CLIENT_ID,
-    redirect_uri: env.GOOGLE_CALLBACK_URL,
+    client_id: getEnv().GOOGLE_CLIENT_ID,
+    redirect_uri: getEnv().GOOGLE_CALLBACK_URL,
     response_type: 'code',
     scope: SCOPES,
     access_type: 'offline',
@@ -38,9 +38,9 @@ export async function exchangeCodeForTokens(code: string): Promise<GoogleTokenRe
     headers: {'Content-Type': 'application/x-www-form-urlencoded'},
     body: new URLSearchParams({
       code,
-      client_id: env.GOOGLE_CLIENT_ID,
-      client_secret: env.GOOGLE_CLIENT_SECRET,
-      redirect_uri: env.GOOGLE_CALLBACK_URL,
+      client_id: getEnv().GOOGLE_CLIENT_ID,
+      client_secret: getEnv().GOOGLE_CLIENT_SECRET,
+      redirect_uri: getEnv().GOOGLE_CALLBACK_URL,
       grant_type: 'authorization_code',
     }),
   });
@@ -67,5 +67,5 @@ export async function fetchGoogleUserInfo(accessToken: string): Promise<GoogleUs
 }
 
 export function isAllowedEmail(email: string): boolean {
-  return email.toLowerCase() === env.ALLOWED_EMAIL.toLowerCase();
+  return email.toLowerCase() === getEnv().ALLOWED_EMAIL.toLowerCase();
 }

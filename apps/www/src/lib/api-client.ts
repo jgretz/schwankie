@@ -1,6 +1,6 @@
 const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3001';
 
-export type LinkStatus = 'saved' | 'archived';
+export type LinkStatus = 'queued' | 'saved' | 'archived';
 
 export type LinkData = {
   id: number;
@@ -25,38 +25,11 @@ export type TagsResponse = {
   tags: Array<{id: number; text: string; count: number}>;
 };
 
-export type MetadataResponse = {
-  url: string;
-  title: string;
-  description: string | null;
-  imageUrl: string | null;
-  tags: string[];
-};
-
-export type CreateLinkInput = {
-  url: string;
-  title: string;
-  description?: string;
-  imageUrl?: string;
-  status?: 'saved' | 'queued';
-  tags?: string[];
-};
-
-export type UpdateLinkInput = {
-  url?: string;
-  title?: string;
-  description?: string;
-  imageUrl?: string;
-  status?: 'saved' | 'queued' | 'archived';
-  tags?: string[];
-};
-
-async function apiFetch<T>(path: string, options?: RequestInit, authToken?: string): Promise<T> {
+async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
-      ...(authToken ? {Authorization: `Bearer ${authToken}`} : {}),
       ...options?.headers,
     },
   });
@@ -66,8 +39,7 @@ async function apiFetch<T>(path: string, options?: RequestInit, authToken?: stri
     throw new Error(`API error: ${res.status} ${res.statusText} — ${body}`);
   }
 
-  const text = await res.text();
-  return text ? JSON.parse(text) : (undefined as T);
+  return res.json();
 }
 
 export function fetchLinks(params: {
@@ -94,31 +66,4 @@ export function fetchTags(params: {status?: LinkStatus}): Promise<TagsResponse> 
 
   const qs = search.toString();
   return apiFetch<TagsResponse>(`/api/tags${qs ? `?${qs}` : ''}`);
-}
-
-export function fetchMetadata(url: string): Promise<MetadataResponse> {
-  return apiFetch<MetadataResponse>('/api/metadata/fetch', {
-    method: 'POST',
-    body: JSON.stringify({url}),
-  });
-}
-
-export function createLink(authToken: string, input: CreateLinkInput): Promise<LinkData> {
-  return apiFetch<LinkData>('/api/links', {
-    method: 'POST',
-    body: JSON.stringify(input),
-  }, authToken);
-}
-
-export function updateLink(authToken: string, id: number, input: UpdateLinkInput): Promise<LinkData> {
-  return apiFetch<LinkData>(`/api/links/${id}`, {
-    method: 'PATCH',
-    body: JSON.stringify(input),
-  }, authToken);
-}
-
-export function deleteLink(authToken: string, id: number): Promise<{deleted: boolean}> {
-  return apiFetch<{deleted: boolean}>(`/api/links/${id}`, {
-    method: 'DELETE',
-  }, authToken);
 }

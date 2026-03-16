@@ -1,6 +1,6 @@
 import {createServerFn} from '@tanstack/react-start';
 import {getCookie, setCookie} from '@tanstack/react-start/server';
-import {env} from './env';
+import {getEnv} from './env';
 
 const SESSION_COOKIE = 'schwankie_session';
 const MAX_AGE = 60 * 60 * 24 * 7; // 7 days
@@ -19,7 +19,7 @@ type SessionPayload = {
 async function importKey(usage: 'sign' | 'verify'): Promise<CryptoKey> {
   return crypto.subtle.importKey(
     'raw',
-    new TextEncoder().encode(env.SESSION_SECRET),
+    new TextEncoder().encode(getEnv().SESSION_SECRET),
     {name: 'HMAC', hash: 'SHA-256'},
     false,
     [usage],

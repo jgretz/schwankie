@@ -10,4 +10,11 @@ const envSchema = z.object({
   API_KEY: z.string(),
 });
 
-export const env = parseEnv(envSchema);
+let cached: z.infer<typeof envSchema> | null = null;
+
+export function getEnv() {
+  if (!cached) {
+    cached = parseEnv(envSchema);
+  }
+  return cached;
+}

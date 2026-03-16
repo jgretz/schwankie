@@ -48,6 +48,7 @@ export function LinkModal({mode, isOpen, onClose, editLink}: LinkModalProps) {
   const [saving, setSaving] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -69,6 +70,7 @@ export function LinkModal({mode, isOpen, onClose, editLink}: LinkModalProps) {
     setDeleteConfirm(false);
     setSaving(false);
     setDeleting(false);
+    setError(null);
   }, [isOpen, mode, editLink]);
 
   const handleFetchMetadata = useCallback(async () => {
@@ -80,7 +82,8 @@ export function LinkModal({mode, isOpen, onClose, editLink}: LinkModalProps) {
       setDescription(metadata.description ?? '');
       setTags(metadata.tags ?? []);
       setStage('form');
-    } catch {
+    } catch (error) {
+      console.error('[LinkModal] Failed to fetch metadata:', error);
       setStage('form');
     }
   }, [url]);
@@ -115,7 +118,8 @@ export function LinkModal({mode, isOpen, onClose, editLink}: LinkModalProps) {
       queryClient.invalidateQueries({queryKey: ['tags']});
       onClose();
     } catch (error) {
-      console.error('Failed to save link:', error);
+      console.error('[LinkModal] Failed to save link:', error);
+      setError('Failed to save link. Please try again.');
       setSaving(false);
     }
   }, [url, title, description, status, tags, mode, editLink, queryClient, onClose]);
@@ -129,7 +133,8 @@ export function LinkModal({mode, isOpen, onClose, editLink}: LinkModalProps) {
       queryClient.invalidateQueries({queryKey: ['tags']});
       onClose();
     } catch (error) {
-      console.error('Failed to delete link:', error);
+      console.error('[LinkModal] Failed to delete link:', error);
+      setError('Failed to delete link. Please try again.');
       setDeleting(false);
     }
   }, [editLink, queryClient, onClose]);
@@ -185,6 +190,11 @@ export function LinkModal({mode, isOpen, onClose, editLink}: LinkModalProps) {
 
         {stage === 'form' && (
           <>
+            {error && (
+              <p className="rounded-md bg-destructive/10 px-3 py-2 font-sans text-[0.82rem] text-destructive">
+                {error}
+              </p>
+            )}
             <div className="space-y-4">
               <StatusToggle value={status} onChange={setStatus} />
 
