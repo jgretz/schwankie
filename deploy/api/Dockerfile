@@ -11,7 +11,7 @@ RUN apt-get update -qq && \
 
 FROM base AS build
 
-COPY --link package.json tsconfig.json ./
+COPY --link bun.lock package.json tsconfig.json ./
 COPY --link packages ./packages
 COPY --link apps/api ./apps/api
 
@@ -23,6 +23,7 @@ RUN bun install
 FROM base
 
 COPY --from=build /app/package.json /app/package.json
+COPY --from=build /app/tsconfig.json /app/tsconfig.json
 COPY --from=build /app/packages /app/packages
 COPY --from=build /app/node_modules /app/node_modules
 COPY --from=build /app/apps/api/node_modules /app/apps/api/node_modules

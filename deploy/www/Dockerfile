@@ -11,7 +11,7 @@ RUN apt-get update -qq && \
 
 FROM base AS build
 
-COPY --link package.json tsconfig.json ./
+COPY --link bun.lock package.json tsconfig.json ./
 COPY --link packages ./packages
 COPY --link apps/www ./apps/www
 
