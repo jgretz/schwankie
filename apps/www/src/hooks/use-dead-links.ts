@@ -1,5 +1,6 @@
 import {useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
-import {fetchDeadLinks, resetEnrichment, deleteLink} from 'client';
+import {fetchDeadLinks} from 'client';
+import {deleteLinkAction, resetEnrichmentAction} from '@www/lib/link-actions';
 import {initClient} from '@www/lib/init-client';
 
 initClient();
@@ -13,12 +14,12 @@ export function useDeadLinks() {
   });
 
   const retryMutation = useMutation({
-    mutationFn: (id: number) => resetEnrichment(id),
+    mutationFn: (id: number) => resetEnrichmentAction({data: {id}}),
     onSuccess: () => queryClient.invalidateQueries({queryKey: ['dead-links']}),
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: number) => deleteLink(id),
+    mutationFn: (id: number) => deleteLinkAction({data: {id}}),
     onSuccess: () => queryClient.invalidateQueries({queryKey: ['dead-links']}),
   });
 

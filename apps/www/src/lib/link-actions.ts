@@ -63,6 +63,17 @@ export const updateLinkAction = createServerFn({method: 'POST'})
     return updateLink(id, input);
   });
 
+const resetEnrichmentInput = z.object({id: z.number()});
+
+export const resetEnrichmentAction = createServerFn({method: 'POST'})
+  .inputValidator(resetEnrichmentInput)
+  .handler(async ({data}) => {
+    await getClient();
+    await requireAuth();
+    const {resetEnrichment} = await import('client');
+    return resetEnrichment(data.id);
+  });
+
 const deleteLinkInput = z.object({id: z.number()});
 
 export const deleteLinkAction = createServerFn({method: 'POST'})
