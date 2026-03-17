@@ -36,7 +36,7 @@ export async function normalizeTags(ollamaUrl: string, ollamaModel: string): Pro
 
   if (unprocessed.length === 0) return;
 
-  const {tags: canonicalRows} = await getCanonicalTags();
+  const {tags: canonicalRows} = await getCanonicalTags(500);
   const canonicalTags = canonicalRows.map((r) => r.text);
 
   for (const row of unprocessed) {

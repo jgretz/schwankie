@@ -24,6 +24,7 @@ export type ListTagsParams = {
   status?: 'queued' | 'saved' | 'archived' | 'trashed';
   needs_normalization?: boolean;
   canonical?: boolean;
+  limit?: number;
 };
 
 export type TagWithCount = {id: number; text: string; count: number};
