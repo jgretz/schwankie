@@ -21,6 +21,7 @@ export const Route = createFileRoute('/queue')({
 });
 
 function QueuePage() {
+  const {auth} = Route.useRouteContext();
   const {tags, q} = Route.useSearch();
   const navigate = useNavigate({from: '/queue'});
 
@@ -53,6 +54,7 @@ function QueuePage() {
       title="Queue"
       tags={tags}
       q={q}
+      isAuthenticated={auth.authenticated}
       onTagClick={handleTagClick}
       onRemoveTag={handleRemoveTag}
       onClearAll={handleClearAll}
