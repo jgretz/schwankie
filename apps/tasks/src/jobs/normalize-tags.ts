@@ -1,4 +1,4 @@
-import type {ApiClient} from '../lib/api-client';
+import {getCanonicalTags, getTagsNeedingNormalization, markTagNormalized, mergeTag} from 'client';
 
 type OllamaMerge = {merge: true; canonical: string};
 type OllamaNoMerge = {merge: false};
@@ -31,23 +31,19 @@ async function callOllama(
   return JSON.parse(body.response) as OllamaResponse;
 }
 
-export async function normalizeTags(
-  api: ApiClient,
-  ollamaUrl: string,
-  ollamaModel: string,
-): Promise<void> {
-  const {tags: unprocessed} = await api.getTagsNeedingNormalization();
+export async function normalizeTags(ollamaUrl: string, ollamaModel: string): Promise<void> {
+  const {tags: unprocessed} = await getTagsNeedingNormalization();
 
   if (unprocessed.length === 0) return;
 
-  const {tags: canonicalRows} = await api.getCanonicalTags();
+  const {tags: canonicalRows} = await getCanonicalTags();
   const canonicalTags = canonicalRows.map((r) => r.text);
 
   for (const row of unprocessed) {
     try {
       // No canonical tags yet — just mark as processed
       if (canonicalTags.length === 0) {
-        await api.markTagNormalized(row.id);
+        await markTagNormalized(row.id);
         canonicalTags.push(row.text);
         canonicalRows.push(row);
         console.log(`[normalize] tag "${row.text}": first canonical`);
@@ -61,10 +57,10 @@ export async function normalizeTags(
         const canonicalRow = canonicalRows.find((r) => r.text === result.canonical);
 
         if (canonicalRow) {
-          await api.mergeTag(row.id, canonicalRow.id);
+          await mergeTag(row.id, canonicalRow.id);
           console.log(`[normalize] tag "${row.text}": merged into "${result.canonical}"`);
         } else {
-          await api.markTagNormalized(row.id);
+          await markTagNormalized(row.id);
           canonicalTags.push(row.text);
           canonicalRows.push(row);
           console.log(
@@ -72,7 +68,7 @@ export async function normalizeTags(
           );
         }
       } else {
-        await api.markTagNormalized(row.id);
+        await markTagNormalized(row.id);
         canonicalTags.push(row.text);
         canonicalRows.push(row);
         console.log(`[normalize] tag "${row.text}": new canonical`);

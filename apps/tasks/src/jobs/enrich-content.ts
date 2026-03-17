@@ -1,7 +1,7 @@
-import type {ApiClient} from '../lib/api-client';
+import {getLinksNeedingEnrichment, updateLinkContent} from 'client';
 
-export async function enrichContent(api: ApiClient, cfBrowserRenderingUrl: string): Promise<void> {
-  const {items: links} = await api.getLinksNeedingEnrichment(5);
+export async function enrichContent(cfBrowserRenderingUrl: string): Promise<void> {
+  const {items: links} = await getLinksNeedingEnrichment(5);
 
   for (const link of links) {
     try {
@@ -17,7 +17,7 @@ export async function enrichContent(api: ApiClient, cfBrowserRenderingUrl: strin
       }
 
       const markdown = await response.text();
-      await api.updateLinkContent(link.id, markdown);
+      await updateLinkContent(link.id, markdown);
 
       console.log(`[enrich] link ${link.id}: content fetched`);
     } catch (error) {

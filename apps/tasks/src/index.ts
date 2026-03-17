@@ -1,6 +1,6 @@
 import z from 'zod';
 import {parseEnv} from 'env';
-import {createApiClient} from './lib/api-client';
+import {init} from 'client';
 import {enrichContent} from './jobs/enrich-content';
 import {normalizeTags} from './jobs/normalize-tags';
 
@@ -14,17 +14,17 @@ const envSchema = z.object({
 });
 const env = parseEnv(envSchema);
 
-const api = createApiClient({apiUrl: env.API_URL, apiKey: env.API_KEY});
+init({apiUrl: env.API_URL, apiKey: env.API_KEY});
 
 async function poll() {
   if (env.CF_BROWSER_RENDERING_URL) {
-    await enrichContent(api, env.CF_BROWSER_RENDERING_URL);
+    await enrichContent(env.CF_BROWSER_RENDERING_URL);
   } else {
     console.log('[poll] CF_BROWSER_RENDERING_URL not set, skipping enrichment');
   }
 
   if (env.OLLAMA_URL) {
-    await normalizeTags(api, env.OLLAMA_URL, env.OLLAMA_MODEL);
+    await normalizeTags(env.OLLAMA_URL, env.OLLAMA_MODEL);
   } else {
     console.log('[poll] OLLAMA_URL not set, skipping tag normalization');
   }
