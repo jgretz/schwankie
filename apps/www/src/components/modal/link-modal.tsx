@@ -18,6 +18,7 @@ import {
 import {useLinkModal} from './link-modal-context';
 import {StatusToggle} from './status-toggle';
 import {TagChipInput} from './tag-chip-input';
+import {useFormValidation} from './use-form-validation';
 
 type Stage = 'url-entry' | 'loading' | 'form';
 
@@ -30,6 +31,8 @@ type FormData = {
   tags: string[];
 };
 
+const URL_REGEX = /^https?:\/\/.+/;
+
 const emptyForm: FormData = {
   url: '',
   title: '',
@@ -37,6 +40,54 @@ const emptyForm: FormData = {
   imageUrl: '',
   status: 'saved',
   tags: [],
+};
+
+const formValidationSchema = {
+  url: {
+    required: true,
+    rules: [
+      {
+        validate: (v: string) => URL_REGEX.test(v),
+        message: 'Must be a valid URL (http:// or https://)',
+      },
+      {
+        validate: (v: string) => v.length <= 2000,
+        message: 'Must be under 2000 characters',
+      },
+    ],
+  },
+  title: {
+    required: true,
+    rules: [
+      {
+        validate: (v: string) => v.length <= 200,
+        message: 'Must be under 200 characters',
+      },
+    ],
+  },
+  description: {
+    rules: [
+      {
+        validate: (v: string) => v.length <= 1000,
+        message: 'Must be under 1000 characters',
+      },
+    ],
+  },
+  imageUrl: {
+    rules: [
+      {
+        validate: (v: string) => {
+          if (!v) return true;
+          return /^https?:\/\/.+/.test(v);
+        },
+        message: 'Must be a valid URL (http:// or https://)',
+      },
+      {
+        validate: (v: string) => v.length <= 2000,
+        message: 'Must be under 2000 characters',
+      },
+    ],
+  },
 };
 
 export function LinkModal() {
@@ -48,6 +99,7 @@ export function LinkModal() {
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [error, setError] = useState('');
+  const {errors, validate, touch, touched, reset} = useFormValidation(formValidationSchema, form);
 
   // Reset state when modal opens/closes
   useEffect(() => {
@@ -57,6 +109,7 @@ export function LinkModal() {
       setSaving(false);
       setConfirmDelete(false);
       setError('');
+      reset();
       return;
     }
 
@@ -97,6 +150,10 @@ export function LinkModal() {
   }, []);
 
   const handleSave = useCallback(async () => {
+    if (!validate()) {
+      return;
+    }
+
     setSaving(true);
     setError('');
     try {
@@ -134,7 +191,7 @@ export function LinkModal() {
     } finally {
       setSaving(false);
     }
-  }, [mode, editLink, form, queryClient, close]);
+  }, [mode, editLink, form, queryClient, close, validate]);
 
   const handleDelete = useCallback(async () => {
     if (!editLink) return;
@@ -185,38 +242,42 @@ export function LinkModal() {
 
         {stage === 'form' && (
           <div className="space-y-4">
-            <Field label="URL">
+            <Field label="URL" required error={touched.url ? errors.url : undefined}>
               <input
                 type="url"
                 value={form.url}
                 onChange={(e) => updateField('url', e.target.value)}
+                onBlur={() => touch('url')}
                 className="w-full rounded-md border border-border bg-bg px-3 py-2 font-sans text-[0.85rem] text-text outline-none transition-colors focus:border-accent"
               />
             </Field>
 
-            <Field label="Title">
+            <Field label="Title" required error={touched.title ? errors.title : undefined}>
               <input
                 type="text"
                 value={form.title}
                 onChange={(e) => updateField('title', e.target.value)}
+                onBlur={() => touch('title')}
                 className="w-full rounded-md border border-border bg-bg px-3 py-2 font-sans text-[0.85rem] text-text outline-none transition-colors focus:border-accent"
               />
             </Field>
 
-            <Field label="Description">
+            <Field label="Description" error={touched.description ? errors.description : undefined}>
               <textarea
                 value={form.description}
                 onChange={(e) => updateField('description', e.target.value)}
+                onBlur={() => touch('description')}
                 rows={2}
                 className="w-full resize-none rounded-md border border-border bg-bg px-3 py-2 font-sans text-[0.85rem] text-text outline-none transition-colors focus:border-accent"
               />
             </Field>
 
-            <Field label="Image URL">
+            <Field label="Image URL" error={touched.imageUrl ? errors.imageUrl : undefined}>
               <input
                 type="url"
                 value={form.imageUrl}
                 onChange={(e) => updateField('imageUrl', e.target.value)}
+                onBlur={() => touch('imageUrl')}
                 className="w-full rounded-md border border-border bg-bg px-3 py-2 font-sans text-[0.85rem] text-text outline-none transition-colors focus:border-accent"
               />
             </Field>
@@ -252,7 +313,7 @@ export function LinkModal() {
               <button
                 type="button"
                 onClick={handleSave}
-                disabled={saving || !form.title.trim() || !form.url.trim()}
+                disabled={saving}
                 className="rounded-md bg-accent px-4 py-1.5 font-sans text-[0.8rem] font-medium text-white transition-colors hover:bg-accent/90 disabled:opacity-50"
               >
                 {saving ? 'Saving…' : mode === 'edit' ? 'Update' : 'Save'}
@@ -267,20 +328,42 @@ export function LinkModal() {
 
 function UrlEntryStage({onSubmit}: {onSubmit: (url: string) => void}) {
   const [url, setUrl] = useState('');
+  const [error, setError] = useState('');
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const trimmed = url.trim();
-    if (trimmed) onSubmit(trimmed);
+
+    if (!trimmed) {
+      setError('Required');
+      return;
+    }
+
+    if (!URL_REGEX.test(trimmed)) {
+      setError('Must be a valid URL (http:// or https://)');
+      return;
+    }
+
+    setError('');
+    onSubmit(trimmed);
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <Field label="URL">
+      <Field label="URL" required error={error || undefined}>
         <input
           type="url"
           value={url}
-          onChange={(e) => setUrl(e.target.value)}
+          onChange={(e) => {
+            setUrl(e.target.value);
+            setError('');
+          }}
+          onBlur={() => {
+            const trimmed = url.trim();
+            if (trimmed && !/^https?:\/\/.+/.test(trimmed)) {
+              setError('Must be a valid URL (http:// or https://)');
+            }
+          }}
           placeholder="https://…"
           autoFocus
           className="w-full rounded-md border border-border bg-bg px-3 py-2 font-sans text-[0.85rem] text-text outline-none transition-colors placeholder:text-text-faint focus:border-accent"
@@ -299,11 +382,25 @@ function UrlEntryStage({onSubmit}: {onSubmit: (url: string) => void}) {
   );
 }
 
-function Field({label, children}: {label: string; children: React.ReactNode}) {
+function Field({
+  label,
+  children,
+  error,
+  required,
+}: {
+  label: string;
+  children: React.ReactNode;
+  error?: string;
+  required?: boolean;
+}) {
   return (
     <label className="block space-y-1">
-      <span className="font-sans text-[0.8rem] font-medium text-text-muted">{label}</span>
+      <span className="font-sans text-[0.8rem] font-medium text-text-muted">
+        {label}
+        {required && <span className="text-accent"> *</span>}
+      </span>
       {children}
+      {error && <p className="font-sans text-[0.75rem] text-destructive">{error}</p>}
     </label>
   );
 }
