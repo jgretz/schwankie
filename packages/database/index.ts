@@ -11,4 +11,3 @@ export function createDatabase(databaseUrl: string): Database {
 }
 
 export * from './schema';
-export * from './queries/tags';

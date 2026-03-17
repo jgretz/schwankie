@@ -1,11 +1,12 @@
+import {link, linkStatusEnum, linkTag, tag} from 'database';
 import {count, desc, eq, sql} from 'drizzle-orm';
-
-import type {Database} from '../index';
-import {link, linkStatusEnum, linkTag, tag} from '../schema';
+import {getDb} from '../db';
 
 export type LinkStatus = (typeof linkStatusEnum.enumValues)[number];
 
-export async function getTagsWithCount(db: Database, status?: LinkStatus) {
+export async function getTagsWithCount(status?: LinkStatus) {
+  const db = getDb();
+
   let query = db
     .select({
       id: tag.id,

@@ -32,6 +32,7 @@
 
       "env": ["./packages/env/src/index.ts"],
       "database": ["./packages/database/index.ts"],
+      "@domain": ["./packages/domain/src/index.ts"],
       "metadata": ["./packages/metadata/src/index.ts"]
     }
   }
