@@ -53,7 +53,7 @@ function IndexPage() {
   return (
     <FeedPage
       status="saved"
-      title="Recent links"
+      title="Feed"
       tags={tags}
       q={q}
       isAuthenticated={auth.authenticated}
