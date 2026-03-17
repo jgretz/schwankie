@@ -1,6 +1,5 @@
 import {createLink} from '../../src/commands/create-link';
 import type {CreateLinkInput} from '../../src/types';
-import {trackLink, trackTag} from './setup';
 
 export async function makeLink(overrides: Partial<CreateLinkInput> = {}) {
   const input: CreateLinkInput = {
@@ -9,10 +8,5 @@ export async function makeLink(overrides: Partial<CreateLinkInput> = {}) {
     ...overrides,
   };
 
-  const result = await createLink(input);
-  trackLink(result.id);
-  for (const t of result.tags) {
-    trackTag(t.id);
-  }
-  return result;
+  return createLink(input);
 }

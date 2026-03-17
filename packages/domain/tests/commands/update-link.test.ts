@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'bun:test';
-import {setupDb, trackTag} from '../helpers/setup';
+import {setupDb} from '../helpers/setup';
 import {makeLink} from '../helpers/factory';
 import {updateLink} from '../../src/commands/update-link';
 
@@ -23,31 +23,27 @@ describe('updateLink', function () {
   });
 
   it('should replace tags when tags array provided', async function () {
-    const created = await makeLink({tags: [`test-old-${Date.now()}`]});
+    const created = await makeLink({tags: ['old-tag']});
 
-    const newTag1 = `test-new1-${Date.now()}`;
-    const newTag2 = `test-new2-${Date.now()}`;
-    const result = await updateLink(created.id, {tags: [newTag1, newTag2]});
+    const result = await updateLink(created.id, {tags: ['new-tag-1', 'new-tag-2']});
 
     expect(result).not.toBeNull();
-    for (const t of result!.tags) trackTag(t.id);
     const tagTexts = result!.tags.map((t) => t.text).sort();
-    expect(tagTexts).toEqual([newTag1, newTag2].sort());
+    expect(tagTexts).toEqual(['new-tag-1', 'new-tag-2']);
   });
 
   it('should preserve existing tags when tags not provided', async function () {
-    const tagName = `test-keep-${Date.now()}`;
-    const created = await makeLink({tags: [tagName]});
+    const created = await makeLink({tags: ['keep-tag']});
 
     const result = await updateLink(created.id, {title: 'Updated'});
 
     expect(result).not.toBeNull();
     expect(result!.tags).toHaveLength(1);
-    expect(result!.tags[0]!.text).toBe(tagName);
+    expect(result!.tags[0]!.text).toBe('keep-tag');
   });
 
   it('should clear tags when empty array provided', async function () {
-    const created = await makeLink({tags: [`test-remove-${Date.now()}`]});
+    const created = await makeLink({tags: ['remove-tag']});
 
     const result = await updateLink(created.id, {tags: []});
 

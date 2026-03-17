@@ -56,9 +56,8 @@ describe('createLink', function () {
   });
 
   it('should reuse existing tags', async function () {
-    const tagName = `test-shared-${Date.now()}`;
-    const first = await makeLink({title: 'First', tags: [tagName]});
-    const second = await makeLink({title: 'Second', tags: [tagName]});
+    const first = await makeLink({title: 'First', tags: ['shared-tag']});
+    const second = await makeLink({title: 'Second', tags: ['shared-tag']});
 
     expect(first.tags[0]!.id).toBe(second.tags[0]!.id);
   });
