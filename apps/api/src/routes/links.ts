@@ -17,6 +17,7 @@ linksRoutes.get('/api/links', async (c) => {
     status: c.req.query('status') || undefined,
     tags: c.req.query('tags') || undefined,
     q: c.req.query('q') || undefined,
+    needs_enrichment: c.req.query('needs_enrichment') || undefined,
   });
   if (!parsed.success) {
     return c.json({error: 'Invalid query parameters', details: parsed.error.flatten()}, 400);

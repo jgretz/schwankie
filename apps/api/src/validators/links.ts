@@ -24,4 +24,5 @@ export const listLinksParamsSchema = z.object({
   status: z.enum(['saved', 'queued', 'archived']).optional(),
   tags: z.string().optional(),
   q: z.string().optional(),
+  needs_enrichment: z.coerce.boolean().optional(),
 });
