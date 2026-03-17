@@ -356,6 +356,12 @@ function UrlEntryStage({onSubmit}: {onSubmit: (url: string) => void}) {
             setUrl(e.target.value);
             setError('');
           }}
+          onBlur={() => {
+            const trimmed = url.trim();
+            if (trimmed && !/^https?:\/\/.+/.test(trimmed)) {
+              setError('Must be a valid URL (http:// or https://)');
+            }
+          }}
           placeholder="https://…"
           autoFocus
           className="w-full rounded-md border border-border bg-bg px-3 py-2 font-sans text-[0.85rem] text-text outline-none transition-colors placeholder:text-text-faint focus:border-accent"
@@ -392,7 +398,7 @@ function Field({
         {required && <span className="text-accent"> *</span>}
       </span>
       {children}
-      {error && <p className="font-sans text-[0.75rem] text-red-600">{error}</p>}
+      {error && <p className="font-sans text-[0.75rem] text-destructive">{error}</p>}
     </label>
   );
 }

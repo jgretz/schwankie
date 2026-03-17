@@ -10,20 +10,21 @@ type FieldConfig<T> = {
   rules?: ValidationRule<T>[];
 };
 
-type SchemaConfig = Record<string, FieldConfig<any>>;
+type SchemaConfig<T extends Record<string, unknown>> = {
+  [K in keyof T]?: FieldConfig<T[K]>;
+};
 
 type UseFormValidationReturn = {
   errors: Record<string, string | undefined>;
   validate: () => boolean;
   touch: (field: string) => void;
   touched: Record<string, boolean>;
-  isValid: boolean;
   reset: () => void;
 };
 
-export function useFormValidation(
-  schema: SchemaConfig,
-  values: Record<string, any>,
+export function useFormValidation<T extends Record<string, unknown>>(
+  schema: SchemaConfig<T>,
+  values: T,
 ): UseFormValidationReturn {
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [errors, setErrors] = useState<Record<string, string | undefined>>({});
@@ -87,18 +88,11 @@ export function useFormValidation(
     setErrors({});
   }, []);
 
-  // Compute isValid from current values, not stale errors state
-  const isValid = Object.keys(schema).every((fieldName) => {
-    const value = values[fieldName];
-    return validateField(fieldName, value) === undefined;
-  });
-
   return {
     errors,
     validate,
     touch,
     touched,
-    isValid,
     reset,
   };
 }
