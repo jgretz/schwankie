@@ -1,14 +1,12 @@
 import {getLinksNeedingEnrichment, updateLinkContent} from 'client';
 
-export async function enrichContent(cfBrowserRenderingUrl: string): Promise<void> {
+export async function enrichContent(): Promise<void> {
   const {items: links} = await getLinksNeedingEnrichment(5);
 
   for (const link of links) {
     try {
-      const response = await fetch(`${cfBrowserRenderingUrl}/markdown`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({url: link.url}),
+      const response = await fetch(`https://r.jina.ai/${link.url}`, {
+        headers: {Accept: 'text/markdown'},
       });
 
       if (!response.ok) {

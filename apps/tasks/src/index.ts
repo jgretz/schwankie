@@ -10,18 +10,13 @@ const envSchema = z.object({
   POLL_INTERVAL_MS: z.coerce.number().default(60_000),
   OLLAMA_URL: z.string().url().optional(),
   OLLAMA_MODEL: z.string().default('llama3.2:3b'),
-  CF_BROWSER_RENDERING_URL: z.string().url().optional(),
 });
 const env = parseEnv(envSchema);
 
 init({apiUrl: env.API_URL, apiKey: env.API_KEY});
 
 async function poll() {
-  if (env.CF_BROWSER_RENDERING_URL) {
-    await enrichContent(env.CF_BROWSER_RENDERING_URL);
-  } else {
-    console.log('[poll] CF_BROWSER_RENDERING_URL not set, skipping enrichment');
-  }
+  await enrichContent();
 
   if (env.OLLAMA_URL) {
     await normalizeTags(env.OLLAMA_URL, env.OLLAMA_MODEL);
