@@ -16,6 +16,8 @@ export const updateLinkSchema = z.object({
   imageUrl: z.string().url().optional(),
   content: z.string().optional(),
   status: z.enum(['saved', 'queued', 'archived']).optional(),
+  enrichmentFailCount: z.coerce.number().optional(),
+  enrichmentLastError: z.string().nullable().optional(),
   tags: z.array(z.string()).optional(),
 });
 
@@ -27,4 +29,5 @@ export const listLinksParamsSchema = z.object({
   q: z.string().optional(),
   ids: z.string().optional(),
   needs_enrichment: z.coerce.boolean().optional(),
+  dead_enrichment: z.coerce.boolean().optional(),
 });
