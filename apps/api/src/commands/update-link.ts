@@ -8,6 +8,7 @@ export type UpdateLinkInput = {
   title?: string;
   description?: string;
   imageUrl?: string;
+  content?: string;
   status?: 'saved' | 'queued' | 'archived';
   tags?: string[];
 };
@@ -24,6 +25,7 @@ export async function updateLink(
     ...(fields.title !== undefined && {title: fields.title}),
     ...(fields.description !== undefined && {description: fields.description}),
     ...(fields.imageUrl !== undefined && {imageUrl: fields.imageUrl}),
+    ...(fields.content !== undefined && {content: fields.content}),
     ...(fields.status !== undefined && {status: fields.status}),
     updateDate: new Date(),
   };

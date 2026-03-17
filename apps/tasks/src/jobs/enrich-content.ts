@@ -1,39 +1,27 @@
-import {eq, and, isNull, ne} from 'drizzle-orm';
-import type {Database, LinkStatus} from 'database';
-import {link} from 'database';
+import type {ApiClient} from '../lib/api-client';
 
-const TRASHED: LinkStatus = 'trashed';
+export async function enrichContent(api: ApiClient, cfBrowserRenderingUrl: string): Promise<void> {
+  const {items: links} = await api.getLinksNeedingEnrichment(5);
 
-export async function enrichContent(db: Database, cfBrowserRenderingUrl: string): Promise<void> {
-  const links = await db
-    .select({id: link.id, url: link.url})
-    .from(link)
-    .where(and(isNull(link.content), ne(link.status, TRASHED)))
-    .limit(5);
-
-  for (const row of links) {
+  for (const link of links) {
     try {
       const response = await fetch(`${cfBrowserRenderingUrl}/markdown`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({url: row.url}),
+        body: JSON.stringify({url: link.url}),
       });
 
       if (!response.ok) {
-        console.warn(`[enrich] link ${row.id}: HTTP ${response.status}`);
+        console.warn(`[enrich] link ${link.id}: HTTP ${response.status}`);
         continue;
       }
 
       const markdown = await response.text();
+      await api.updateLinkContent(link.id, markdown);
 
-      await db
-        .update(link)
-        .set({content: markdown, updateDate: new Date()})
-        .where(eq(link.id, row.id));
-
-      console.log(`[enrich] link ${row.id}: content fetched`);
+      console.log(`[enrich] link ${link.id}: content fetched`);
     } catch (error) {
-      console.warn(`[enrich] link ${row.id}: failed`, error);
+      console.warn(`[enrich] link ${link.id}: failed`, error);
     }
   }
 }

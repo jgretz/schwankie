@@ -7,10 +7,7 @@
     "start": "bun run src/index.ts"
   },
   "dependencies": {
-    "database": "workspace:*",
-    "drizzle-orm": "0.30.10",
     "env": "workspace:*",
-    "ts-pattern": "^5.6.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
