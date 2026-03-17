@@ -1,27 +1,28 @@
 import {createFileRoute, redirect} from '@tanstack/react-router';
+import {createServerFn} from '@tanstack/react-start';
 
-async function processOAuthCode(code: string): Promise<{error: string | null}> {
-  'use server';
+const processOAuthCode = createServerFn({method: 'POST'})
+  .inputValidator((code: string) => code)
+  .handler(async ({data: code}) => {
+    try {
+      const {exchangeCodeForTokens, fetchGoogleUserInfo, isAllowedEmail} = await import(
+        '../../lib/auth.server'
+      );
+      const {createSession} = await import('../../lib/session.server');
 
-  try {
-    const {exchangeCodeForTokens, fetchGoogleUserInfo, isAllowedEmail} = await import(
-      '../../lib/auth.server'
-    );
-    const {createSession} = await import('../../lib/session.server');
+      const tokens = await exchangeCodeForTokens(code);
+      const userInfo = await fetchGoogleUserInfo(tokens.access_token);
 
-    const tokens = await exchangeCodeForTokens(code);
-    const userInfo = await fetchGoogleUserInfo(tokens.access_token);
+      if (!isAllowedEmail(userInfo.email)) {
+        return {error: 'unauthorized_email'};
+      }
 
-    if (!isAllowedEmail(userInfo.email)) {
-      return {error: 'unauthorized_email'};
+      await createSession(userInfo.email);
+      return {error: null};
+    } catch {
+      return {error: 'auth_failed'};
     }
-
-    await createSession(userInfo.email);
-    return {error: null};
-  } catch {
-    return {error: 'auth_failed'};
-  }
-}
+  });
 
 export const Route = createFileRoute('/auth/callback')({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -38,7 +39,7 @@ export const Route = createFileRoute('/auth/callback')({
       throw redirect({to: '/auth/login', search: {error: 'missing_code'}});
     }
 
-    const result = await processOAuthCode(deps.code);
+    const result = await processOAuthCode({data: deps.code});
 
     if (result.error) {
       throw redirect({to: '/auth/login', search: {error: result.error}});
