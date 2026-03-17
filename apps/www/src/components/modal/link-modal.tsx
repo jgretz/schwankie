@@ -89,6 +89,7 @@ export function LinkModal() {
         imageUrl: meta.imageUrl ?? '',
       }));
     } catch (err) {
+      console.warn('Failed to fetch metadata:', err);
       toast.error('Failed to fetch metadata');
       setForm((prev) => ({...prev, url}));
     }

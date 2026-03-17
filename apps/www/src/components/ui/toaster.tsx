@@ -1,10 +1,12 @@
+import {useEffect, useState} from 'react';
 import {Toaster as Sonner} from 'sonner';
 
 export function Toaster() {
-  const theme =
-    (typeof window !== 'undefined'
-      ? (localStorage.getItem('schwankie-theme') as 'light' | 'dark' | null)
-      : null) ?? 'system';
+  const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('system');
+  useEffect(() => {
+    const stored = localStorage.getItem('schwankie-theme') as 'light' | 'dark' | null;
+    if (stored) setTheme(stored);
+  }, []);
   return (
     <Sonner
       position="bottom-right"
