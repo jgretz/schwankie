@@ -16,7 +16,7 @@ async function requireAuth() {
 const fetchMetadataInput = z.object({url: z.string().url()});
 
 export const fetchMetadataAction = createServerFn({method: 'POST'})
-  .validator(fetchMetadataInput)
+  .inputValidator(fetchMetadataInput)
   .handler(async ({data}) => {
     await requireAuth();
     return fetchMetadata(data.url);
@@ -32,7 +32,7 @@ const createLinkInput = z.object({
 });
 
 export const createLinkAction = createServerFn({method: 'POST'})
-  .validator(createLinkInput)
+  .inputValidator(createLinkInput)
   .handler(async ({data}) => {
     await requireAuth();
     return createLink(data);
@@ -49,7 +49,7 @@ const updateLinkInput = z.object({
 });
 
 export const updateLinkAction = createServerFn({method: 'POST'})
-  .validator(updateLinkInput)
+  .inputValidator(updateLinkInput)
   .handler(async ({data}) => {
     await requireAuth();
     const {id, ...input} = data;
@@ -59,7 +59,7 @@ export const updateLinkAction = createServerFn({method: 'POST'})
 const deleteLinkInput = z.object({id: z.number()});
 
 export const deleteLinkAction = createServerFn({method: 'POST'})
-  .validator(deleteLinkInput)
+  .inputValidator(deleteLinkInput)
   .handler(async ({data}) => {
     await requireAuth();
     return deleteLink(data.id);
