@@ -1,8 +1,10 @@
 import {createServerFn} from '@tanstack/react-start';
 import {z} from 'zod';
-import {createLink, deleteLink, fetchMetadata, updateLink} from './api-client';
-import {getEnv} from './env.server';
+import {createLink, deleteLink, fetchMetadata, updateLink} from 'client';
+import {initClientServer} from './init-client.server';
 import {getSession} from './session.server';
+
+initClientServer();
 
 async function requireAuth() {
   const session = await getSession();
@@ -33,7 +35,7 @@ export const createLinkAction = createServerFn({method: 'POST'})
   .validator(createLinkInput)
   .handler(async ({data}) => {
     await requireAuth();
-    return createLink(getEnv().API_KEY, data);
+    return createLink(data);
   });
 
 const updateLinkInput = z.object({
@@ -51,7 +53,7 @@ export const updateLinkAction = createServerFn({method: 'POST'})
   .handler(async ({data}) => {
     await requireAuth();
     const {id, ...input} = data;
-    return updateLink(getEnv().API_KEY, id, input);
+    return updateLink(id, input);
   });
 
 const deleteLinkInput = z.object({id: z.number()});
@@ -60,5 +62,5 @@ export const deleteLinkAction = createServerFn({method: 'POST'})
   .validator(deleteLinkInput)
   .handler(async ({data}) => {
     await requireAuth();
-    return deleteLink(getEnv().API_KEY, data.id);
+    return deleteLink(data.id);
   });

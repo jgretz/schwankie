@@ -1,5 +1,5 @@
 import {useCallback, useEffect, useMemo, useRef} from 'react';
-import type {LinkData, LinkStatus} from '@www/lib/api-client';
+import type {LinkData, LinkStatus} from 'client';
 import {useLinkModal} from '@www/components/modal/link-modal-context';
 import {FilterStrip} from './filter-strip';
 import {LinkItem} from './link-item';

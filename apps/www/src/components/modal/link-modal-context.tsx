@@ -1,5 +1,5 @@
 import {createContext, useCallback, useContext, useState, type ReactNode} from 'react';
-import type {LinkData} from '@www/lib/api-client';
+import type {LinkData} from 'client';
 
 type ModalState =
   | {isOpen: false; mode: null; editLink: null}
