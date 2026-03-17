@@ -31,7 +31,7 @@ export function useFormValidation<T extends Record<string, unknown>>(
 
   // Helper to validate a single field
   const validateField = useCallback(
-    (fieldName: string, value: any): string | undefined => {
+    (fieldName: string, value: unknown): string | undefined => {
       const config = schema[fieldName];
 
       if (config?.required && !value) {
@@ -40,7 +40,7 @@ export function useFormValidation<T extends Record<string, unknown>>(
 
       if (value && config?.rules) {
         for (const rule of config.rules) {
-          if (!rule.validate(value)) {
+          if (!rule.validate(value as T[string])) {
             return rule.message;
           }
         }
