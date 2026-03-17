@@ -3,6 +3,7 @@ export {init} from './db';
 // queries
 export {listLinks} from './queries/list-links';
 export {listTags} from './queries/list-tags';
+export {getLink} from './queries/get-link';
 
 // commands
 export {createLink} from './commands/create-link';

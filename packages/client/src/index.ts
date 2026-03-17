@@ -3,6 +3,7 @@ export {init} from './config';
 // calls
 export {fetchLinks} from './calls/fetch-links';
 export {fetchTags} from './calls/fetch-tags';
+export {getLink} from './calls/get-link';
 export {createLink} from './calls/create-link';
 export {updateLink} from './calls/update-link';
 export {deleteLink} from './calls/delete-link';
