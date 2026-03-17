@@ -1,4 +1,5 @@
 import {Link} from '@tanstack/react-router';
+import {ThemeToggle} from '@www/components/theme-toggle';
 import {cn} from '@www/lib/utils';
 
 type TopbarProps = {
@@ -87,6 +88,8 @@ export function Topbar({
           </Link>
         ))}
       </nav>
+
+      <ThemeToggle />
 
       {showAddButton && (
         <button

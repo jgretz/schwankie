@@ -39,7 +39,7 @@ bun run migrate                             # drizzle-kit migrate
 
 - **Path Aliases**: tsconfig aliases — `database`, `env`, `client`, `@domain`, `@api`, `@www/*`.
 - **API Client**: Shared `client` package. `init()` singleton pattern (like `domain`). One call per file.
-- **Design System**: Parchment/terracotta theme. CSS custom properties for colors. Lora (serif) for headings/titles, DM Sans for UI chrome.
+- **Design System**: Stone & Slate theme (slate-blue accent `#5b6f8a`). CSS custom properties for colors. Light/dark toggle with localStorage persistence. Lora (serif) for headings/titles, DM Sans for UI chrome.
 
 ## Prettier
 
