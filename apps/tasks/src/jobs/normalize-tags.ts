@@ -49,6 +49,7 @@ export async function normalizeTags(
       if (canonicalTags.length === 0) {
         await api.markTagNormalized(row.id);
         canonicalTags.push(row.text);
+        canonicalRows.push(row);
         console.log(`[normalize] tag "${row.text}": first canonical`);
         continue;
       }
@@ -65,6 +66,7 @@ export async function normalizeTags(
         } else {
           await api.markTagNormalized(row.id);
           canonicalTags.push(row.text);
+          canonicalRows.push(row);
           console.log(
             `[normalize] tag "${row.text}": canonical "${result.canonical}" not found, kept`,
           );
@@ -72,6 +74,7 @@ export async function normalizeTags(
       } else {
         await api.markTagNormalized(row.id);
         canonicalTags.push(row.text);
+        canonicalRows.push(row);
         console.log(`[normalize] tag "${row.text}": new canonical`);
       }
     } catch (error) {
