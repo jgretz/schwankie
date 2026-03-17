@@ -7,6 +7,8 @@ export type LinkData = {
   description: string | null;
   imageUrl: string | null;
   status: LinkStatus;
+  enrichmentFailCount: number;
+  enrichmentLastError: string | null;
   createDate: string;
   updateDate: string;
   tags: Array<{id: number; text: string}>;

@@ -14,6 +14,9 @@ export {getTagsNeedingNormalization} from './calls/get-tags-needing-normalizatio
 export {getCanonicalTags} from './calls/get-canonical-tags';
 export {mergeTag} from './calls/merge-tag';
 export {markTagNormalized} from './calls/mark-tag-normalized';
+export {reportEnrichmentFailure} from './calls/report-enrichment-failure';
+export {resetEnrichment} from './calls/reset-enrichment';
+export {fetchDeadLinks} from './calls/fetch-dead-links';
 
 // types
 export type {
