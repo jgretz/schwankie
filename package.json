@@ -33,6 +33,10 @@
     "test:api": "bun test --cwd apps/api",
     "test:www": "bun test --cwd apps/www",
     "db:generate": "bun run --cwd packages/database generate",
-    "db:migrate": "bun run --cwd packages/database migrate"
+    "db:migrate": "bun run --cwd packages/database migrate",
+    "deploy:api": "fly deploy --config ./deploy/api/fly.toml --dockerfile ./deploy/api/Dockerfile",
+    "deploy:www": "fly deploy --config ./deploy/www/fly.toml --dockerfile ./deploy/www/Dockerfile",
+    "sync-secrets:api": "./scripts/sync-fly-secrets.sh apps/api schwankie-api",
+    "sync-secrets:www": "./scripts/sync-fly-secrets.sh apps/www schwankie"
   }
 }

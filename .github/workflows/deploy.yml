@@ -1,0 +1,64 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - release
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      api: ${{ steps.filter.outputs.api }}
+      www: ${{ steps.filter.outputs.www }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          base: ${{ github.event.before }}
+          filters: |
+            api:
+              - 'apps/api/**'
+              - 'packages/database/**'
+              - 'packages/domain/**'
+              - 'packages/env/**'
+              - 'packages/metadata/**'
+              - 'deploy/api/**'
+              - 'package.json'
+              - 'bun.lock'
+              - 'tsconfig.json'
+            www:
+              - 'apps/www/**'
+              - 'packages/client/**'
+              - 'packages/env/**'
+              - 'deploy/www/**'
+              - 'package.json'
+              - 'bun.lock'
+              - 'tsconfig.json'
+
+  deploy-api:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.api == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: superfly/flyctl-actions/setup-flyctl@v1
+      - run: flyctl deploy --config ./deploy/api/fly.toml --dockerfile ./deploy/api/Dockerfile
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+  deploy-www:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.www == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: superfly/flyctl-actions/setup-flyctl@v1
+      - run: flyctl deploy --config ./deploy/www/fly.toml --dockerfile ./deploy/www/Dockerfile
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
