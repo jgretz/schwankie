@@ -1,8 +1,8 @@
 import {createFileRoute} from '@tanstack/react-router';
 import {createServerFn} from '@tanstack/react-start';
-import {buildGoogleAuthUrl} from '../../lib/auth.server';
 
 const getGoogleAuthUrl = createServerFn({method: 'GET'}).handler(async () => {
+  const {buildGoogleAuthUrl} = await import('../../lib/auth.server');
   return buildGoogleAuthUrl();
 });
 

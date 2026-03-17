@@ -16,9 +16,10 @@ import {useTags} from '@www/hooks/use-tags';
 import {parseTagIds} from '@www/lib/parse-tag-ids';
 import type {FeedSearch} from '@www/routes/index';
 import '../globals.css';
-import {destroySession, getAuthState} from '../lib/session.server';
+import {getAuthState} from '../lib/session-actions';
 
 export const logout = createServerFn({method: 'POST'}).handler(async () => {
+  const {destroySession} = await import('../lib/session.server');
   await destroySession();
   throw new Response(null, {status: 302, headers: {Location: '/'}});
 });

@@ -1,16 +1,17 @@
 import {createServerFn} from '@tanstack/react-start';
 import {z} from 'zod';
-import {createLink, deleteLink, fetchMetadata, updateLink} from 'client';
-import {initClientServer} from './init-client.server';
-import {getSession} from './session.server';
-
-initClientServer();
 
 async function requireAuth() {
+  const {getSession} = await import('./session.server');
   const session = await getSession();
   if (!session?.authenticated) {
     throw new Error('Unauthorized');
   }
+}
+
+async function getClient() {
+  const {initClientServer} = await import('./init-client.server');
+  initClientServer();
 }
 
 const fetchMetadataInput = z.object({url: z.string().url()});
@@ -18,7 +19,9 @@ const fetchMetadataInput = z.object({url: z.string().url()});
 export const fetchMetadataAction = createServerFn({method: 'POST'})
   .inputValidator(fetchMetadataInput)
   .handler(async ({data}) => {
+    await getClient();
     await requireAuth();
+    const {fetchMetadata} = await import('client');
     return fetchMetadata(data.url);
   });
 
@@ -34,7 +37,9 @@ const createLinkInput = z.object({
 export const createLinkAction = createServerFn({method: 'POST'})
   .inputValidator(createLinkInput)
   .handler(async ({data}) => {
+    await getClient();
     await requireAuth();
+    const {createLink} = await import('client');
     return createLink(data);
   });
 
@@ -51,7 +56,9 @@ const updateLinkInput = z.object({
 export const updateLinkAction = createServerFn({method: 'POST'})
   .inputValidator(updateLinkInput)
   .handler(async ({data}) => {
+    await getClient();
     await requireAuth();
+    const {updateLink} = await import('client');
     const {id, ...input} = data;
     return updateLink(id, input);
   });
@@ -61,6 +68,8 @@ const deleteLinkInput = z.object({id: z.number()});
 export const deleteLinkAction = createServerFn({method: 'POST'})
   .inputValidator(deleteLinkInput)
   .handler(async ({data}) => {
+    await getClient();
     await requireAuth();
+    const {deleteLink} = await import('client');
     return deleteLink(data.id);
   });

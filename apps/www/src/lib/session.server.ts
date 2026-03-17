@@ -1,4 +1,3 @@
-import {createServerFn} from '@tanstack/react-start';
 import {getCookie, setCookie} from '@tanstack/react-start/server';
 import {getEnv} from './env.server';
 
@@ -82,10 +81,3 @@ export async function destroySession(): Promise<void> {
   });
 }
 
-export const getAuthState = createServerFn({method: 'GET'}).handler(async () => {
-  const session = await getSession();
-  if (!session?.authenticated) {
-    return {authenticated: false as const};
-  }
-  return {authenticated: true as const, email: session.email};
-});

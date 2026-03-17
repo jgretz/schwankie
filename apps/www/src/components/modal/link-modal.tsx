@@ -13,7 +13,7 @@ import {
   deleteLinkAction,
   fetchMetadataAction,
   updateLinkAction,
-} from '@www/lib/link-actions.server';
+} from '@www/lib/link-actions';
 import {useLinkModal} from './link-modal-context';
 import {StatusToggle} from './status-toggle';
 import {TagChipInput} from './tag-chip-input';

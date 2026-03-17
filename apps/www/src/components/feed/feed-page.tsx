@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useMemo, useRef} from 'react';
+import {useEffect, useMemo, useRef} from 'react';
 import type {LinkData, LinkStatus} from 'client';
 import {useLinkModal} from '@www/components/modal/link-modal-context';
 import {FilterStrip} from './filter-strip';
@@ -63,10 +63,6 @@ export function FeedPage({
     return () => observer.disconnect();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  const memoizedOnTagClick = useCallback(onTagClick, [onTagClick]);
-  const memoizedOnRemoveTag = useCallback(onRemoveTag, [onRemoveTag]);
-  const memoizedOnClearAll = useCallback(onClearAll, [onClearAll]);
-
   const activeTags = useMemo(
     () =>
       selectedTagIds
@@ -110,8 +106,8 @@ export function FeedPage({
       <FilterStrip
         activeTags={activeTags}
         totalCount={total}
-        onRemoveTag={memoizedOnRemoveTag}
-        onClearAll={memoizedOnClearAll}
+        onRemoveTag={onRemoveTag}
+        onClearAll={onClearAll}
       />
 
       {items.length === 0 ? (
@@ -128,7 +124,7 @@ export function FeedPage({
               date={item.createDate}
               tags={item.tags}
               activeTagIds={selectedTagIds}
-              onTagClick={memoizedOnTagClick}
+              onTagClick={onTagClick}
               showEditButton={isAuthenticated}
               onEditClick={() => openEdit(item as LinkData)}
             />
