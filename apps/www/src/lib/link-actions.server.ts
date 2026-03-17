@@ -16,6 +16,7 @@ const fetchMetadataInput = z.object({url: z.string().url()});
 export const fetchMetadataAction = createServerFn({method: 'POST'})
   .validator(fetchMetadataInput)
   .handler(async ({data}) => {
+    await requireAuth();
     return fetchMetadata(data.url);
   });
 

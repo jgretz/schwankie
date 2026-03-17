@@ -87,7 +87,8 @@ export function LinkModal() {
         description: meta.description ?? '',
         imageUrl: meta.imageUrl ?? '',
       }));
-    } catch {
+    } catch (err) {
+      console.warn('Failed to fetch metadata:', err);
       setForm((prev) => ({...prev, url}));
     }
     setStage('form');
