@@ -16,6 +16,12 @@ async function initializeServer() {
     port: SERVER_PORT,
 
     routes: {
+      '/assets/*': async (req: Request) => {
+        const url = new URL(req.url);
+        const file = Bun.file(path.join(CLIENT_DIRECTORY, url.pathname));
+        if (await file.exists()) return new Response(file);
+        return new Response('Not found', {status: 404});
+      },
       '/*': (req: Request) => {
         try {
           return handler.fetch(req);
