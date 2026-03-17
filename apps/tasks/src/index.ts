@@ -1,29 +1,30 @@
 import z from 'zod';
 import {parseEnv} from 'env';
-import {createDatabase} from 'database';
+import {createApiClient} from './lib/api-client';
 import {enrichContent} from './jobs/enrich-content';
 import {normalizeTags} from './jobs/normalize-tags';
 
 const envSchema = z.object({
-  DATABASE_URL: z.string(),
-  CF_BROWSER_RENDERING_URL: z.string().optional(),
-  OLLAMA_URL: z.string().optional(),
-  OLLAMA_MODEL: z.string().default('llama3.2:3b'),
+  API_URL: z.string().url(),
+  API_KEY: z.string(),
   POLL_INTERVAL_MS: z.coerce.number().default(60_000),
+  OLLAMA_URL: z.string().url().optional(),
+  OLLAMA_MODEL: z.string().default('llama3.2:3b'),
+  CF_BROWSER_RENDERING_URL: z.string().url().optional(),
 });
 const env = parseEnv(envSchema);
 
-const db = createDatabase(env.DATABASE_URL);
+const api = createApiClient({apiUrl: env.API_URL, apiKey: env.API_KEY});
 
 async function poll() {
   if (env.CF_BROWSER_RENDERING_URL) {
-    await enrichContent(db, env.CF_BROWSER_RENDERING_URL);
+    await enrichContent(api, env.CF_BROWSER_RENDERING_URL);
   } else {
     console.log('[poll] CF_BROWSER_RENDERING_URL not set, skipping enrichment');
   }
 
   if (env.OLLAMA_URL) {
-    await normalizeTags(db, env.OLLAMA_URL, env.OLLAMA_MODEL);
+    await normalizeTags(api, env.OLLAMA_URL, env.OLLAMA_MODEL);
   } else {
     console.log('[poll] OLLAMA_URL not set, skipping tag normalization');
   }

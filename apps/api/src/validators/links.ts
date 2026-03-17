@@ -14,6 +14,7 @@ export const updateLinkSchema = z.object({
   title: z.string().min(1).optional(),
   description: z.string().optional(),
   imageUrl: z.string().url().optional(),
+  content: z.string().optional(),
   status: z.enum(['saved', 'queued', 'archived']).optional(),
   tags: z.array(z.string()).optional(),
 });
