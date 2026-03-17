@@ -165,6 +165,7 @@ function ShellWithData() {
       onSearchChange={handleSearchChange}
       showAddButton={auth.authenticated}
       onAddClick={openAdd}
+      isAuthenticated={auth.authenticated}
     >
       <Outlet />
     </AppShell>

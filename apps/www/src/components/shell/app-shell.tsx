@@ -13,6 +13,7 @@ type AppShellProps = {
   onSearchChange: (value: string) => void;
   showAddButton: boolean;
   onAddClick: () => void;
+  isAuthenticated?: boolean;
 };
 
 export function AppShell({
@@ -24,6 +25,7 @@ export function AppShell({
   onSearchChange,
   showAddButton,
   onAddClick,
+  isAuthenticated,
 }: AppShellProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -35,6 +37,7 @@ export function AppShell({
         showAddButton={showAddButton}
         onAddClick={onAddClick}
         showMenuButton={true}
+        isAuthenticated={isAuthenticated}
         onMenuClick={() => setDrawerOpen(true)}
       />
 

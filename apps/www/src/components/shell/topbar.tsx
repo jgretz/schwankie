@@ -9,12 +9,17 @@ type TopbarProps = {
   onAddClick: () => void;
   onMenuClick?: () => void;
   showMenuButton?: boolean;
+  isAuthenticated?: boolean;
 };
 
-const navLinks: {to: '/' | '/queue'; label: string; exact: boolean}[] = [
+type NavLink = {to: '/' | '/queue' | '/admin'; label: string; exact: boolean};
+
+const publicLinks: NavLink[] = [
   {to: '/', label: 'Feed', exact: true},
   {to: '/queue', label: 'Queue', exact: true},
 ];
+
+const adminLinks: NavLink[] = [{to: '/admin', label: 'Admin', exact: true}];
 
 export function Topbar({
   searchValue,
@@ -23,7 +28,9 @@ export function Topbar({
   onAddClick,
   onMenuClick,
   showMenuButton,
+  isAuthenticated,
 }: TopbarProps) {
+  const navLinks = isAuthenticated ? [...publicLinks, ...adminLinks] : publicLinks;
   return (
     <header className="sticky top-0 z-[100] flex h-14 items-center gap-8 border-b border-border bg-bg px-8">
       {showMenuButton && (
