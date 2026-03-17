@@ -1,3 +1,4 @@
+import {useRef, useState} from 'react';
 import {cn} from '@www/lib/utils';
 import type {Tag} from './types';
 
@@ -9,14 +10,59 @@ type TagListProps = {
 
 export function TagList({tags, selectedTagIds, onTagToggle}: TagListProps) {
   const firstSelectedId = selectedTagIds[0];
+  const [filter, setFilter] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const filteredTags = filter
+    ? tags.filter((t) => t.text.toLowerCase().includes(filter.toLowerCase()))
+    : tags;
 
   return (
     <div>
-      <div className="mb-2.5 px-1.5 text-[0.68rem] font-medium uppercase tracking-[0.1em] text-text-faint">
-        Tags — click to filter
+      <div className="mb-2.5 flex items-center justify-between px-1.5 text-[0.68rem] font-medium uppercase tracking-[0.1em] text-text-faint">
+        {isSearching ? (
+          <>
+            <input
+              ref={inputRef}
+              type="text"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              autoFocus
+              placeholder="Search tags…"
+              className="w-full bg-transparent text-[0.68rem] text-text-faint placeholder:text-text-faint/50 focus:outline-none"
+            />
+            <button
+              type="button"
+              onClick={() => {
+                setFilter('');
+                setIsSearching(false);
+              }}
+              className="ml-1 shrink-0 cursor-pointer text-text-faint hover:text-text-muted"
+            >
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M2 2l8 8M10 2l-8 8" />
+              </svg>
+            </button>
+          </>
+        ) : (
+          <>
+            <span>Tags — click to filter</span>
+            <button
+              type="button"
+              onClick={() => setIsSearching(true)}
+              className="shrink-0 cursor-pointer text-text-faint hover:text-text-muted"
+            >
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <circle cx="5" cy="5" r="3.5" />
+                <path d="M7.5 7.5L10.5 10.5" />
+              </svg>
+            </button>
+          </>
+        )}
       </div>
       <div className="flex flex-col gap-px">
-        {tags.map((tag) => {
+        {filteredTags.map((tag) => {
           const isSelected = selectedTagIds.includes(tag.id);
           const isFirst = tag.id === firstSelectedId;
 
