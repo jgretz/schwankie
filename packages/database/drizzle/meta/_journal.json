@@ -15,6 +15,13 @@
       "when": 1773698359395,
       "tag": "0001_add-tag-normalization",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1773781928099,
+      "tag": "0002_add-enrichment-failure-tracking",
+      "breakpoints": true
     }
   ]
 }
