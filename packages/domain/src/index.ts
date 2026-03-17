@@ -11,6 +11,7 @@ export {deleteLink} from './commands/delete-link';
 export {updateLink} from './commands/update-link';
 export {mergeTag} from './commands/merge-tag';
 export {markTagNormalized} from './commands/normalize-tag';
+export {resetEnrichment} from './commands/reset-enrichment';
 
 // lib
 export {normalizeTag} from './lib/normalize-tag';

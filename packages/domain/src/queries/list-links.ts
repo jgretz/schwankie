@@ -1,17 +1,22 @@
 import {link, tag, linkTag} from 'database';
-import {eq, and, ilike, or, inArray, desc, sql, count, isNull, ne} from 'drizzle-orm';
+import {eq, and, ilike, or, inArray, desc, sql, count, isNull, ne, gte, lt} from 'drizzle-orm';
 import {getDb} from '../db';
 import type {ListLinksParams, ListLinksResult} from '../types';
 
 export async function listLinks(params: ListLinksParams): Promise<ListLinksResult> {
   const db = getDb();
-  const {limit, offset, status, tags: tagsParam, q, ids, needs_enrichment} = params;
+  const {limit, offset, status, tags: tagsParam, q, ids, needs_enrichment, dead_enrichment} = params;
 
   const conditions = [];
 
   if (needs_enrichment) {
     conditions.push(isNull(link.content));
     conditions.push(ne(link.status, 'trashed'));
+    conditions.push(lt(link.enrichmentFailCount, 3));
+  }
+
+  if (dead_enrichment) {
+    conditions.push(gte(link.enrichmentFailCount, 3));
   }
 
   if (status) {

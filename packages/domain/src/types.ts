@@ -12,6 +12,7 @@ export type ListLinksParams = {
   q?: string;
   ids?: string;
   needs_enrichment?: boolean;
+  dead_enrichment?: boolean;
 };
 
 export type ListLinksResult = {
@@ -48,6 +49,8 @@ export type UpdateLinkInput = {
   imageUrl?: string;
   content?: string;
   status?: 'saved' | 'queued' | 'archived';
+  enrichmentFailCount?: number;
+  enrichmentLastError?: string | null;
   tags?: string[];
 };
 
