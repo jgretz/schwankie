@@ -40,6 +40,7 @@ lerna-debug.log*
 CLAUDE-WORKING.md
 .mcp.json
 .worksite/
+.worksite-*
 .claude/hooks/
 .claude/settings.local.json
 .claude/rules/worksite-worker.md
