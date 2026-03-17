@@ -97,7 +97,7 @@ export function LinkModal() {
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [error, setError] = useState('');
-  const {errors, validate, touch, touched} = useFormValidation(formValidationSchema, form);
+  const {errors, validate, touch, touched, reset} = useFormValidation(formValidationSchema, form);
 
   // Reset state when modal opens/closes
   useEffect(() => {
@@ -107,6 +107,7 @@ export function LinkModal() {
       setSaving(false);
       setConfirmDelete(false);
       setError('');
+      reset();
       return;
     }
 

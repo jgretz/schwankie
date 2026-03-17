@@ -18,6 +18,7 @@ type UseFormValidationReturn = {
   touch: (field: string) => void;
   touched: Record<string, boolean>;
   isValid: boolean;
+  reset: () => void;
 };
 
 export function useFormValidation(
@@ -27,24 +28,39 @@ export function useFormValidation(
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [errors, setErrors] = useState<Record<string, string | undefined>>({});
 
+  // Helper to validate a single field
+  const validateField = useCallback(
+    (fieldName: string, value: any): string | undefined => {
+      const config = schema[fieldName];
+
+      if (config?.required && !value) {
+        return 'Required';
+      }
+
+      if (value && config?.rules) {
+        for (const rule of config.rules) {
+          if (!rule.validate(value)) {
+            return rule.message;
+          }
+        }
+      }
+
+      return undefined;
+    },
+    [schema],
+  );
+
   const validate = useCallback(() => {
     const newErrors: Record<string, string | undefined> = {};
     let isValid = true;
 
-    for (const [fieldName, config] of Object.entries(schema)) {
+    for (const fieldName of Object.keys(schema)) {
       const value = values[fieldName];
+      const fieldError = validateField(fieldName, value);
 
-      if (config.required && !value) {
-        newErrors[fieldName] = 'Required';
+      if (fieldError) {
+        newErrors[fieldName] = fieldError;
         isValid = false;
-      } else if (value && config.rules) {
-        for (const rule of config.rules) {
-          if (!rule.validate(value)) {
-            newErrors[fieldName] = rule.message;
-            isValid = false;
-            break;
-          }
-        }
       }
     }
 
@@ -54,33 +70,28 @@ export function useFormValidation(
       ...Object.keys(schema).reduce((acc, key) => ({...acc, [key]: true}), {}),
     }));
     return isValid;
-  }, [schema, values]);
+  }, [schema, values, validateField]);
 
   const touch = useCallback(
     (field: string) => {
       setTouched((prev) => ({...prev, [field]: true}));
-
-      const config = schema[field];
       const value = values[field];
-      let fieldError: string | undefined;
-
-      if (config?.required && !value) {
-        fieldError = 'Required';
-      } else if (value && config?.rules) {
-        for (const rule of config.rules) {
-          if (!rule.validate(value)) {
-            fieldError = rule.message;
-            break;
-          }
-        }
-      }
-
+      const fieldError = validateField(field, value);
       setErrors((prev) => ({...prev, [field]: fieldError}));
     },
-    [schema, values],
+    [values, validateField],
   );
 
-  const isValid = Object.keys(errors).every((key) => !errors[key]);
+  const reset = useCallback(() => {
+    setTouched({});
+    setErrors({});
+  }, []);
+
+  // Compute isValid from current values, not stale errors state
+  const isValid = Object.keys(schema).every((fieldName) => {
+    const value = values[fieldName];
+    return validateField(fieldName, value) === undefined;
+  });
 
   return {
     errors,
@@ -88,5 +99,6 @@ export function useFormValidation(
     touch,
     touched,
     isValid,
+    reset,
   };
 }
