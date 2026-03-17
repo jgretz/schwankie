@@ -13,6 +13,7 @@ linksRoutes.get('/api/links', async (c) => {
     status: c.req.query('status') || undefined,
     tags: c.req.query('tags') || undefined,
     q: c.req.query('q') || undefined,
+    ids: c.req.query('ids') || undefined,
     needs_enrichment: c.req.query('needs_enrichment') || undefined,
   });
   if (!parsed.success) {

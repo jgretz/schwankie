@@ -10,6 +10,7 @@ export type ListLinksParams = {
   status?: 'saved' | 'queued' | 'archived';
   tags?: string;
   q?: string;
+  ids?: string;
   needs_enrichment?: boolean;
 };
 

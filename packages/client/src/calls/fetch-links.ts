@@ -7,6 +7,7 @@ type FetchLinksParams = {
   status?: LinkStatus;
   tags?: string;
   q?: string;
+  ids?: string;
 };
 
 export function fetchLinks(params: FetchLinksParams): Promise<LinksResponse> {
@@ -16,6 +17,7 @@ export function fetchLinks(params: FetchLinksParams): Promise<LinksResponse> {
   if (params.status) search.set('status', params.status);
   if (params.tags) search.set('tags', params.tags);
   if (params.q) search.set('q', params.q);
+  if (params.ids) search.set('ids', params.ids);
 
   const qs = search.toString();
   return apiFetch<LinksResponse>(`/api/links${qs ? `?${qs}` : ''}`);

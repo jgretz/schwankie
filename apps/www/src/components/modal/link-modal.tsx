@@ -31,6 +31,8 @@ type FormData = {
   tags: string[];
 };
 
+const URL_REGEX = /^https?:\/\/.+/;
+
 const emptyForm: FormData = {
   url: '',
   title: '',
@@ -45,7 +47,7 @@ const formValidationSchema = {
     required: true,
     rules: [
       {
-        validate: (v: string) => /^https?:\/\/.+/.test(v),
+        validate: (v: string) => URL_REGEX.test(v),
         message: 'Must be a valid URL (http:// or https://)',
       },
       {
@@ -337,7 +339,7 @@ function UrlEntryStage({onSubmit}: {onSubmit: (url: string) => void}) {
       return;
     }
 
-    if (!/^https?:\/\/.+/.test(trimmed)) {
+    if (!URL_REGEX.test(trimmed)) {
       setError('Must be a valid URL (http:// or https://)');
       return;
     }
