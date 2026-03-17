@@ -1,5 +1,6 @@
 import {useQueryClient} from '@tanstack/react-query';
 import {useCallback, useEffect, useState} from 'react';
+import {toast} from 'sonner';
 import {
   Dialog,
   DialogContent,
@@ -88,7 +89,7 @@ export function LinkModal() {
         imageUrl: meta.imageUrl ?? '',
       }));
     } catch (err) {
-      console.warn('Failed to fetch metadata:', err);
+      toast.error('Failed to fetch metadata');
       setForm((prev) => ({...prev, url}));
     }
     setStage('form');
@@ -126,7 +127,9 @@ export function LinkModal() {
       queryClient.invalidateQueries({queryKey: ['tags']});
       close();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save link');
+      const message = err instanceof Error ? err.message : 'Failed to save link';
+      setError(message);
+      toast.error(message);
     } finally {
       setSaving(false);
     }
@@ -146,7 +149,9 @@ export function LinkModal() {
       queryClient.invalidateQueries({queryKey: ['tags']});
       close();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete link');
+      const message = err instanceof Error ? err.message : 'Failed to delete link';
+      setError(message);
+      toast.error(message);
     } finally {
       setSaving(false);
     }

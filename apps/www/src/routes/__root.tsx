@@ -1,4 +1,4 @@
-import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
+import {QueryCache, QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {
   HeadContent,
   Outlet,
@@ -9,6 +9,8 @@ import {
 } from '@tanstack/react-router';
 import {createServerFn} from '@tanstack/react-start';
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {toast} from 'sonner';
+import {Toaster} from '@www/components/ui/toaster';
 import {LinkModal} from '@www/components/modal/link-modal';
 import {LinkModalProvider, useLinkModal} from '@www/components/modal/link-modal-context';
 import {AppShell} from '@www/components/shell/app-shell';
@@ -61,6 +63,11 @@ function RootComponent() {
   const [queryClient] = useState(
     () =>
       new QueryClient({
+        queryCache: new QueryCache({
+          onError: (error) => {
+            toast.error(error.message || 'Something went wrong');
+          },
+        }),
         defaultOptions: {
           queries: {
             staleTime: 30_000,
@@ -87,6 +94,7 @@ function RootComponent() {
             <LinkModal />
           </LinkModalProvider>
         </QueryClientProvider>
+        <Toaster />
         <Scripts />
       </body>
     </html>
