@@ -25,12 +25,22 @@ async function poll() {
   }
 }
 
-let intervalId: ReturnType<typeof setInterval>;
+let timeoutId: ReturnType<typeof setTimeout>;
+let running = true;
 
 function shutdown() {
   console.log('schwankie-tasks shutting down...');
-  clearInterval(intervalId);
+  running = false;
+  clearTimeout(timeoutId);
   process.exit(0);
+}
+
+async function scheduleNext() {
+  if (!running) return;
+  await poll();
+  if (running) {
+    timeoutId = setTimeout(scheduleNext, env.POLL_INTERVAL_MS);
+  }
 }
 
 async function start() {
@@ -39,10 +49,7 @@ async function start() {
   process.on('SIGINT', shutdown);
   process.on('SIGTERM', shutdown);
 
-  intervalId = setInterval(poll, env.POLL_INTERVAL_MS);
-  await poll();
-
-  console.log(`Task runner started, polling every ${env.POLL_INTERVAL_MS}ms`);
+  await scheduleNext();
 }
 
 start().catch(console.error);
