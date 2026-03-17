@@ -5,6 +5,7 @@ bun.lock
 
 # Secrets
 .env
+.env.*
 
 # Logs
 logs
