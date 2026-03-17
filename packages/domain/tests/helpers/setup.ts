@@ -1,12 +1,8 @@
-import {mock, beforeEach} from 'bun:test';
-import {mockDb, resetStore, store} from './mock-db';
+import {beforeEach} from 'bun:test';
+import {resetStore, store, mockDb} from './mock-db';
 
-mock.module('../../src/db', () => ({
-  init() {},
-  getDb() {
-    return mockDb;
-  },
-}));
+// mock.module lives in preload.ts — it must register before
+// any test file's static imports resolve db.ts.
 
 export function setupDb() {
   beforeEach(function () {
