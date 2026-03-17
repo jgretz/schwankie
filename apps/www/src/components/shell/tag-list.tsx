@@ -62,6 +62,9 @@ export function TagList({tags, selectedTagIds, onTagToggle}: TagListProps) {
         )}
       </div>
       <div className="flex flex-col gap-px">
+        {filteredTags.length === 0 && (
+          <span className="px-2 py-2 text-[0.78rem] text-text-faint">No tags yet</span>
+        )}
         {filteredTags.map((tag) => {
           const isSelected = selectedTagIds.includes(tag.id);
           const isFirst = tag.id === firstSelectedId;

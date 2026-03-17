@@ -5,6 +5,7 @@ import {
   Scripts,
   createRootRoute,
   useNavigate,
+  useRouterState,
   useSearch,
 } from '@tanstack/react-router';
 import {createServerFn} from '@tanstack/react-start';
@@ -106,13 +107,17 @@ function ShellWithData() {
   const {openAdd} = useLinkModal();
   const {auth} = Route.useRouteContext();
 
+  const pathname = useRouterState({select: (s) => s.location.pathname});
+  const status = pathname === '/queue' ? 'queued' : 'saved';
+  const currentPath = pathname === '/queue' ? '/queue' : '/';
+
   const search = useSearch({strict: false}) as FeedSearch;
   const tagsParam = search.tags;
   const qParam = search.q ?? '';
 
   const selectedTagIds = useMemo(() => parseTagIds(tagsParam), [tagsParam]);
 
-  const {data: tags} = useTags('saved');
+  const {data: tags} = useTags(status);
 
   // Debounced search
   const [searchValue, setSearchValue] = useState(qParam);
@@ -134,12 +139,12 @@ function ShellWithData() {
       if (debounceRef.current) clearTimeout(debounceRef.current);
       debounceRef.current = setTimeout(() => {
         navigate({
-          to: '/',
+          to: currentPath,
           search: {tags: tagsParam, q: value || undefined},
         });
       }, 300);
     },
-    [navigate, tagsParam],
+    [navigate, tagsParam, currentPath],
   );
 
   const handleTagToggle = useCallback(
@@ -149,11 +154,11 @@ function ShellWithData() {
         ? selectedTagIds.filter((id) => id !== tagId)
         : [...selectedTagIds, tagId];
       navigate({
-        to: '/',
+        to: currentPath,
         search: {tags: next.length > 0 ? next.join(',') : undefined, q: search.q},
       });
     },
-    [selectedTagIds, navigate, search.q],
+    [selectedTagIds, navigate, search.q, currentPath],
   );
 
   return (
