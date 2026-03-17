@@ -23,6 +23,7 @@ export const Route = createFileRoute('/')({
 });
 
 function IndexPage() {
+  const {auth} = Route.useRouteContext();
   const {tags, q} = Route.useSearch();
   const navigate = useNavigate({from: '/'});
 
@@ -55,6 +56,7 @@ function IndexPage() {
       title="Recent links"
       tags={tags}
       q={q}
+      isAuthenticated={auth.authenticated}
       onTagClick={handleTagClick}
       onRemoveTag={handleRemoveTag}
       onClearAll={handleClearAll}

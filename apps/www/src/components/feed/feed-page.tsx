@@ -1,5 +1,6 @@
 import {useCallback, useEffect, useMemo, useRef} from 'react';
-import type {LinkStatus} from '@www/lib/api-client';
+import type {LinkData, LinkStatus} from '@www/lib/api-client';
+import {useLinkModal} from '@www/components/modal/link-modal-context';
 import {FilterStrip} from './filter-strip';
 import {LinkItem} from './link-item';
 import {useInfiniteLinks} from '@www/hooks/use-infinite-links';
@@ -11,6 +12,7 @@ type FeedPageProps = {
   title: string;
   tags?: string;
   q?: string;
+  isAuthenticated: boolean;
   onTagClick: (tagId: number) => void;
   onRemoveTag: (tagId: number) => void;
   onClearAll: () => void;
@@ -21,10 +23,12 @@ export function FeedPage({
   title,
   tags: tagsParam,
   q,
+  isAuthenticated,
   onTagClick,
   onRemoveTag,
   onClearAll,
 }: FeedPageProps) {
+  const {openEdit} = useLinkModal();
   const selectedTagIds = useMemo(() => parseTagIds(tagsParam), [tagsParam]);
 
   const {data, hasNextPage, fetchNextPage, isFetchingNextPage, isLoading, isError} =
@@ -125,8 +129,8 @@ export function FeedPage({
               tags={item.tags}
               activeTagIds={selectedTagIds}
               onTagClick={memoizedOnTagClick}
-              showEditButton={false}
-              onEditClick={() => {}}
+              showEditButton={isAuthenticated}
+              onEditClick={() => openEdit(item as LinkData)}
             />
           ))}
         </div>

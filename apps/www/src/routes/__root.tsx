@@ -9,6 +9,8 @@ import {
 } from '@tanstack/react-router';
 import {createServerFn} from '@tanstack/react-start';
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {LinkModal} from '@www/components/modal/link-modal';
+import {LinkModalProvider, useLinkModal} from '@www/components/modal/link-modal-context';
 import {AppShell} from '@www/components/shell/app-shell';
 import {useTags} from '@www/hooks/use-tags';
 import {parseTagIds} from '@www/lib/parse-tag-ids';
@@ -73,7 +75,10 @@ function RootComponent() {
       </head>
       <body>
         <QueryClientProvider client={queryClient}>
-          <ShellWithData />
+          <LinkModalProvider>
+            <ShellWithData />
+            <LinkModal />
+          </LinkModalProvider>
         </QueryClientProvider>
         <Scripts />
       </body>
@@ -83,6 +88,8 @@ function RootComponent() {
 
 function ShellWithData() {
   const navigate = useNavigate();
+  const {openAdd} = useLinkModal();
+  const {auth} = Route.useRouteContext();
 
   const search = useSearch({strict: false}) as FeedSearch;
   const tagsParam = search.tags;
@@ -141,8 +148,8 @@ function ShellWithData() {
       onTagToggle={handleTagToggle}
       searchValue={searchValue}
       onSearchChange={handleSearchChange}
-      showAddButton={false}
-      onAddClick={() => {}}
+      showAddButton={auth.authenticated}
+      onAddClick={openAdd}
     >
       <Outlet />
     </AppShell>
