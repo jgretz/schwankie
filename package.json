@@ -27,6 +27,7 @@
     "start:api": "cd apps/api && bun run start",
     "start:www": "cd apps/www && bun run start",
     "start:tasks": "cd apps/tasks && bun run start",
+    "test": "bun test",
     "db:generate": "bun run --cwd packages/database generate",
     "db:migrate": "bun run --cwd packages/database migrate"
   }

@@ -52,3 +52,7 @@ CLAUDE-WORKING.md
 .claude/reviews/
 .claude/rules/worksite-reviewer.md
 .claude/rules/worksite-planner.md
+.claude/commands/review.md
+.claude/commands/night-shift.md
+.claude/commands/introspect.md
+.claude/commands/curate-ideas.md
