@@ -15,7 +15,7 @@
     "packages/**"
   ],
   "scripts": {
-    "dev": "concurrently bun:dev:*",
+    "dev": "concurrently bun:dev:api bun:dev:www",
     "dev:api": "bun run --cwd apps/api dev",
     "dev:www": "bun run --cwd apps/www dev",
     "dev:tasks": "bun run --cwd apps/tasks dev",
