@@ -5,7 +5,7 @@ import type {ListLinksParams, ListLinksResult} from '../types';
 
 export async function listLinks(params: ListLinksParams): Promise<ListLinksResult> {
   const db = getDb();
-  const {limit, offset, status, tags: tagsParam, q, needs_enrichment} = params;
+  const {limit, offset, status, tags: tagsParam, q, ids, needs_enrichment} = params;
 
   const conditions = [];
 
@@ -33,6 +33,13 @@ export async function listLinks(params: ListLinksParams): Promise<ListLinksResul
         HAVING COUNT(DISTINCT ${linkTag.tagId}) = ${tagIds.length}
       )`;
       conditions.push(sql`${link.id} IN ${subquery}`);
+    }
+  }
+
+  if (ids) {
+    const idList = ids.split(',').map(Number).filter(Boolean);
+    if (idList.length > 0) {
+      conditions.push(inArray(link.id, idList));
     }
   }
 

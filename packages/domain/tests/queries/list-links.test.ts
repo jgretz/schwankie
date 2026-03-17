@@ -58,4 +58,44 @@ describe('listLinks', function () {
     const found = result.items.find((i) => i.id === withTag.id);
     expect(found).toBeDefined();
   });
+
+  it('should return only links matching provided ids', async function () {
+    const link1 = await makeLink({title: 'Link 1'});
+    const link2 = await makeLink({title: 'Link 2'});
+    const link3 = await makeLink({title: 'Link 3'});
+
+    const result = await listLinks({limit: 100, offset: 0, ids: `${link1.id},${link2.id}`});
+
+    expect(result.items).toHaveLength(2);
+    const ids = result.items.map((i) => i.id);
+    expect(ids).toContain(link1.id);
+    expect(ids).toContain(link2.id);
+    expect(ids).not.toContain(link3.id);
+  });
+
+  it("should return empty when ids don't match any links", async function () {
+    const result = await listLinks({limit: 100, offset: 0, ids: '999999,999998'});
+
+    expect(result.items).toHaveLength(0);
+    expect(result.total).toBe(0);
+  });
+
+  it('should combine ids filter with other filters (status)', async function () {
+    const savedLink = await makeLink({title: 'Saved', status: 'saved'});
+    const queuedLink = await makeLink({title: 'Queued', status: 'queued'});
+    const anotherSavedLink = await makeLink({title: 'Another Saved', status: 'saved'});
+
+    const result = await listLinks({
+      limit: 100,
+      offset: 0,
+      ids: `${savedLink.id},${queuedLink.id},${anotherSavedLink.id}`,
+      status: 'saved',
+    });
+
+    expect(result.items).toHaveLength(2);
+    for (const item of result.items) {
+      expect(item.status).toBe('saved');
+      expect([savedLink.id, anotherSavedLink.id]).toContain(item.id);
+    }
+  });
 });
