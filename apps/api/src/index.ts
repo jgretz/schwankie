@@ -2,6 +2,7 @@ import {Hono} from 'hono';
 import {cors} from 'hono/cors';
 import z from 'zod';
 import {parseEnv} from 'env';
+import {init as initDomain} from '@domain';
 import {authMiddleware} from './middleware/auth';
 import {healthRoutes} from './routes/health';
 import {helloRoutes} from './routes/hello';
@@ -12,8 +13,11 @@ import {metadataRoutes} from './routes/metadata';
 const envSchema = z.object({
   PORT: z.string().default('3001'),
   API_KEY: z.string(),
+  DATABASE_URL: z.string(),
 });
 const env = parseEnv(envSchema);
+
+initDomain(env.DATABASE_URL);
 
 const app = new Hono();
 

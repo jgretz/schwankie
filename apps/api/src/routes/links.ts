@@ -1,11 +1,7 @@
 import {Hono} from 'hono';
 import {authMiddleware} from '../middleware/auth';
-import {db} from '../lib/db';
+import {listLinks, createLink, updateLink, deleteLink} from '@domain';
 import {createLinkSchema, updateLinkSchema, listLinksParamsSchema} from '../validators/links';
-import {listLinks} from '../queries/list-links';
-import {createLink} from '../commands/create-link';
-import {updateLink} from '../commands/update-link';
-import {deleteLink} from '../commands/delete-link';
 
 export const linksRoutes = new Hono();
 const auth = authMiddleware();
@@ -22,7 +18,7 @@ linksRoutes.get('/api/links', async (c) => {
   if (!parsed.success) {
     return c.json({error: 'Invalid query parameters', details: parsed.error.flatten()}, 400);
   }
-  const result = await listLinks(db, parsed.data);
+  const result = await listLinks(parsed.data);
   return c.json(result);
 });
 
@@ -31,7 +27,7 @@ linksRoutes.post('/api/links', auth, async (c) => {
   if (!parsed.success) {
     return c.json({error: 'Invalid request body', details: parsed.error.flatten()}, 400);
   }
-  const result = await createLink(db, parsed.data);
+  const result = await createLink(parsed.data);
   return c.json(result, 201);
 });
 
@@ -44,7 +40,7 @@ linksRoutes.patch('/api/links/:id', auth, async (c) => {
   if (!parsed.success) {
     return c.json({error: 'Invalid request body', details: parsed.error.flatten()}, 400);
   }
-  const result = await updateLink(db, id, parsed.data);
+  const result = await updateLink(id, parsed.data);
   if (!result) {
     return c.json({error: 'Link not found'}, 404);
   }
@@ -56,7 +52,7 @@ linksRoutes.delete('/api/links/:id', auth, async (c) => {
   if (Number.isNaN(id)) {
     return c.json({error: 'Invalid link ID'}, 400);
   }
-  const deleted = await deleteLink(db, id);
+  const deleted = await deleteLink(id);
   if (!deleted) {
     return c.json({error: 'Link not found'}, 404);
   }

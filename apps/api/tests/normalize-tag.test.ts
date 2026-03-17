@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'bun:test';
-import {normalizeTag} from '../src/lib/normalize-tag';
+import {normalizeTag} from '@domain';
 
 describe('normalizeTag', function () {
   it('should trim whitespace', function () {

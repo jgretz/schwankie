@@ -1,10 +1,7 @@
 import {Hono} from 'hono';
 import {authMiddleware} from '../middleware/auth';
-import {db} from '../lib/db';
+import {listTags, mergeTag, markTagNormalized} from '@domain';
 import {listTagsParamsSchema, mergeTagSchema} from '../validators/tags';
-import {listTags} from '../queries/list-tags';
-import {mergeTag} from '../commands/merge-tag';
-import {markTagNormalized} from '../commands/normalize-tag';
 
 export const tagsRouter = new Hono();
 const auth = authMiddleware();
@@ -17,7 +14,7 @@ tagsRouter.get('/api/tags', async (c) => {
   });
   if (!parsed.success) return c.json({error: 'Invalid query parameters'}, 400);
 
-  const result = await listTags(db, parsed.data);
+  const result = await listTags(parsed.data);
   return c.json(result);
 });
 
@@ -29,7 +26,7 @@ tagsRouter.post('/api/tags/:id/merge', auth, async (c) => {
   if (!parsed.success)
     return c.json({error: 'Invalid request body', details: parsed.error.flatten()}, 400);
 
-  const result = await mergeTag(db, {aliasTagId, canonicalTagId: parsed.data.canonicalTagId});
+  const result = await mergeTag({aliasTagId, canonicalTagId: parsed.data.canonicalTagId});
   if (!result) return c.json({error: 'Tag not found'}, 404);
 
   return c.json({merged: true});
@@ -39,7 +36,7 @@ tagsRouter.patch('/api/tags/:id/normalize', auth, async (c) => {
   const tagId = Number(c.req.param('id'));
   if (Number.isNaN(tagId)) return c.json({error: 'Invalid tag ID'}, 400);
 
-  const normalized = await markTagNormalized(db, tagId);
+  const normalized = await markTagNormalized(tagId);
   if (!normalized) return c.json({error: 'Tag not found'}, 404);
 
   return c.json({normalized: true});
