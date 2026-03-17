@@ -21,6 +21,7 @@ async function callOllama(
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({model, prompt, stream: false}),
+    signal: AbortSignal.timeout(30_000),
   });
 
   if (!response.ok) {
@@ -50,7 +51,7 @@ export async function normalizeTags(ollamaUrl: string, ollamaModel: string): Pro
         continue;
       }
 
-      const prompt = buildPrompt(canonicalTags, row.text);
+      const prompt = buildPrompt(canonicalTags, row.text.trim());
       const result = await callOllama(ollamaUrl, ollamaModel, prompt);
 
       if (result.merge && result.canonical) {
