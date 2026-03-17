@@ -31,13 +31,14 @@ bun run migrate                             # drizzle-kit migrate
 
 ## Packages
 
+- **client** — Shared API client. `init({apiUrl, apiKey?})` singleton, one file per call in `src/calls/`.
 - **database** — Drizzle ORM + PostgreSQL. Schema in `schema/`. `createDatabase()`.
 - **env** — Zod env parsing via `parseEnv()`.
 
 ## Key Patterns
 
-- **Path Aliases**: tsconfig aliases — `database`, `env`, `@api`, `@www/*`.
-- **API Client**: Manual fetch wrapper (no Hono RPC). Typed request/response via shared types.
+- **Path Aliases**: tsconfig aliases — `database`, `env`, `client`, `@domain`, `@api`, `@www/*`.
+- **API Client**: Shared `client` package. `init()` singleton pattern (like `domain`). One call per file.
 - **Design System**: Parchment/terracotta theme. CSS custom properties for colors. Lora (serif) for headings/titles, DM Sans for UI chrome.
 
 ## Prettier
