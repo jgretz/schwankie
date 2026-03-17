@@ -35,7 +35,7 @@ export function LinkItem({
         href={url}
         target="_blank"
         rel="noopener noreferrer"
-        className="mb-[0.3rem] block font-serif text-[0.975rem] font-medium leading-[1.35] text-text transition-colors duration-[120ms] hover:text-accent"
+        className="mb-[0.3rem] block font-serif text-[0.975rem] font-medium leading-[1.35] text-text transition-colors duration-100 hover:text-accent"
       >
         {title}
       </a>
@@ -59,7 +59,7 @@ export function LinkItem({
               type="button"
               onClick={() => onTagClick(tag.id)}
               className={cn(
-                'inline-flex cursor-pointer items-center rounded-[3px] px-2 py-[2px] font-sans text-[0.72rem] leading-[1.6] transition-colors duration-[120ms]',
+                'inline-flex cursor-pointer items-center rounded-[3px] px-2 py-[2px] font-sans text-[0.72rem] leading-[1.6] transition-colors duration-100',
                 isActive
                   ? 'bg-accent text-white'
                   : 'bg-tag-bg text-tag-text hover:bg-accent hover:text-white',
@@ -75,7 +75,7 @@ export function LinkItem({
             type="button"
             onClick={() => onEditClick(id)}
             aria-label="Edit link"
-            className="ml-auto text-text-faint opacity-0 transition-opacity duration-[120ms] hover:text-text-muted group-hover:opacity-100"
+            className="ml-auto text-text-faint opacity-0 transition-opacity duration-100 hover:text-text-muted group-hover:opacity-100"
           >
             <svg
               width="13"

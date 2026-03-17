@@ -72,7 +72,7 @@ export function TagList({tags, selectedTagIds, onTagToggle}: TagListProps) {
               type="button"
               onClick={() => onTagToggle(tag.id)}
               className={cn(
-                'flex cursor-pointer select-none items-center justify-between rounded-[5px] px-2 py-[5px] transition-[background] duration-[120ms]',
+                'flex cursor-pointer select-none items-center justify-between rounded-[5px] px-2 py-[5px] transition-[background] duration-100',
                 !isSelected && 'hover:bg-bg-subtle',
                 isSelected && isFirst && 'bg-tag-active-bg',
                 isSelected &&
