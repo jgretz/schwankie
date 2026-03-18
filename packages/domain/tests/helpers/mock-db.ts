@@ -644,7 +644,7 @@ function createUpdateBuilder(table: any) {
           }
         }
       }
-      resolve({rowsAffected: count});
+      resolve({rowCount: count});
     },
   };
 
@@ -680,7 +680,7 @@ function createDeleteBuilder(table: any) {
       const kept = storeArr.filter((row) => !evaluateCondition(row, whereCondition, table));
       const removed = storeArr.length - kept.length;
       replaceStoreArray(table, kept);
-      resolve({rowsAffected: removed});
+      resolve({rowCount: removed});
     },
   };
 

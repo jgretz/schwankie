@@ -12,5 +12,5 @@ export async function renameTag(input: RenameTagInput): Promise<boolean> {
 
   const result = await db.update(tag).set({text: normalized}).where(eq(tag.id, input.id));
 
-  return result.rowsAffected > 0;
+  return (result.rowCount ?? 0) > 0;
 }
