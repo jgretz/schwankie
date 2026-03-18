@@ -92,9 +92,7 @@ export function TagList({tags, selectedTags, onTagToggle}: TagListProps) {
                 'flex cursor-pointer select-none items-start justify-between rounded-[5px] px-2 py-[5px] transition-[background] duration-100',
                 !isSelected && 'hover:bg-bg-subtle',
                 isSelected && isFirst && 'bg-tag-active-bg',
-                isSelected &&
-                  !isFirst &&
-                  'bg-[color-mix(in_srgb,var(--tag-active-bg)_65%,var(--bg-subtle))]',
+                isSelected && !isFirst && 'bg-tag-active-bg-secondary',
               )}
             >
               <span
