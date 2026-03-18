@@ -12,9 +12,17 @@ type TopbarProps = {
   isAuthenticated?: boolean;
 };
 
-type NavLink = {to: '/' | '/queue' | '/admin'; label: string; exact: boolean; icon?: 'settings'};
+type NavLink = {
+  to: '/' | '/queue' | '/admin' | '/about';
+  label: string;
+  exact: boolean;
+  icon?: 'settings';
+};
 
-const publicLinks: NavLink[] = [{to: '/', label: 'Compendium', exact: true}];
+const publicLinks: NavLink[] = [
+  {to: '/', label: 'Compendium', exact: true},
+  {to: '/about', label: 'About', exact: true},
+];
 
 const adminLinks: NavLink[] = [
   {to: '/queue', label: 'Queue', exact: true},
