@@ -1,3 +1,5 @@
+import {cn} from '@www/lib/utils';
+
 type FilterStripProps = {
   activeTags: Array<{text: string}>;
   totalCount: number;
@@ -17,7 +19,12 @@ export function FilterStrip({activeTags, totalCount, onRemoveTag, onClearAll}: F
       {activeTags.map((tag, index) => (
         <span key={tag.text} className="inline-flex items-center gap-[0.35rem]">
           {index > 0 && <span className="text-[0.68rem] italic text-text-faint">+</span>}
-          <span className="inline-flex items-center gap-1 rounded-[3px] bg-pill-bg px-2 py-[2px] text-[0.75rem] font-medium text-pill-text">
+          <span
+            className={cn(
+              'inline-flex items-center gap-1 rounded-[3px] px-2 py-[2px] text-[0.75rem] font-medium text-pill-text',
+              index === 0 ? 'bg-pill-bg' : 'bg-tag-active-bg-secondary',
+            )}
+          >
             {tag.text}
             <button
               type="button"

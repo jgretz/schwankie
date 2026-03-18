@@ -15,6 +15,7 @@
     --tag-bg: #e4d5c4;
     --tag-text: #4a3728;
     --tag-active-bg: #5b6f8a;
+    --tag-active-bg-secondary: #7b8fa6;
     --tag-active-text: #ffffff;
     --modal-bg: #ffffff;
     --search-bg: #ffffff;
@@ -53,6 +54,7 @@
     --tag-bg: #222a35;
     --tag-text: #8aa0be;
     --tag-active-bg: #5b6f8a;
+    --tag-active-bg-secondary: #6e89a8;
     --tag-active-text: #ffffff;
     --modal-bg: #21252a;
     --search-bg: #21252a;

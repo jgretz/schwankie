@@ -60,7 +60,9 @@ export function LinkItem({
         </span>
 
         {tags.map((tag) => {
-          const isActive = activeTags.includes(tag.text);
+          const activeIndex = activeTags.indexOf(tag.text);
+          const isActive = activeIndex !== -1;
+          const isPrimary = activeIndex === 0;
           return (
             <button
               key={tag.id}
@@ -68,9 +70,9 @@ export function LinkItem({
               onClick={() => onTagClick(tag.text)}
               className={cn(
                 'inline-flex cursor-pointer items-center rounded-[3px] px-2 py-[2px] font-sans text-[0.72rem] leading-[1.6] transition-colors duration-100',
-                isActive
-                  ? 'bg-accent text-white'
-                  : 'bg-tag-bg text-tag-text hover:bg-accent hover:text-white',
+                !isActive && 'bg-tag-bg text-tag-text hover:bg-accent hover:text-white',
+                isActive && isPrimary && 'bg-accent text-white',
+                isActive && !isPrimary && 'bg-tag-active-bg-secondary text-white',
               )}
             >
               {tag.text}

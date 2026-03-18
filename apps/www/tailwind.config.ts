@@ -20,6 +20,7 @@ export default {
         'tag-bg': 'var(--tag-bg)',
         'tag-text': 'var(--tag-text)',
         'tag-active-bg': 'var(--tag-active-bg)',
+        'tag-active-bg-secondary': 'var(--tag-active-bg-secondary)',
         'tag-active-text': 'var(--tag-active-text)',
         'modal-bg': 'var(--modal-bg)',
         'search-bg': 'var(--search-bg)',
