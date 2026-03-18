@@ -28,8 +28,12 @@ function AdminPage() {
     queryFn: async () => {
       try {
         return await getSetting('tagCountFloor');
-      } catch {
-        return {key: 'tagCountFloor', value: '1'};
+      } catch (error) {
+        // 404 = setting not yet created, fall back to default
+        if (error instanceof Error && error.message.includes('404')) {
+          return {key: 'tagCountFloor', value: '1'};
+        }
+        throw error;
       }
     },
   });
@@ -51,16 +55,20 @@ function AdminPage() {
       setFloorSaveError(null);
       queryClient.invalidateQueries({queryKey: ['tags']});
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Failed to save tagCountFloor setting:', error);
       setFloorSaveError('Failed to save. Please try again.');
     },
   });
 
   const handleSaveFloor = () => {
     const num = Number(floorValue);
-    if (!Number.isNaN(num) && num >= 1) {
-      floorMutation.mutate(floorValue);
+    if (!Number.isInteger(num) || num < 1) {
+      setFloorSaveError('Value must be a whole number of 1 or greater.');
+      return;
     }
+    setFloorSaveError(null);
+    floorMutation.mutate(String(num));
   };
 
   return (
