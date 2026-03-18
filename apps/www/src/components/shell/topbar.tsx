@@ -14,12 +14,12 @@ type TopbarProps = {
 
 type NavLink = {to: '/' | '/queue' | '/admin'; label: string; exact: boolean};
 
-const publicLinks: NavLink[] = [
-  {to: '/', label: 'Compendium', exact: true},
-  {to: '/queue', label: 'Queue', exact: true},
-];
+const publicLinks: NavLink[] = [{to: '/', label: 'Compendium', exact: true}];
 
-const adminLinks: NavLink[] = [{to: '/admin', label: 'Admin', exact: true}];
+const adminLinks: NavLink[] = [
+  {to: '/queue', label: 'Queue', exact: true},
+  {to: '/admin', label: 'Admin', exact: true},
+];
 
 export function Topbar({
   searchValue,
