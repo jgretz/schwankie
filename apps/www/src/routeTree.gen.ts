@@ -14,6 +14,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
 import { Route as AuthCallbackRouteImport } from './routes/auth/callback'
+import { Route as AdminTagsRouteImport } from './routes/admin.tags'
 
 const QueueRoute = QueueRouteImport.update({
   id: '/queue',
@@ -40,40 +41,67 @@ const AuthCallbackRoute = AuthCallbackRouteImport.update({
   path: '/auth/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminTagsRoute = AdminTagsRouteImport.update({
+  id: '/tags',
+  path: '/tags',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/queue': typeof QueueRoute
+  '/admin/tags': typeof AdminTagsRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/login': typeof AuthLoginRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/queue': typeof QueueRoute
+  '/admin/tags': typeof AdminTagsRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/login': typeof AuthLoginRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/queue': typeof QueueRoute
+  '/admin/tags': typeof AdminTagsRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/login': typeof AuthLoginRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/admin' | '/queue' | '/auth/callback' | '/auth/login'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/queue'
+    | '/admin/tags'
+    | '/auth/callback'
+    | '/auth/login'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin' | '/queue' | '/auth/callback' | '/auth/login'
-  id: '__root__' | '/' | '/admin' | '/queue' | '/auth/callback' | '/auth/login'
+  to:
+    | '/'
+    | '/admin'
+    | '/queue'
+    | '/admin/tags'
+    | '/auth/callback'
+    | '/auth/login'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/queue'
+    | '/admin/tags'
+    | '/auth/callback'
+    | '/auth/login'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AdminRoute: typeof AdminRoute
+  AdminRoute: typeof AdminRouteWithChildren
   QueueRoute: typeof QueueRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
   AuthLoginRoute: typeof AuthLoginRoute
@@ -116,12 +144,29 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/tags': {
+      id: '/admin/tags'
+      path: '/tags'
+      fullPath: '/admin/tags'
+      preLoaderRoute: typeof AdminTagsRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
+interface AdminRouteChildren {
+  AdminTagsRoute: typeof AdminTagsRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminTagsRoute: AdminTagsRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AdminRoute: AdminRoute,
+  AdminRoute: AdminRouteWithChildren,
   QueueRoute: QueueRoute,
   AuthCallbackRoute: AuthCallbackRoute,
   AuthLoginRoute: AuthLoginRoute,

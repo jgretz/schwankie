@@ -631,8 +631,10 @@ function createUpdateBuilder(table: any) {
     },
     then(resolve: any) {
       const storeArr = getStoreForTable(table);
+      let count = 0;
       for (const row of storeArr) {
         if (evaluateCondition(row, whereCondition, table)) {
+          count++;
           for (const [key, val] of Object.entries(setValues)) {
             if (val && typeof val === 'object' && (val as any).queryChunks) {
               (row as any)[key] = new Date();
@@ -642,7 +644,7 @@ function createUpdateBuilder(table: any) {
           }
         }
       }
-      resolve(undefined);
+      resolve({rowsAffected: count});
     },
   };
 
@@ -676,8 +678,9 @@ function createDeleteBuilder(table: any) {
     then(resolve: any) {
       const storeArr = getStoreForTable(table);
       const kept = storeArr.filter((row) => !evaluateCondition(row, whereCondition, table));
+      const removed = storeArr.length - kept.length;
       replaceStoreArray(table, kept);
-      resolve(undefined);
+      resolve({rowsAffected: removed});
     },
   };
 
