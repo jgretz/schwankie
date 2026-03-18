@@ -1,17 +1,29 @@
 import {Hono} from 'hono';
 import {authMiddleware} from '../middleware/auth';
-import {listTags, mergeTag, markTagNormalized, renameTag, deleteTag} from '@domain';
+import {listTags, mergeTag, markTagNormalized, renameTag, deleteTag, getSetting} from '@domain';
 import {listTagsParamsSchema, mergeTagSchema, renameTagSchema} from '../validators/tags';
 
 export const tagsRouter = new Hono();
 const auth = authMiddleware();
 
 tagsRouter.get('/api/tags', async (c) => {
+  const needs_normalization = c.req.query('needs_normalization') === 'true' ? true : undefined;
+  const canonical = c.req.query('canonical') === 'true' ? true : undefined;
+
+  // Read tag count floor setting for default tag list
+  let minCount: number | undefined;
+  if (!needs_normalization && !canonical) {
+    const floorValue = await getSetting('tagCountFloor');
+    const floor = floorValue ? Number(floorValue) : 1;
+    minCount = Number.isNaN(floor) ? 1 : floor;
+  }
+
   const parsed = listTagsParamsSchema.safeParse({
     status: c.req.query('status') || undefined,
-    needs_normalization: c.req.query('needs_normalization') === 'true' ? true : undefined,
-    canonical: c.req.query('canonical') === 'true' ? true : undefined,
+    needs_normalization,
+    canonical,
     limit: c.req.query('limit') || undefined,
+    minCount,
   });
   if (!parsed.success) return c.json({error: 'Invalid query parameters'}, 400);
 

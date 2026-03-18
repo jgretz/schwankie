@@ -23,6 +23,8 @@ export {resetEnrichment} from './calls/reset-enrichment';
 export {fetchDeadLinks} from './calls/fetch-dead-links';
 export {refetchLink} from './calls/refetch-link';
 export {suggestTags} from './calls/suggest-tags';
+export {getSetting} from './calls/get-setting';
+export {setSetting} from './calls/set-setting';
 
 // types
 export type {
@@ -33,4 +35,5 @@ export type {
   LinkMetadata,
   CreateLinkInput,
   UpdateLinkInput,
+  SettingResponse,
 } from './types';
