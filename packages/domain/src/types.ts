@@ -13,6 +13,8 @@ export type ListLinksParams = {
   ids?: string;
   needs_enrichment?: boolean;
   dead_enrichment?: boolean;
+  sort?: 'date' | 'score';
+  needs_scoring?: boolean;
 };
 
 export type ListLinksResult = {
@@ -51,6 +53,7 @@ export type UpdateLinkInput = {
   status?: 'saved' | 'queued' | 'archived';
   enrichmentFailCount?: number;
   enrichmentLastError?: string | null;
+  score?: number | null;
   tags?: string[];
 };
 

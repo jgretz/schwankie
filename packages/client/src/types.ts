@@ -9,6 +9,7 @@ export type LinkData = {
   status: LinkStatus;
   enrichmentFailCount: number;
   enrichmentLastError: string | null;
+  score: number | null;
   createDate: string;
   updateDate: string;
   tags: Array<{id: number; text: string}>;

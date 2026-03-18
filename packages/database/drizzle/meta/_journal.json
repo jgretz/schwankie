@@ -29,6 +29,13 @@
       "when": 1773788428271,
       "tag": "0003_composite-status-create-date-index",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1773860434516,
+      "tag": "0004_add-link-score",
+      "breakpoints": true
     }
   ]
 }

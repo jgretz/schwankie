@@ -2,6 +2,7 @@ import z from 'zod';
 import {parseEnv} from 'env';
 import {init} from 'client';
 import {enrichContent} from './jobs/enrich-content';
+import {scoreLinks} from './jobs/score-links';
 import {normalizeTags} from './jobs/normalize-tags';
 
 const envSchema = z.object({
@@ -17,6 +18,7 @@ init({apiUrl: env.API_URL, apiKey: env.API_KEY});
 
 async function poll() {
   await enrichContent();
+  await scoreLinks(env.OLLAMA_URL, env.OLLAMA_MODEL);
 
   if (env.OLLAMA_URL) {
     await normalizeTags(env.OLLAMA_URL, env.OLLAMA_MODEL);

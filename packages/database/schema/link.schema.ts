@@ -14,9 +14,11 @@ export const link = pgTable(
     content: text('content'),
     enrichmentFailCount: integer('enrichment_fail_count').notNull().default(0),
     enrichmentLastError: varchar('enrichment_last_error', {length: 500}),
+    score: integer('score'),
     ...dates,
   },
   (table) => ({
     statusCreateDateIdx: index('idx_link_status_create_date').on(table.status, table.createDate),
+    scoreIdx: index('idx_link_score').on(table.score),
   }),
 );

@@ -18,6 +18,7 @@ export const updateLinkSchema = z.object({
   status: z.enum(['saved', 'queued', 'archived']).optional(),
   enrichmentFailCount: z.coerce.number().optional(),
   enrichmentLastError: z.string().nullable().optional(),
+  score: z.coerce.number().min(0).max(100).nullable().optional(),
   tags: z.array(z.string()).optional(),
 });
 
@@ -30,4 +31,6 @@ export const listLinksParamsSchema = z.object({
   ids: z.string().optional(),
   needs_enrichment: z.coerce.boolean().optional(),
   dead_enrichment: z.coerce.boolean().optional(),
+  sort: z.enum(['date', 'score']).optional(),
+  needs_scoring: z.coerce.boolean().optional(),
 });
