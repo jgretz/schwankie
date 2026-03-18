@@ -24,8 +24,6 @@ export default {
         'tag-active-text': 'var(--tag-active-text)',
         'modal-bg': 'var(--modal-bg)',
         'search-bg': 'var(--search-bg)',
-        'pill-bg': 'var(--pill-bg)',
-        'pill-text': 'var(--pill-text)',
         background: 'var(--background)',
         foreground: 'var(--foreground)',
         card: {
