@@ -9,7 +9,7 @@ export function useAdminTags() {
 
   const query = useQuery({
     queryKey: ['admin-tags'],
-    queryFn: () => fetchTags({status: 'saved'}),
+    queryFn: () => fetchTags({}),
   });
 
   const renameMutation = useMutation({
