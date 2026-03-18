@@ -48,6 +48,10 @@ function QueuePage() {
     navigate({search: {q}});
   }, [navigate, q]);
 
+  const handleClearSearch = useCallback(() => {
+    navigate({search: {tags, q: undefined}});
+  }, [navigate, tags]);
+
   return (
     <FeedPage
       status="queued"
@@ -58,6 +62,7 @@ function QueuePage() {
       onTagClick={handleTagClick}
       onRemoveTag={handleRemoveTag}
       onClearAll={handleClearAll}
+      onClearSearch={handleClearSearch}
     />
   );
 }
