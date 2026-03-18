@@ -26,7 +26,10 @@ function AdminPage() {
   const items = data?.items ?? [];
   const queryClient = useQueryClient();
 
-  // Tag count floor settings
+  // Tag count floor settings — only fetch client-side (client not initialized during SSR)
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   const {data: settingData, isLoading: settingLoading} = useQuery({
     queryKey: ['setting', 'tagCountFloor'],
     queryFn: async () => {
@@ -40,6 +43,7 @@ function AdminPage() {
         throw error;
       }
     },
+    enabled: mounted,
   });
 
   const [floorValue, setFloorValue] = useState('1');
