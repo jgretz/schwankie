@@ -9,6 +9,7 @@ import {helloRoutes} from './routes/hello';
 import {tagsRouter} from './routes/tags';
 import {linksRoutes} from './routes/links';
 import {metadataRoutes} from './routes/metadata';
+import {settingsRouter} from './routes/settings';
 
 const envSchema = z.object({
   PORT: z.string().default('3001'),
@@ -29,6 +30,9 @@ app.route('/', tagsRouter);
 
 // links — handles its own auth (GET is public, mutations are protected)
 app.route('/', linksRoutes);
+
+// settings — handles its own auth
+app.route('/', settingsRouter);
 
 // protected
 app.use('/api/*', authMiddleware());

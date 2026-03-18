@@ -29,6 +29,7 @@ export type ListTagsParams = {
   needs_normalization?: boolean;
   canonical?: boolean;
   limit?: number;
+  minCount?: number;
 };
 
 export type TagWithCount = {id: number; text: string; count: number};

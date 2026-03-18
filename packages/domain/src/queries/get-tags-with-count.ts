@@ -1,10 +1,10 @@
 import {link, linkStatusEnum, linkTag, tag} from 'database';
-import {count, desc, eq, sql} from 'drizzle-orm';
+import {count, desc, eq, gte, sql} from 'drizzle-orm';
 import {getDb} from '../db';
 
 export type LinkStatus = (typeof linkStatusEnum.enumValues)[number];
 
-export async function getTagsWithCount(status?: LinkStatus) {
+export async function getTagsWithCount(status?: LinkStatus, minCount?: number) {
   const db = getDb();
 
   let query = db
@@ -22,7 +22,16 @@ export async function getTagsWithCount(status?: LinkStatus) {
     query = query.where(eq(link.status, status));
   }
 
-  return query
-    .groupBy(tag.id, tag.text)
-    .orderBy(desc(sql`count(DISTINCT ${linkTag.linkId})`), tag.text);
+  let countedQuery = query.groupBy(tag.id, tag.text);
+
+  if (minCount && minCount > 1) {
+    countedQuery = countedQuery.having(
+      gte(count(sql`DISTINCT ${linkTag.linkId}`), minCount)
+    );
+  }
+
+  return countedQuery.orderBy(
+    desc(sql`count(DISTINCT ${linkTag.linkId})`),
+    tag.text
+  );
 }

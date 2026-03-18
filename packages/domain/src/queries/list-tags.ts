@@ -31,6 +31,6 @@ export async function listTags(params: ListTagsParams): Promise<ListTagsResult> 
     return {tags};
   }
 
-  const tags = await getTagsWithCount(params.status);
+  const tags = await getTagsWithCount(params.status, params.minCount);
   return {tags};
 }

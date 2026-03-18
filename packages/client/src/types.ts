@@ -49,3 +49,8 @@ export type UpdateLinkInput = {
   status?: 'saved' | 'queued' | 'archived';
   tags?: string[];
 };
+
+export type SettingResponse = {
+  key: string;
+  value: string;
+};

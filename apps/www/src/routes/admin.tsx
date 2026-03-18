@@ -1,6 +1,9 @@
 import {createFileRoute, redirect} from '@tanstack/react-router';
+import {useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
 import {useDeadLinks} from '@www/hooks/use-dead-links';
 import {Button} from '@www/components/ui/button';
+import {getSetting, setSetting} from 'client';
+import {useState, useEffect} from 'react';
 
 export const Route = createFileRoute('/admin')({
   beforeLoad: ({context}) => {
@@ -17,9 +20,82 @@ export const Route = createFileRoute('/admin')({
 function AdminPage() {
   const {data, isLoading, isError, retryLink, deleteLink} = useDeadLinks();
   const items = data?.items ?? [];
+  const queryClient = useQueryClient();
+
+  // Tag count floor settings
+  const {data: settingData, isLoading: settingLoading} = useQuery({
+    queryKey: ['setting', 'tagCountFloor'],
+    queryFn: async () => {
+      try {
+        return await getSetting('tagCountFloor');
+      } catch {
+        return {key: 'tagCountFloor', value: '1'};
+      }
+    },
+  });
+
+  const [floorValue, setFloorValue] = useState('1');
+
+  useEffect(() => {
+    if (settingData) {
+      setFloorValue(settingData.value);
+    }
+  }, [settingData]);
+
+  const floorMutation = useMutation({
+    mutationFn: async (value: string) => {
+      await setSetting('tagCountFloor', value);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({queryKey: ['tags']});
+    },
+  });
+
+  const handleSaveFloor = () => {
+    const num = Number(floorValue);
+    if (!Number.isNaN(num) && num >= 1) {
+      floorMutation.mutate(floorValue);
+    }
+  };
 
   return (
     <div className="px-6 py-6">
+      <div className="mb-8">
+        <div className="mb-5 flex items-baseline gap-3">
+          <h2 className="font-serif text-[1.35rem] font-semibold text-text">Settings</h2>
+        </div>
+
+        <div className="space-y-4">
+          <div className="flex items-end gap-3">
+            <div className="flex flex-col">
+              <label htmlFor="tag-floor" className="mb-1 font-sans text-[0.85rem] text-text-muted">
+                Tag count floor
+              </label>
+              <input
+                id="tag-floor"
+                type="number"
+                min="1"
+                value={floorValue}
+                onChange={(e) => setFloorValue(e.target.value)}
+                disabled={settingLoading}
+                className="w-20 rounded border border-border bg-bg px-2 py-1.5 font-sans text-[0.9rem] text-text disabled:opacity-50"
+              />
+            </div>
+            <Button
+              size="sm"
+              onClick={handleSaveFloor}
+              disabled={settingLoading || floorMutation.isPending}
+              variant="default"
+            >
+              {floorMutation.isPending ? 'Saving...' : 'Save'}
+            </Button>
+          </div>
+          <p className="font-sans text-[0.8rem] text-text-faint">
+            Tags with fewer links than this value will be hidden from the sidebar.
+          </p>
+        </div>
+      </div>
+
       <div className="mb-5 flex items-baseline gap-3">
         <h2 className="font-serif text-[1.35rem] font-semibold text-text">Dead Links</h2>
         <span className="font-sans text-[0.8rem] text-text-faint">{data?.total ?? 0}</span>

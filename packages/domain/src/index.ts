@@ -4,6 +4,7 @@ export {init} from './db';
 export {listLinks} from './queries/list-links';
 export {listTags} from './queries/list-tags';
 export {getLink} from './queries/get-link';
+export {getSetting} from './queries/get-setting';
 
 // commands
 export {createLink} from './commands/create-link';
@@ -14,6 +15,7 @@ export {renameTag} from './commands/rename-tag';
 export {deleteTag} from './commands/delete-tag';
 export {markTagNormalized} from './commands/normalize-tag';
 export {resetEnrichment} from './commands/reset-enrichment';
+export {setSetting} from './commands/set-setting';
 
 // lib
 export {normalizeTag} from './lib/normalize-tag';
