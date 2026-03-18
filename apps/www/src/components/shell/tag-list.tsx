@@ -4,12 +4,12 @@ import type {Tag} from './types';
 
 type TagListProps = {
   tags: Tag[];
-  selectedTagIds: number[];
-  onTagToggle: (tagId: number) => void;
+  selectedTags: string[];
+  onTagToggle: (tagText: string) => void;
 };
 
-export function TagList({tags, selectedTagIds, onTagToggle}: TagListProps) {
-  const firstSelectedId = selectedTagIds[0];
+export function TagList({tags, selectedTags, onTagToggle}: TagListProps) {
+  const firstSelectedText = selectedTags[0];
   const [filter, setFilter] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -40,7 +40,14 @@ export function TagList({tags, selectedTagIds, onTagToggle}: TagListProps) {
               }}
               className="ml-1 shrink-0 cursor-pointer text-text-faint hover:text-text-muted"
             >
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 12 12"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              >
                 <path d="M2 2l8 8M10 2l-8 8" />
               </svg>
             </button>
@@ -53,7 +60,14 @@ export function TagList({tags, selectedTagIds, onTagToggle}: TagListProps) {
               onClick={() => setIsSearching(true)}
               className="shrink-0 cursor-pointer text-text-faint hover:text-text-muted"
             >
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 12 12"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              >
                 <circle cx="5" cy="5" r="3.5" />
                 <path d="M7.5 7.5L10.5 10.5" />
               </svg>
@@ -66,14 +80,14 @@ export function TagList({tags, selectedTagIds, onTagToggle}: TagListProps) {
           <span className="px-2 py-2 text-[0.78rem] text-text-faint">No tags yet</span>
         )}
         {filteredTags.map((tag) => {
-          const isSelected = selectedTagIds.includes(tag.id);
-          const isFirst = tag.id === firstSelectedId;
+          const isSelected = selectedTags.includes(tag.text);
+          const isFirst = tag.text === firstSelectedText;
 
           return (
             <button
               key={tag.id}
               type="button"
-              onClick={() => onTagToggle(tag.id)}
+              onClick={() => onTagToggle(tag.text)}
               className={cn(
                 'flex cursor-pointer select-none items-start justify-between rounded-[5px] px-2 py-[5px] transition-[background] duration-100',
                 !isSelected && 'hover:bg-bg-subtle',

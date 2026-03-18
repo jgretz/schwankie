@@ -7,8 +7,8 @@ import type {Tag} from './types';
 type AppShellProps = {
   children: ReactNode;
   tags: Tag[];
-  selectedTagIds: number[];
-  onTagToggle: (tagId: number) => void;
+  selectedTags: string[];
+  onTagToggle: (tagText: string) => void;
   searchValue: string;
   onSearchChange: (value: string) => void;
   showAddButton: boolean;
@@ -19,7 +19,7 @@ type AppShellProps = {
 export function AppShell({
   children,
   tags,
-  selectedTagIds,
+  selectedTags,
   onTagToggle,
   searchValue,
   onSearchChange,
@@ -42,14 +42,14 @@ export function AppShell({
       />
 
       <div className="mx-auto flex min-h-[calc(100vh-3.5rem)] max-w-[1200px]">
-        <Sidebar tags={tags} selectedTagIds={selectedTagIds} onTagToggle={onTagToggle} />
+        <Sidebar tags={tags} selectedTags={selectedTags} onTagToggle={onTagToggle} />
 
         <main className="min-w-0 flex-1">{children}</main>
       </div>
 
       <MobileDrawer
         tags={tags}
-        selectedTagIds={selectedTagIds}
+        selectedTags={selectedTags}
         onTagToggle={onTagToggle}
         isOpen={drawerOpen}
         onClose={() => setDrawerOpen(false)}
