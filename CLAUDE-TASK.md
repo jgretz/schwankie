@@ -1,417 +1,170 @@
-# Task: Add inline form validation to link modal
-ID: 366daebc | Branch: feat/add-inline-form-validation-to-link-modal | Type: feat
+# Task: Replace Admin text link with icon, tighten nav button spacing
+ID: ae1dfe8e | Branch: refactor/replace-admin-text-link-with-icon-tighten-nav-button-spacing | Type: refactor
 
 ## Restart Context
 **Reason**: Reviewer requested changes
-**Last milestone**: committed (2026-03-17T20:31:05.939Z)
-Resume from this point — do not redo completed phases.
-**Branch**: feat/add-inline-form-validation-to-link-modal
+
+⚡ **DIRECTIVE: Skip exploration. Go straight to the fix. Do not re-read files you don't need to edit.**
+
+**Branch**: refactor/replace-admin-text-link-with-icon-tighten-nav-button-spacing
 
 ### Last Checkpoint
-[verification-baseline] typecheck: pass (sha256:dd18ad77da07) | test: fail (sha256:0ff6b0ec3a4e)
-
-### Recent Progress
-- [16:31] Addressed all reviewer findings and pushed fixes. Hook now exposes reset() function, extracts validateField() helper to eliminate duplication, and computes isValid from current values instead of stale state. LinkModal calls reset() when closing to prevent stale errors on re-open.
+[verification-baseline] typecheck: pass (sha256:dd18ad77da07) | test: fail (sha256:08a3b7b612b3)
 
 ### Git State
-Last commit: "fix(www): address reviewer feedback on form validation"
-Uncommitted changes: 2 files
+Last commit: "refactor(www): replace admin text link with gear icon, tighten nav spacing"
+Uncommitted changes: 3 files
 
 ### PR
-https://github.com/jgretz/schwankie/pull/30
+https://github.com/jgretz/schwankie/pull/50
 
 ### ⚠ Reviewer Findings — YOU MUST ADDRESS THESE
 The automated reviewer blocked your PR. Read each finding below and fix it.
 Do NOT re-implement from scratch.
-[SCOPE DRIFT] findings: run `git checkout origin/main -- <file>` to revert. Do NOT justify or make further edits.
-After fixing, commit and push. The reviewer will re-review automatically.
+After fixing ALL findings, commit and push. The reviewer will re-review automatically.
 
-- **[T2]** validateField uses `value: any` parameter type. Commit 3874785 message claims 'Replace any types with proper generics in useFormValidation hook' but this specific instance was not fixed. Violates code style (no any) and misrepresents the commit.
+### STEP 1: Fix findings with surgical edits
 
-  **Suggested fix** (`apps/www/src/components/modal/use-form-validation.ts`):
-  ```
-  - (fieldName: string, value: any): string | undefined => {
-  + (fieldName: keyof T & string, value: T[keyof T]): string | undefined => {
-  ```
+**FIX 1** (`apps/www/src/components/shell/topbar.tsx`):
+**Tier**: T2
+**Issue**: Desktop nav lost `hidden` class — changed from `hidden md:flex` to `flex gap-1 md:gap-2`. Nav is now always visible including on mobile, causing duplicate navigation alongside the mobile bottom bar.
+**Edit:**
+```
+Find: <nav className="ml-auto flex gap-1 md:gap-2">
+Replace with: <nav className="ml-auto hidden items-center gap-1 md:flex md:gap-2">
+```
 
-- **[T1]** URL format regex /^https?:\/\/.+/ is duplicated: once in formValidationSchema (link-modal.tsx) and once inline in UrlEntryStage. Extract to a shared constant or validator to satisfy DRY.
+**FIX 2** (`apps/www/src/components/shell/topbar.tsx`):
+**Tier**: T1
+**Issue**: Redundant ternary in activeProps: `icon === 'settings' ? '!text-accent' : '!text-accent'` — both branches identical. Appears on desktop (line 96) and mobile (line 148).
+**Edit:**
+```
+Find: activeProps={{className: icon === 'settings' ? '!text-accent' : '!text-accent'}}
+Replace with: activeProps={{className: '!text-accent'}}
+```
+
+### STEP 2: Address findings requiring judgment
+
+**[T2]** SVG icon is a sun/starburst (radial lines), not a gear/cog. Path `M12 1v6m0 6v6...` renders 8 rays from center. Plan explicitly provided the classic settings cog path and acceptance criterion requires gear/cog icon.
+
+**[T2]** Missing aria-label="Admin" on the icon Link element in both desktop and mobile nav. Plan explicitly required it for accessibility.
+
+**[T2]** Gear icon missing border styling specified in plan: no `border-[1.5px] border-border`, no `hover:border-accent`, hover uses `hover:text-text` instead of `hover:text-accent`, active state missing `!border-accent`. Does not match ThemeToggle visual style.
+
+**[T1]** Icon size 18px vs plan-specified 16px (`width="18" height="18"` should be `width="16" height="16"`).
+
 
 ### Fix Verification Protocol
-For EACH finding above:
-1. `grep` the file for the problematic pattern to confirm it exists
-2. Read the relevant section (use `Bash(cat -n file | sed -n Xp,Yp)` if the Read tool is blocked)
-3. Edit the file with the exact `old_string` from what you just read
-4. After editing, `grep` again to confirm the pattern is GONE
-5. If the pattern persists, your edit did not apply — re-read and retry with the exact string
+For EACH FIX above:
+1. Open the file and make the edit using the exact Find/Replace strings
+2. Grep to confirm the old pattern is gone: `grep -n "pattern" file`
+3. Move to the next finding
 
-Do NOT commit until all T4/T3 patterns are confirmed removed via grep.
+Do NOT run typecheck or tests until ALL findings are addressed.
+Do NOT commit until ALL findings are fixed. Partial fixes cause re-review cycles.
 
-### Current PR Diff (your code vs main)
-This is the exact current state of your changes. Use it to identify the code you need to fix:
-```diff
-diff --git a/apps/www/src/components/modal/link-modal.tsx b/apps/www/src/components/modal/link-modal.tsx
-index 68030a9..13e39c4 100644
---- a/apps/www/src/components/modal/link-modal.tsx
-+++ b/apps/www/src/components/modal/link-modal.tsx
-@@ -18,6 +18,7 @@ import {
- import {useLinkModal} from './link-modal-context';
- import {StatusToggle} from './status-toggle';
- import {TagChipInput} from './tag-chip-input';
-+import {useFormValidation} from './use-form-validation';
- 
- type Stage = 'url-entry' | 'loading' | 'form';
- 
-@@ -39,6 +40,54 @@ const emptyForm: FormData = {
-   tags: [],
- };
- 
-+const formValidationSchema = {
-+  url: {
-+    required: true,
-+    rules: [
-+      {
-+        validate: (v: string) => /^https?:\/\/.+/.test(v),
-+        message: 'Must be a valid URL (http:// or https://)',
-+      },
-+      {
-+        validate: (v: string) => v.length <= 2000,
-+        message: 'Must be under 2000 characters',
-+      },
-+    ],
-+  },
-+  title: {
-+    required: true,
-+    rules: [
-+      {
-+        validate: (v: string) => v.length <= 200,
-+        message: 'Must be under 200 characters',
-+      },
-+    ],
-+  },
-+  description: {
-+    rules: [
-+      {
-+        validate: (v: string) => v.length <= 1000,
-+        message: 'Must be under 1000 characters',
-+      },
-+    ],
-+  },
-+  imageUrl: {
-+    rules: [
-+      {
-+        validate: (v: string) => {
-+          if (!v) return true;
-+          return /^https?:\/\/.+/.test(v);
-+        },
-+        message: 'Must be a valid URL (http:// or https://)',
-+      },
-+      {
-+        validate: (v: string) => v.length <= 2000,
-+        message: 'Must be under 2000 characters',
-+      },
-+    ],
-+  },
-+};
-+
- export function LinkModal() {
-   const {isOpen, mode, editLink, close} = useLinkModal();
-   const queryClient = useQueryClient();
-@@ -48,6 +97,7 @@ export function LinkModal() {
-   const [saving, setSaving] = useState(false);
-   const [confirmDelete, setConfirmDelete] = useState(false);
-   const [error, setError] = useState('');
-+  const {errors, validate, touch, touched, reset} = useFormValidation(formValidationSchema, form);
- 
-   // Reset state when modal opens/closes
-   useEffect(() => {
-@@ -57,6 +107,7 @@ export function LinkModal() {
-       setSaving(false);
-       setConfirmDelete(false);
-       setError('');
-+      reset();
-       return;
-     }
- 
-@@ -97,6 +148,10 @@ export function LinkModal() {
-   }, []);
- 
-   const handleSave = useCallback(async () => {
-+    if (!validate()) {
-+      return;
-+    }
-+
-     setSaving(true);
-     setError('');
-     try {
-@@ -134,7 +189,7 @@ export function LinkModal() {
-     } finally {
-       setSaving(false);
-     }
--  }, [mode, editLink, form, queryClient, close]);
-+  }, [mode, editLink, form, queryClient, close, validate]);
- 
-   const handleDelete = useCallback(async () => {
-     if (!editLink) return;
-@@ -185,38 +240,42 @@ export function LinkModal() {
- 
-         {stage === 'form' && (
-           <div className="space-y-4">
--            <Field label="URL">
-+            <Field label="URL" required error={touched.url ? errors.url : undefined}>
-               <input
-                 type="url"
-                 value={form.url}
-                 onChange={(e) => updateField('url', e.target.value)}
-+                onBlur={() => touch('url')}
-                 className="w-full rounded-md border border-border bg-bg px-3 py-2 font-sans text-[0.85rem] text-text outline-none transition-colors focus:border-accent"
-               />
-             </Field>
- 
--            <Field label="Title">
-+            <Field label="Title" required error={touched.title ? errors.title : undefined}>
-               <input
-                 type="text"
-                 value={form.title}
-                 onChange={(e) => updateField('title', e.target.value)}
-+                onBlur={() => touch('title')}
-                 className="w-full rounded-md border border-border bg-bg px-3 py-2 font-sans text-[0.85rem] text-text outline-none transition-colors focus:border-accent"
-               />
-             </Field>
- 
--            <Field label="Description">
-+            <Field label="Description" error={touched.description ? errors.description : undefined}>
-               <textarea
-                 value={form.description}
-                 onChange={(e) => updateField('description', e.target.value)}
-+                onBlur={() => touch('description')}
-                 rows={2}
-                 className="w-full resize-none rounded-md border border-border bg-bg px-3 py-2 font-sans text-[0.85rem] text-text outline-none transition-colors focus:border-accent"
-               />
-             </Field>
- 
--            <Field label="Image URL">
-+            <Field label="Image URL" error={touched.imageUrl ? errors.imageUrl : undefined}>
-               <input
-                 type="url"
-                 value={form.imageUrl}
-                 onChange={(e) => updateField('imageUrl', e.target.value)}
-+                onBlur={() => touch('imageUrl')}
-                 className="w-full rounded-md border border-border bg-bg px-3 py-2 font-sans text-[0.85rem] text-text outline-none transition-colors focus:border-accent"
-               />
-             </Field>
-@@ -252,7 +311,7 @@ export function LinkModal() {
-               <button
-                 type="button"
-                 onClick={handleSave}
--                disabled={saving || !form.title.trim() || !form.url.trim()}
-+                disabled={saving}
-                 className="rounded-md bg-accent px-4 py-1.5 font-sans text-[0.8rem] font-medium text-white transition-colors hover:bg-accent/90 disabled:opacity-50"
-               >
-                 {saving ? 'Saving…' : mode === 'edit' ? 'Update' : 'Save'}
-@@ -267,20 +326,42 @@ export function LinkModal() {
- 
- function UrlEntryStage({onSubmit}: {onSubmit: (url: string) => void}) {
-   const [url, setUrl] = useState('');
-+  const [error, setError] = useState('');
- 
-   function handleSubmit(e: React.FormEvent) {
-     e.preventDefault();
-     const trimmed = url.trim();
--    if (trimmed) onSubmit(trimmed);
-+
-+    if (!trimmed) {
-+      setError('Required');
-+      return;
-+    }
-+
-+    if (!/^https?:\/\/.+/.test(trimmed)) {
-+      setError('Must be a valid URL (http:// or https://)');
-+      return;
-+    }
-+
-+    setError('');
-+    onSubmit(trimmed);
-   }
- 
-   return (
-     <form onSubmit={handleSubmit} className="space-y-4">
--      <Field label="URL">
-+      <Field label="URL" required error={error || undefined}>
-         <input
-           type="url"
-           value={url}
--          onChange={(e) => setUrl(e.target.value)}
-+          onChange={(e) => {
-+            setUrl(e.target.value);
-+            setError('');
-+          }}
-+          onBlur={() => {
-+            const trimmed = url.trim();
-+            if (trimmed && !/^https?:\/\/.+/.test(trimmed)) {
-+              setError('Must be a valid URL (http:// or https://)');
-+            }
-+          }}
-           placeholder="https://…"
-           autoFocus
-           className="w-full rounded-md border border-border bg-bg px-3 py-2 font-sans text-[0.85rem] text-text outline-none transition-colors placeholder:text-text-faint focus:border-accent"
-@@ -299,11 +380,25 @@ function UrlEntryStage({onSubmit}: {onSubmit: (url: string) => void}) {
-   );
- }
- 
--function Field({label, children}: {label: string; children: React.ReactNode}) {
-+function Field({
-+  label,
-+  children,
-+  error,
-+  required,
-+}: {
-+  label: string;
-+  children: React.ReactNode;
-+  error?: string;
-+  required?: boolean;
-+}) {
-   return (
-     <label className="block space-y-1">
--      <span className="font-sans text-[0.8rem] font-medium text-text-muted">{label}</span>
-+      <span className="font-sans text-[0.8rem] font-medium text-text-muted">
-+        {label}
-+        {required && <span className="text-accent"> *</span>}
-+      </span>
-       {children}
-+      {error && <p className="font-sans text-[0.75rem] text-destructive">{error}</p>}
-     </label>
-   );
- }
-diff --git a/apps/www/src/component
-... (diff truncated)
+### Changed Files
+Summary of files changed in this PR:
+```
+ apps/www/src/components/shell/topbar.tsx | 64 +++++++++++++++++++++++++-------
+ 1 file changed, 50 insertions(+), 14 deletions(-)
+
 ```
 
 ## Plan
 ## Context
 
-The link modal (`apps/www/src/components/modal/link-modal.tsx`) currently validates by disabling the Save button when `!url.trim() || !title.trim()` (line 249). There are no inline error messages, no URL format validation on the client, no character limits, and no required-field indicators. Users get no feedback about *what's* wrong — the button is just grayed out. Server-side Zod schemas in `link-actions.server.ts` catch invalid URLs and empty titles, but errors surface as a generic catch-block message at the bottom of the form.
+The topbar nav actions (Compendium, Queue, Admin links + theme toggle + add button) are spaced too far apart, and the "Admin" link is a text label while it should be an icon (gear/cog) for visual consistency with the other icon buttons (theme toggle, add button).
 
-**Goal**: Add a reusable client-side validation layer with inline field errors, required-field indicators, URL format validation, and character limits. Keep server-side Zod schemas as the canonical validation; client-side is UX feedback only.
+**Trigger**: Design polish — idea a142755d.
 
-## Files to Modify
+**Scope**: Single file change in `apps/www/src/components/shell/topbar.tsx`. The Admin link only appears in the topbar (not in mobile-drawer or sidebar). Both desktop and mobile bottom bar layouts need adjustment.
 
-1. **`apps/www/src/components/modal/use-form-validation.ts`** — NEW. Reusable validation hook.
-2. **`apps/www/src/components/modal/link-modal.tsx`** — Integrate validation hook, add inline errors.
-3. **`apps/www/src/components/modal/link-modal.tsx`** — Update `Field` component to support error/required props.
+## Flow
 
-## Files NOT to Modify
-
-- `link-actions.server.ts` — server Zod schemas stay as-is (they're already correct)
-- `tag-chip-input.tsx` — already validates (trim, lowercase, dedup)
-- `status-toggle.tsx` — binary toggle, no validation needed
+1. Replace the Admin text link with a gear/cog SVG icon link
+2. Tighten spacing between nav action buttons in both desktop and mobile layouts
+3. Verify typecheck passes and mobile layout still works
 
 ## Steps
 
-### Step 1: Create `use-form-validation.ts` hook
+### Step 1: Replace Admin text with gear icon (desktop + mobile nav)
 
-Create `apps/www/src/components/modal/use-form-validation.ts`.
+**File**: `apps/www/src/components/shell/topbar.tsx`
 
-A generic, reusable validation hook with this shape:
+The `adminLinks` array currently has `label: 'Admin'`. The nav links are rendered in a `.map()` that outputs `{label}` as text content. To replace Admin with an icon while keeping Compendium/Queue as text:
 
-```ts
-type ValidationRule<T> = {
-  validate: (value: T) => boolean;
-  message: string;
-};
+- Change the `NavLink` type to add an optional `icon` field: `icon?: 'settings'`
+- Update `adminLinks` entry: `{to: '/admin', label: 'Admin', exact: true, icon: 'settings'}`
+- In the desktop nav `.map()` (line 87-97), conditionally render: if `icon === 'settings'`, render a gear SVG (24→16px viewBox, same stroke style as existing SVGs); otherwise render `{label}` text
+- In the mobile nav `.map()` (line 120-131), apply the same conditional rendering
+- The gear icon link should use the same button-like styling as ThemeToggle: `h-[30px] w-[30px]` (desktop) / `h-[28px] w-[28px]` (mobile), `flex items-center justify-center rounded-md border-[1.5px] border-border text-text-muted transition-colors hover:border-accent hover:bg-bg-subtle hover:text-accent`, with active state `!border-accent !text-accent`
+- Keep `aria-label="Admin"` on the icon link for accessibility
 
-type FieldConfig<T> = {
-  required?: boolean;
-  rules?: ValidationRule<T>[];
-};
-
-type SchemaConfig = Record<string, FieldConfig<any>>;
+**Gear SVG** (standard settings cog, matches existing stroke style):
+```svg
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+  <circle cx="12" cy="12" r="3" />
+  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+</svg>
 ```
 
-The hook should:
-- Accept a schema config object and the current form values
-- Expose `errors: Record<string, string | undefined>` — first failing rule message per field
-- Expose `validate(): boolean` — runs all rules, sets errors, returns true if valid
-- Expose `touched: Record<string, boolean>` and `touch(field: string)` — errors only show after a field is touched or after `validate()` is called
-- Expose `isValid: boolean` — derived from errors state
-- NOT auto-validate on every keystroke (performance) — validate on blur (`touch`) and on submit (`validate`)
+### Step 2: Tighten desktop nav spacing
 
-### Step 2: Define link form validation schema
+**File**: `apps/www/src/components/shell/topbar.tsx`
 
-In `link-modal.tsx`, define the validation schema for the link form:
+Current desktop layout (line 36): `gap-4 md:gap-8` on the main flex container. This creates large gaps between all items including the search bar, which is fine — but the nav/actions cluster on the right should be tighter.
 
-- **url**: required, must match URL pattern (`/^https?:\/\/.+/`), max 2000 chars
-- **title**: required, max 200 chars
-- **description**: optional, max 1000 chars
-- **imageUrl**: optional, but if non-empty must match URL pattern, max 2000 chars
+Changes:
+- On the desktop `<nav>` element (line 86): add `gap-1` to reduce spacing between nav links (Compendium, Queue). Currently no gap class — links have `px-3` padding which creates natural spacing. Add `gap-1` explicitly.
+- Remove `ml-2` from the add button (line 109) — the parent `gap-4`/`gap-8` already provides separation
+- Wrap the right-side action buttons (nav, theme toggle, add button, admin icon) in a flex container with `gap-1.5` (~6px) to create even, tight spacing between them. This means restructuring lines 86-116:
+  - Create a wrapper `<div className="ml-auto hidden items-center gap-1.5 md:flex">`
+  - Move the `<nav>` inside (remove `ml-auto` from nav, keep `hidden md:flex` on wrapper)
+  - Move `<ThemeToggle />` inside (remove its wrapper div)
+  - Move the add button inside (remove `hidden md:flex` from button, remove `ml-2`)
+  - The admin gear icon link is already part of the nav `.map()`, so it'll be in the right spot
 
-These limits are generous — they prevent garbage, not real use.
+### Step 3: Tighten mobile bottom bar spacing
 
-### Step 3: Integrate validation into `LinkModal`
+**File**: `apps/www/src/components/shell/topbar.tsx`
 
-In the `LinkModal` component:
+Current mobile bar (line 119): `gap-1` on the container — already tight. The nav links inside have `px-3` padding. This is reasonable.
 
-1. Call `useFormValidation(schema, form)` 
-2. On each field's `onBlur`, call `touch(fieldName)`
-3. In `handleSave`, call `validate()` first — if invalid, return early (don't call server)
-4. Replace the `disabled={saving || !form.title.trim() || !form.url.trim()}` check on Save button with `disabled={saving}` — validation errors will be visible inline
-5. Keep the existing `error` state for server-side errors (network failures, etc.)
-
-### Step 4: Update `Field` component for error display and required indicator
-
-Modify the `Field` component (currently at line 296) to accept optional `error?: string` and `required?: boolean` props:
-
-- If `required`, render a `*` after the label text in the accent color
-- If `error` is truthy, render a `<p>` below the children with the error message in `text-red-600`, `text-[0.75rem]`
-- When error is present, add a `ring-red-400` or `border-red-400` visual cue — pass this as a className or via a wrapping div. Since `Field` renders `{children}` (the input), the simplest approach is to wrap children in a container that adds a CSS class when errored, but inputs already have their own border. Instead, pass `aria-invalid` context: add a `data-error` attribute to the wrapper so inputs can be styled with `[data-error=true]_&:border-red-400` or use a simpler approach — just show the message below and let the red text be the signal.
-
-### Step 5: Wire field errors in the form JSX
-
-For each field in the form section (URL, Title, Description, Image URL):
-
-```tsx
-<Field label="URL" required error={errors.url}>
-  <input
-    ...existing props...
-    onBlur={() => touch('url')}
-  />
-</Field>
-```
-
-### Step 6: Update `UrlEntryStage` validation
-
-The `UrlEntryStage` component (line 262) should also validate URL format before submitting. Add basic URL format check (`/^https?:\/\/.+/`) — if invalid, show inline error. This is simpler than the full hook since it's a single field; a local `useState` for the error is fine.
-
-### Step 7: Verify
-
-- Run `cd apps/www && bun run typecheck` — no errors
-- Run `bun run test` from root — all suites pass
-- Manual verification criteria:
-  - Required fields (URL, Title) show `*` indicator
-  - Leaving a required field empty and blurring shows "Required" error
-  - Entering an invalid URL format shows "Must be a valid URL" error
-  - Exceeding character limit shows "Must be under X characters" error
-  - Errors clear when the field is corrected
-  - Save button attempts validation on click; if invalid, errors appear on all invalid fields
-  - Valid form still saves normally (create and edit modes)
+Changes:
+- Keep `gap-1` on the mobile container — already ~4px
+- The admin gear icon will render as a small button (28x28) in the mobile nav, fitting naturally alongside the theme toggle and add button
 
 ## Acceptance Criteria
 
-1. `bun run typecheck` passes with zero errors
-2. `bun run test` (root) passes all suites
-3. Required fields show `*` after label
-4. Inline error messages appear below fields on blur and on submit attempt
-5. URL fields validate format (must start with `http://` or `https://`)
-6. Character limits enforced: title 200, description 1000, URLs 2000
-7. Errors clear when user fixes the value
-8. `useFormValidation` hook is generic — not coupled to link form types
-9. Edit mode pre-fills form and does not show errors until user interacts
+### Truths
+- Admin link renders as a gear/cog icon (not text) on both desktop and mobile
+- Icon has `aria-label="Admin"` for accessibility
+- Active state on admin icon shows accent color (matching other nav links)
+- Desktop nav action buttons (Compendium, Queue, gear icon, theme toggle, add button) have ~6px even gaps
+- Mobile bottom bar layout is intact and functional
+- No visual regression on non-authenticated view (admin link not shown)
+
+### Artifacts
+- Modified: `apps/www/src/components/shell/topbar.tsx`
+
+### Key Links
+- ThemeToggle component: `apps/www/src/components/theme-toggle.tsx` — reference for icon button sizing (30x30 desktop, matches border/hover styles)
+- Design tokens: `.claude/rules/design-tokens.md`
+
+### Verification
+- `cd apps/www && bunx tsc --noEmit` passes
+- Visual check: desktop topbar shows gear icon where "Admin" text was, with even spacing between all action buttons
+- Visual check: mobile bottom bar shows gear icon, layout not broken
+- Non-authenticated view: gear icon does not appear (same conditional as before)
 
 ## Code Graph Context
 
 Files your task will modify and their relationships:
 
-### apps/www/src/components/modal/link-modal.tsx
-**Imports:** @tanstack/react-query, react, sonner, @www/components/ui/dialog, @www/lib/link-actions, ./link-modal-context, ./status-toggle, ./tag-chip-input
+### apps/www/src/components/shell/topbar.tsx
+**Imports:** @tanstack/react-router, @www/components/theme-toggle, @www/lib/utils
+**Used by:** apps/www/src/components/shell/app-shell.tsx (Topbar)
 
 ## Rules
 
@@ -506,11 +259,31 @@ Three layers of tokens in `apps/www/src/globals.css`:
 - **shadcn tokens**: `--background`, `--foreground`, `--card`, `--primary`, `--secondary`, `--muted`, `--destructive`, `--ring`, `--input`, `--radius` — standard shadcn/ui mapping.
 - **Component tokens**: `--tag-bg`, `--tag-text`, `--tag-active-bg`, `--tag-active-text`, `--modal-bg`, `--search-bg`, `--pill-bg`, `--pill-text` — scoped to specific UI elements.
 
-All tokens defined in `:root`, overridden in `.dark` class.
+All tokens defined in `:root`; theme-adaptive tokens overridden in `.dark` class (see Dark Mode Inheritance below).
+
+## Dark Mode Inheritance
+
+Not all tokens change between themes. Categorize tokens by their dark-mode behavior:
+
+**Invariant (same value in `.light` and `.dark`):**
+
+- `--pill-bg`, `--pill-text`, `--tag-active-bg`, `--tag-active-text`, `--destructive`, `--destructive-foreground`, `--primary-foreground`, `--radius` — accent-colored UI elements stay consistent across themes; structural tokens (radius) are theme-independent.
+
+**Theme-adaptive (different values in `.dark`):**
+
+- All surface/text/border tokens: `--bg`, `--bg-subtle`, `--border`, `--text`, `--text-muted`, `--text-faint`, `--accent`, `--accent-hover`, `--tag-bg`, `--tag-text`, `--tag-active-bg-secondary`, `--modal-bg`, `--search-bg`, `--background`, `--foreground`, `--card`, `--card-foreground`, `--popover`, `--popover-foreground`, `--primary`, `--secondary`, `--secondary-foreground`, `--muted`, `--muted-foreground`, `--ring`, `--input`, `--accent-foreground`.
+
+**When Adding a New Token:**
+
+- Structural tokens (spacing, radius) → define in `:root` only; no `.dark` override needed
+- Color tokens referencing accent or white-on-accent → can be invariant if the accent itself adapts
+- All surface, text, or border tokens → must have a `.dark` override with contrasting value
+
+**CSS Cleanup:** Remove redundant `.dark` redeclarations for invariant tokens — makes the token system self-documenting (if a token appears in `.dark`, it genuinely changes).
 
 ## Theme — Stone & Slate
 
-- **Light**: off-white base (#f4f2f0), dark text (#1e1e1e), slate-blue accent (#5b6f8a)
+- **Light**: warm parchment base (#f7f3ed), dark text (#1e1e1e), slate-blue accent (#5b6f8a); tag chips use terracotta warm (#e4d5c4 bg, #4a3728 text)
 - **Dark**: charcoal base (#1a1c1e), cream text (#e2e4e8), light slate-blue (#7b96b5)
 - Dark mode uses `.dark` class toggle on `html` (not `prefers-color-scheme`), with localStorage persistence
 - Neutrals are warm-tinted (no cool grays, no pure black/white)
@@ -539,7 +312,7 @@ All tokens defined in `:root`, overridden in `.dark` class.
 
 ## Adding New Tokens
 
-- Define in both `:root` and `.dark` blocks in `globals.css`
+- Define in `:root`; add a `.dark` override only for theme-adaptive tokens (see Dark Mode Inheritance above)
 - Add Tailwind mapping in `tailwind.config.ts` `colors` extend
 - Use semantic names (`--sidebar-bg`) not raw values (`--blue-200`)
 - Keep warm palette — no cool grays, no pure blacks/whites
@@ -1032,7 +805,7 @@ Steps (15 minutes max):
 2. Call `update_task({ learning: "..." })` for each meaningful learning (max 3-4)
    - Capture: initial wrong approaches, non-obvious patterns, project-specific gotchas
    - Skip: things that went smoothly, obvious language features
-3. Call `create_idea({ prompt: "[task:366daebc] ..." })` for out-of-scope improvements (max 2)
+3. Call `create_idea({ prompt: "[task:ae1dfe8e] ..." })` for out-of-scope improvements (max 2)
 4. Call `update_task({ note: "Retrospective: <2-3 sentences on what went well and what to improve>" })`
 5. Call `update_task({ status: 'user_review', note: 'Reflection complete — ready for user review' })`
 6. Your job is done after the `update_task` call above.
@@ -1059,10 +832,10 @@ Steps (15 minutes max):
    git add <specific files changed by the task>
    git commit -m "type(scope): subject"
    Follow conventional commits format. One logical commit per task.
-5. Push: git push -u origin feat/add-inline-form-validation-to-link-modal
+5. Push: git push -u origin refactor/replace-admin-text-link-with-icon-tighten-nav-button-spacing
 6. Create the label and PR:
    gh label create "Working" --description "Task in progress" --color "1d76db" --force 2>/dev/null || true
-   gh pr create --title "Add inline form validation to link modal" --label "Working" --body "$(cat <<'EOF'
+   gh pr create --title "Replace Admin text link with icon, tighten nav button spacing" --label "Working" --body "$(cat <<'EOF'
 ## Summary
 <1-3 bullet points summarizing the change>
 
@@ -1080,7 +853,7 @@ EOF
 
    **How to capture:**
    - Debugging insights, patterns, project quirks → `update_task({ learning: "..." })` (max 3-4)
-   - Permanent project conventions discovered → `create_idea({ prompt: "[task:366daebc] Add rule: ..." })` (max 2)
+   - Permanent project conventions discovered → `create_idea({ prompt: "[task:ae1dfe8e] Add rule: ..." })` (max 2)
    - If a `.claude/rules/` change is small and clearly in scope: apply it directly, commit, push
    - Session-specific context (one-off details) → skip, don't persist
 
@@ -1094,7 +867,7 @@ If the task notes include "PR has merge conflicts — re-engaged worker to rebas
 1. `git fetch origin main && git rebase origin/main`
 2. Resolve any conflicts, run typecheck and tests to verify
 3. `git push --force-with-lease`
-3b. **Verify clean state**: run `git status` (must show "nothing to commit, working tree clean") and `git log origin/feat/add-inline-form-validation-to-link-modal..HEAD` (must show 0 commits). If not clean or unpushed commits remain, push again.
+3b. **Verify clean state**: run `git status` (must show "nothing to commit, working tree clean") and `git log origin/refactor/replace-admin-text-link-with-icon-tighten-nav-button-spacing..HEAD` (must show 0 commits). If not clean or unpushed commits remain, push again.
 4. If rebase fails after 2 attempts, flag attention: `attentionMessage: "Merge conflicts I cannot resolve: <summary>"`
 5. Call worksite `update_task` with `status: 'user_review'` and `note: 'Resolved merge conflicts — returning to user review'` — do NOT call `submit_for_review`; the reviewer already approved the core implementation
 
@@ -1124,16 +897,16 @@ If the task notes include "re-engaged worker to address reviewer feedback", you 
 5. Commit and push the fixes
 6. **Verify clean state** before considering your work done:
    - `git status` — must show "nothing to commit, working tree clean"
-   - `git log origin/feat/add-inline-form-validation-to-link-modal..HEAD` — must show 0 commits (all pushed)
+   - `git log origin/refactor/replace-admin-text-link-with-icon-tighten-nav-button-spacing..HEAD` — must show 0 commits (all pushed)
    If either check fails, stage/commit/push the remaining changes before proceeding.
 7. The reviewer will automatically re-review after detecting new commits — do NOT call `submit_for_review` again
 8. If you disagree with a finding after one attempt: call `update_task` with `attentionMessage: "Reviewer disagreement: <summary>"` — do NOT keep trying
 9. Once fixes are pushed, your job is done. The daemon detects new commits and re-launches the reviewer automatically.
 
 ## User Feedback (re-engaged case)
-9a. Read the PR comments: `gh pr view https://github.com/jgretz/schwankie/pull/30 --json comments,reviews`
+9a. Read the PR comments: `gh pr view https://github.com/jgretz/schwankie/pull/50 --json comments,reviews`
 9b. Fix the code for each piece of feedback, commit, and push
-9b2. **Verify clean state**: run `git status` (must show "nothing to commit, working tree clean") and `git log origin/feat/add-inline-form-validation-to-link-modal..HEAD` (must show 0 commits). If not, stage/commit/push remaining changes.
+9b2. **Verify clean state**: run `git status` (must show "nothing to commit, working tree clean") and `git log origin/refactor/replace-admin-text-link-with-icon-tighten-nav-button-spacing..HEAD` (must show 0 commits). If not, stage/commit/push remaining changes.
 9c. When all feedback is addressed, call worksite `submit_for_review` with the PR URL — this sends your fixes through automated review before returning to the user.
 9d. Your job is done after the `submit_for_review` call above.
 
@@ -1152,6 +925,7 @@ Accumulated knowledge from previous tasks in this repository:
 ### Testing Patterns
 - Reviewer flagged: (1) Position-dependent auth via Hono registration order is fragile — use per-route middleware params instead. (2) Type assertions on query params (`as 'saved'|'queued'`) bypass runtime validation — always use Zod safeParse. (3) Number() on route params needs NaN guard before DB query. (4) Per-tag upsert is N+1 — batch INSERT + single SELECT WHERE IN. (5) Pagination nextOffset should be capped at total to avoid returning offsets beyond dataset.
 - CQRS separation working well: route validates and delegates to query, query owns DB logic and tag join, client call wraps the HTTP call. This clean separation makes the code easy to test and reason about. The pattern of "one file per query" makes files small and focused.
+- Established patterns (CQRS, conditions array, NaN filtering) enabled straight-line implementation — no rework needed. Task completed in one cycle: implement → typecheck → test → review → commit → PR. Pattern reuse (matching tags filter exactly) made the feature feel like copy/paste with variable names changed.
 
 ### Architecture Conventions
 - Tag upsert pattern: When upserting tags, insert on conflict do nothing, then select by text to retrieve the ID. This avoids race conditions and ensures we always get back the tag record. Used in upsertTags helper to handle both new and existing tags uniformly.
