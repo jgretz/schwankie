@@ -14,6 +14,7 @@ type AppShellProps = {
   showAddButton: boolean;
   onAddClick: () => void;
   isAuthenticated?: boolean;
+  hideSidebar?: boolean;
 };
 
 export function AppShell({
@@ -26,6 +27,7 @@ export function AppShell({
   showAddButton,
   onAddClick,
   isAuthenticated,
+  hideSidebar,
 }: AppShellProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -47,18 +49,22 @@ export function AppShell({
       />
 
       <div className="mx-auto flex min-h-[calc(100vh-3.5rem)] max-w-[1200px]">
-        <Sidebar tags={tags} selectedTags={selectedTags} onTagToggle={onTagToggle} />
+        {!hideSidebar && (
+          <Sidebar tags={tags} selectedTags={selectedTags} onTagToggle={onTagToggle} />
+        )}
 
         <main className="min-w-0 flex-1">{children}</main>
       </div>
 
-      <MobileDrawer
-        tags={tags}
-        selectedTags={selectedTags}
-        onTagToggle={handleMobileTagToggle}
-        isOpen={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-      />
+      {!hideSidebar && (
+        <MobileDrawer
+          tags={tags}
+          selectedTags={selectedTags}
+          onTagToggle={handleMobileTagToggle}
+          isOpen={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+        />
+      )}
     </>
   );
 }

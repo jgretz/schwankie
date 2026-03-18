@@ -108,6 +108,7 @@ function ShellWithData() {
   const {auth} = Route.useRouteContext();
 
   const pathname = useRouterState({select: (s) => s.location.pathname});
+  const isAdmin = pathname.startsWith('/admin');
   const status = pathname === '/queue' ? 'queued' : 'saved';
   const currentPath = pathname === '/queue' ? '/queue' : '/';
 
@@ -171,6 +172,7 @@ function ShellWithData() {
       showAddButton={auth.authenticated}
       onAddClick={openAdd}
       isAuthenticated={auth.authenticated}
+      hideSidebar={isAdmin}
     >
       <Outlet />
     </AppShell>

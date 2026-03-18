@@ -13,9 +13,11 @@ import { Route as QueueRouteImport } from './routes/queue'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
 import { Route as AuthCallbackRouteImport } from './routes/auth/callback'
 import { Route as AdminTagsRouteImport } from './routes/admin.tags'
+import { Route as AdminDeadLinksRouteImport } from './routes/admin.dead-links'
 
 const QueueRoute = QueueRouteImport.update({
   id: '/queue',
@@ -37,6 +39,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AuthLoginRoute = AuthLoginRouteImport.update({
   id: '/auth/login',
   path: '/auth/login',
@@ -52,24 +59,32 @@ const AdminTagsRoute = AdminTagsRouteImport.update({
   path: '/tags',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminDeadLinksRoute = AdminDeadLinksRouteImport.update({
+  id: '/dead-links',
+  path: '/dead-links',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/admin': typeof AdminRouteWithChildren
   '/queue': typeof QueueRoute
+  '/admin/dead-links': typeof AdminDeadLinksRoute
   '/admin/tags': typeof AdminTagsRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/login': typeof AuthLoginRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/admin': typeof AdminRouteWithChildren
   '/queue': typeof QueueRoute
+  '/admin/dead-links': typeof AdminDeadLinksRoute
   '/admin/tags': typeof AdminTagsRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/login': typeof AuthLoginRoute
+  '/admin': typeof AdminIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -77,9 +92,11 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/admin': typeof AdminRouteWithChildren
   '/queue': typeof QueueRoute
+  '/admin/dead-links': typeof AdminDeadLinksRoute
   '/admin/tags': typeof AdminTagsRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/login': typeof AuthLoginRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -88,27 +105,32 @@ export interface FileRouteTypes {
     | '/about'
     | '/admin'
     | '/queue'
+    | '/admin/dead-links'
     | '/admin/tags'
     | '/auth/callback'
     | '/auth/login'
+    | '/admin/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/about'
-    | '/admin'
     | '/queue'
+    | '/admin/dead-links'
     | '/admin/tags'
     | '/auth/callback'
     | '/auth/login'
+    | '/admin'
   id:
     | '__root__'
     | '/'
     | '/about'
     | '/admin'
     | '/queue'
+    | '/admin/dead-links'
     | '/admin/tags'
     | '/auth/callback'
     | '/auth/login'
+    | '/admin/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -150,6 +172,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/auth/login': {
       id: '/auth/login'
       path: '/auth/login'
@@ -171,15 +200,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminTagsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/dead-links': {
+      id: '/admin/dead-links'
+      path: '/dead-links'
+      fullPath: '/admin/dead-links'
+      preLoaderRoute: typeof AdminDeadLinksRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
 interface AdminRouteChildren {
+  AdminDeadLinksRoute: typeof AdminDeadLinksRoute
   AdminTagsRoute: typeof AdminTagsRoute
+  AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminDeadLinksRoute: AdminDeadLinksRoute,
   AdminTagsRoute: AdminTagsRoute,
+  AdminIndexRoute: AdminIndexRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
