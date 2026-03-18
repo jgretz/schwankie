@@ -12,11 +12,13 @@ type FeedPageProps = {
   title: string;
   tags?: string;
   q?: string;
+  sort?: 'date' | 'score';
   isAuthenticated: boolean;
   onTagClick: (tagText: string) => void;
   onRemoveTag: (tagText: string) => void;
   onClearAll: () => void;
   onClearSearch?: () => void;
+  onSortChange?: (sort: 'date' | 'score') => void;
 };
 
 function buildEmptyMessage(q: string | undefined, tags: string[]): string {
@@ -38,11 +40,13 @@ export function FeedPage({
   title,
   tags: tagsParam,
   q,
+  sort,
   isAuthenticated,
   onTagClick,
   onRemoveTag,
   onClearAll,
   onClearSearch,
+  onSortChange,
 }: FeedPageProps) {
   const {openEdit} = useLinkModal();
   const selectedTags = useMemo(() => parseTagSlugs(tagsParam), [tagsParam]);
@@ -52,6 +56,7 @@ export function FeedPage({
       status,
       tags: tagsParam,
       q,
+      sort,
     });
 
   const {data: allTags} = useTags(status);
@@ -119,6 +124,33 @@ export function FeedPage({
         <span className="font-sans text-[0.8rem] text-text-faint">{total}</span>
       </div>
 
+      {status === 'queued' && onSortChange && (
+        <div className="mb-4 flex gap-2">
+          <button
+            type="button"
+            onClick={() => onSortChange('date')}
+            className={`font-sans text-[0.72rem] transition-colors ${
+              sort !== 'score'
+                ? 'bg-accent text-white'
+                : 'text-text-muted hover:text-text'
+            }`}
+          >
+            Newest
+          </button>
+          <button
+            type="button"
+            onClick={() => onSortChange('score')}
+            className={`font-sans text-[0.72rem] transition-colors ${
+              sort === 'score'
+                ? 'bg-accent text-white'
+                : 'text-text-muted hover:text-text'
+            }`}
+          >
+            Best
+          </button>
+        </div>
+      )}
+
       <FilterStrip
         activeTags={activeTags}
         totalCount={total}
@@ -160,6 +192,8 @@ export function FeedPage({
               searchQuery={q}
               showEditButton={isAuthenticated}
               onEditClick={() => openEdit(item as LinkData)}
+              score={item.score}
+              showScore={sort === 'score'}
             />
           ))}
         </div>

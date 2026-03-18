@@ -7,6 +7,7 @@ import {parseTagSlugs} from '@www/lib/parse-tag-slugs';
 const searchSchema = z.object({
   tags: z.string().optional().catch(undefined),
   q: z.string().optional().catch(undefined),
+  sort: z.enum(['date', 'score']).optional().catch(undefined),
 });
 
 export const Route = createFileRoute('/queue')({
@@ -27,7 +28,7 @@ export const Route = createFileRoute('/queue')({
 
 function QueuePage() {
   const {auth} = Route.useRouteContext();
-  const {tags, q} = Route.useSearch();
+  const {tags, q, sort} = Route.useSearch();
   const navigate = useNavigate({from: '/queue'});
 
   const selectedTags = useMemo(() => parseTagSlugs(tags), [tags]);
@@ -36,26 +37,33 @@ function QueuePage() {
     (tagText: string) => {
       if (selectedTags.includes(tagText)) return;
       const next = [...selectedTags, tagText];
-      navigate({search: {tags: next.join(','), q}});
+      navigate({search: {tags: next.join(','), q, sort}});
     },
-    [selectedTags, navigate, q],
+    [selectedTags, navigate, q, sort],
   );
 
   const handleRemoveTag = useCallback(
     (tagText: string) => {
       const next = selectedTags.filter((t) => t !== tagText);
-      navigate({search: {tags: next.length > 0 ? next.join(',') : undefined, q}});
+      navigate({search: {tags: next.length > 0 ? next.join(',') : undefined, q, sort}});
     },
-    [selectedTags, navigate, q],
+    [selectedTags, navigate, q, sort],
   );
 
   const handleClearAll = useCallback(() => {
-    navigate({search: {q}});
-  }, [navigate, q]);
+    navigate({search: {q, sort}});
+  }, [navigate, q, sort]);
 
   const handleClearSearch = useCallback(() => {
-    navigate({search: {tags, q: undefined}});
-  }, [navigate, tags]);
+    navigate({search: {tags, q: undefined, sort}});
+  }, [navigate, tags, sort]);
+
+  const handleSortChange = useCallback(
+    (newSort: 'date' | 'score') => {
+      navigate({search: {tags, q, sort: newSort === 'date' ? undefined : newSort}});
+    },
+    [navigate, tags, q],
+  );
 
   return (
     <FeedPage
@@ -63,11 +71,13 @@ function QueuePage() {
       title="Queue"
       tags={tags}
       q={q}
+      sort={sort}
       isAuthenticated={auth.authenticated}
       onTagClick={handleTagClick}
       onRemoveTag={handleRemoveTag}
       onClearAll={handleClearAll}
       onClearSearch={handleClearSearch}
+      onSortChange={handleSortChange}
     />
   );
 }
