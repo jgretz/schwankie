@@ -49,6 +49,9 @@ function AdminPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({queryKey: ['tags']});
     },
+    onError: (error) => {
+      console.error('Failed to save tag count floor:', error);
+    },
   });
 
   const handleSaveFloor = () => {

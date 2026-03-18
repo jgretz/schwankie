@@ -24,7 +24,7 @@ export async function getTagsWithCount(status?: LinkStatus, minCount?: number) {
 
   let countedQuery = query.groupBy(tag.id, tag.text);
 
-  if (minCount && minCount > 1) {
+  if (minCount !== undefined && minCount > 1) {
     countedQuery = countedQuery.having(
       gte(count(sql`DISTINCT ${linkTag.linkId}`), minCount)
     );
