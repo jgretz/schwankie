@@ -15,7 +15,7 @@ type TopbarProps = {
 type NavLink = {to: '/' | '/queue' | '/admin'; label: string; exact: boolean};
 
 const publicLinks: NavLink[] = [
-  {to: '/', label: 'Feed', exact: true},
+  {to: '/', label: 'Compendium', exact: true},
   {to: '/queue', label: 'Queue', exact: true},
 ];
 
