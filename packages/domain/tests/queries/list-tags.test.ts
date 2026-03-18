@@ -30,6 +30,17 @@ describe('listTags', function () {
     expect(tagTexts).not.toContain('normalized-tag');
   });
 
+  it('should filter tags by link status', async function () {
+    await makeLink({title: 'Queued Link', status: 'queued', tags: ['queued-tag']});
+    await makeLink({title: 'Saved Link', status: 'saved', tags: ['saved-tag']});
+
+    const result = await listTags({status: 'queued'});
+
+    const tagTexts = result.tags.map((t) => t.text);
+    expect(tagTexts).toContain('queued-tag');
+    expect(tagTexts).not.toContain('saved-tag');
+  });
+
   it('should filter canonical tags', async function () {
     await makeLink({title: 'Link A', tags: ['canonical-tag', 'not-canonical-tag']});
 

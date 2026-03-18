@@ -471,12 +471,27 @@ function createSelectBuilder(targetTable?: any, fields?: any) {
       let result: any[];
 
       if (joinConfigs.length > 0) {
-        // For joins, filter base rows first
-        let baseRows = [...getStoreForTable(fromTable)];
+        const baseRows = [...getStoreForTable(fromTable)];
+        // Perform joins first, then apply WHERE on the merged rows
+        let mergedRows = performJoins(baseRows, fromTable, joinConfigs, undefined);
         if (whereCondition) {
-          baseRows = baseRows.filter((r) => evaluateCondition(r, whereCondition, fromTable));
+          mergedRows = mergedRows.filter((r) => evaluateCondition(r, whereCondition, fromTable));
         }
-        result = performJoins(baseRows, fromTable, joinConfigs, fields);
+        // Project fields from the filtered merged rows
+        result = fields
+          ? mergedRows.map((r) => {
+              const projected: any = {};
+              for (const [alias, col] of Object.entries(fields)) {
+                const c = col as any;
+                if (c?.name && c?.table) {
+                  projected[alias] = r[colToField(c.table, c.name)];
+                } else {
+                  projected[alias] = 0;
+                }
+              }
+              return projected;
+            })
+          : mergedRows;
 
         // Handle groupBy with count for getTagsWithCount
         if (hasGroupBy && fields && hasCountField(fields)) {
