@@ -13,6 +13,7 @@ import {
   createLinkAction,
   deleteLinkAction,
   fetchMetadataAction,
+  refetchLinkAction,
   suggestTagsAction,
   updateLinkAction,
 } from '@www/lib/link-actions';
@@ -99,6 +100,7 @@ export function LinkModal() {
   const [form, setForm] = useState<FormData>(emptyForm);
   const [saving, setSaving] = useState(false);
   const [suggestingTags, setSuggestingTags] = useState(false);
+  const [refetching, setRefetching] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [error, setError] = useState('');
   const {errors, validate, touch, touched, reset} = useFormValidation(formValidationSchema, form);
@@ -110,6 +112,7 @@ export function LinkModal() {
       setForm(emptyForm);
       setSaving(false);
       setSuggestingTags(false);
+      setRefetching(false);
       setConfirmDelete(false);
       setError('');
       reset();
@@ -223,6 +226,26 @@ export function LinkModal() {
     }
   }, [editLink]);
 
+  const handleRefetch = useCallback(async () => {
+    if (!editLink) return;
+    setRefetching(true);
+    try {
+      const updated = await refetchLinkAction({data: {id: editLink.id}});
+      setForm((prev) => ({
+        ...prev,
+        title: updated.title,
+        description: updated.description ?? '',
+        imageUrl: updated.imageUrl ?? '',
+      }));
+      toast.success('Link re-fetched');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to re-fetch link';
+      toast.error(message);
+    } finally {
+      setRefetching(false);
+    }
+  }, [editLink]);
+
   const handleDelete = useCallback(async () => {
     if (!editLink) return;
     if (!confirmDelete) {
@@ -281,6 +304,24 @@ export function LinkModal() {
                 className="w-full rounded-md border border-border bg-bg px-3 py-2 font-sans text-[0.85rem] text-text outline-none transition-colors focus:border-accent"
               />
             </Field>
+
+            {mode === 'edit' && editLink?.status === 'queued' && (
+              <button
+                type="button"
+                onClick={handleRefetch}
+                disabled={refetching || saving}
+                className="flex items-center gap-1.5 font-sans text-[0.75rem] text-text-muted transition-colors hover:text-accent disabled:opacity-50"
+              >
+                {refetching ? (
+                  <>
+                    <span className="inline-block h-3 w-3 animate-spin rounded-full border-[1.5px] border-text-muted border-t-accent" />
+                    Re-fetching…
+                  </>
+                ) : (
+                  'Re-fetch metadata'
+                )}
+              </button>
+            )}
 
             <Field label="Title" required error={touched.title ? errors.title : undefined}>
               <input
