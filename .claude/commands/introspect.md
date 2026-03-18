@@ -20,7 +20,7 @@ Parse arguments:
   - "plans" -> Phase 8 only (macro phase timing)
   - "attention" -> Phase 9 only (attention pattern analysis)
   - "access" -> Phase 10 only (file access frequency)
-  - "patterns" -> Phase 11 only (uncovered pattern analysis)
+  - "pressure" -> Phase 11 only (context pressure analysis)
 - Flags:
   - "fix" -> auto-fix what can be fixed (consolidate memories, log ideas for manual fixes)
   - "report" -> write findings to `.claude/reviews/introspect-YYYY-MM-DD.md`
@@ -217,40 +217,106 @@ Query: `list_events({taskId, eventType: 'status_change'})` → count entries whe
 - Stale + correlated (≥ 1.5×): "High priority refresh — stale doc correlated with elevated weighted failure rate"
 - Stale only: "Review for freshness — last modified >90 days ago"
 
+**Targeted guidance** — include for high-correlation entries:
+
+For each entry where `guidance` is not null, render the full guidance text as a detail line:
+
+> **{file}** ({indicator}, {ratio}×): {guidance}
+
+Example:
+
+> **.claude/rules/frontend.md** (⚠ high, 2.4×): 67% of tasks touching this file flag attention for: missing CSS token reference; component composability issues. Consider updating this doc to address these patterns.
+
+If `fix` flag is present: for each entry with non-null guidance and indicator of `⚠ high` or `⚡ elevated`, call `create_idea` with:
+
+```
+prompt: "[introspect:docs] {file}: {guidance}"
+impact: 4
+```
+
 ---
 
-### 5c. Rule Compliance Correlation
+### 5c. Rule Compliance Correlation & Trend Tracking
 
 Analyze whether `.claude/rules/` enforcement patterns correlate with worker failures,
-regardless of doc staleness.
+and track whether individual rule compliance is improving or degrading over time.
 
 **Steps:**
 
-1. Call `analyzeRuleCompliance` (from `@worksite/engine` — but since this runs in an
-   introspect session, implement the logic inline using the same algorithm):
-   - Read each `.claude/rules/*.md` file
-   - Extract frontmatter tags and file path references
-   - Cross-reference with task history (same data gathered in 5b)
-   - Compute per-rule attention ratio vs global baseline
+1. Call `analyze_rule_compliance` (MCP tool). This tool:
+   - Reads each `.claude/rules/*.md` file
+   - Extracts frontmatter tags and file path references
+   - Cross-references with task history (same data gathered in 5b)
+   - Computes per-rule attention ratio vs global baseline
+   - Stores a snapshot of current metrics to the database
+   - Compares to prior snapshots to compute trend direction
 
-2. Report table:
+2. Report table with trend column:
 
-| Rule File        | Tags          | Governed Paths           | Matching Tasks | Attention Rate | Ratio | Signal            |
-| ---------------- | ------------- | ------------------------ | -------------- | -------------- | ----- | ----------------- |
-| security.md      | feat,fix      | packages/store, apps/mcp | 8              | 50%            | 2.3×  | ⚠ high            |
-| testing-local.md | feat,fix,test | packages/store/tests     | 12             | 25%            | 1.1×  | —                 |
-| typecheck.md     | feat,fix      | apps/mcp, apps/hud       | 15             | 13%            | 0.6×  | ✓ well-understood |
+| Rule File        | Tags          | Governed Paths           | Matching Tasks | Attention Rate | Ratio | Signal            | Trend           |
+| ---------------- | ------------- | ------------------------ | -------------- | -------------- | ----- | ----------------- | --------------- |
+| security.md      | feat,fix      | packages/store, apps/mcp | 8              | 50%            | 2.3×  | ⚠ high            | ↑ degrading     |
+| testing-local.md | feat,fix,test | packages/store/tests     | 12             | 25%            | 1.1×  | —                 | ↓ improving     |
+| typecheck.md     | feat,fix      | apps/mcp, apps/hud       | 15             | 13%            | 0.6×  | ✓ well-understood | → stable        |
 
-3. Signal values:
-   - `⚠ high` (ratio ≥ 2.0×): Rule is frequently violated — consider rewriting for clarity
-   - `⚡ elevated` (1.5–2.0×): Worth investigating
-   - `—` (0.5–1.5×): No signal
-   - `✓ well-understood` (< 0.5× with ≥ 5 tasks): Rule is effective
-   - `n/a` (< 3 tasks): Insufficient data
+3. Signal and trend values:
+   - **Signal** (compliance level):
+     - `⚠ high` (ratio ≥ 2.0×): Rule is frequently violated — consider rewriting for clarity
+     - `⚡ elevated` (1.5–2.0×): Worth investigating
+     - `—` (0.5–1.5×): No signal
+     - `✓ well-understood` (< 0.5× with ≥ 5 tasks): Rule is effective
+     - `n/a` (< 3 tasks): Insufficient data
+   - **Trend** (direction of change vs prior snapshot):
+     - `↑ degrading` — ratio increased by ≥ 0.3 since last snapshot (compliance worsening)
+     - `↓ improving` — ratio decreased by ≥ 0.3 since last snapshot (compliance improving)
+     - `→ stable` — ratio change < 0.3 (consistent)
+     - `new` — first snapshot for this rule (no prior data)
 
-4. Action items:
-   - High/elevated rules: "Rewrite for clarity or add code examples — workers frequently violate this rule"
-   - Well-understood rules: No action needed (positive signal)
+4. Action items (prioritize high + degrading):
+   - **High + degrading** (⚠ high, ↑ degrading): "Urgent rewrite needed — rule clarity is declining. Update with concrete examples or simplify language"
+   - **High only** (⚠ high, not degrading): "Rewrite for clarity — workers frequently violate this rule"
+   - **Degrading (any signal)** (↑ degrading): "Rule compliance worsening — review for ambiguity and update if needed"
+   - **Improving (any signal)** (↓ improving): "Rule compliance improving — current approach is working; no action needed"
+   - **Well-understood** (✓): No action needed (positive signal)
+
+
+### 5d. Regression Trend Detection
+
+Analyze whether doc/rule quality is worsening, stable, or improving over time using
+time-series regression on task attention rates across 90-day sliding windows.
+
+**Steps:**
+
+1. Call `detect_regressions` tool.
+   - Loads the last 90 days of tasks
+   - Reads all `.claude/rules/*.md`, `docs/*.md`, and `CLAUDE.md` files
+   - Performs linear regression on attention rate trends per doc
+   - Returns per-doc trend (worsening/stable/improving) with slope coefficient
+
+2. Check if `analyzed === 0`:
+   - If yes, report "Insufficient task history for regression analysis — need 3+ days of task data" and skip remaining steps.
+   - If no, proceed.
+
+3. Report table sorted by slope (worsening first):
+
+| File                 | Trend     | Slope  | Windows | Attention Rate Trend        |
+| -------------------- | --------- | ------ | ------- | --------------------------- |
+| .claude/rules/bun.md | worsening | +0.087 | 5       | 10% → 20% → 35% (climbing)  |
+| docs/architecture.md | stable    | +0.012 | 4       | 15% → 16% → 15% (flat)      |
+| docs/concurrency.md  | improving | -0.042 | 5       | 40% → 30% → 15% (declining) |
+
+4. Interpretation:
+   - `worsening` (slope > +0.05): Tasks touching this doc increasingly flagged with attention → deteriorating guidance
+   - `stable` (-0.05 to +0.05): Consistent attention rate → doc stable
+   - `improving` (slope < -0.05): Tasks touching this doc increasingly resolve → guidance improving
+
+5. Action items:
+   - Worsening docs: "Consider rewriting or adding clarification — attention has increased by {X}% over 90 days"
+   - Improving docs: No action needed (positive signal)
+   - Stable docs: Only investigate if already flagged as stale (Phase 5a) or correlated with high failure (Phase 5b)
+
+6. **Phase 5 Summary addendum**: If worsening count > 0, add to the Phase 5 summary section (before Phase 6):
+   - "⚠ {N} docs show worsening regression trends — see Phase 5d details for remediation"
 
 ---
 
@@ -281,13 +347,7 @@ Report a table:
 
 ## Phase 7: Macro Phase Timing
 
-**Data collection**: Make three calls:
-
-1. `list_events({ eventType: 'milestone' })` — all milestone events
-2. `list_events({ eventType: 'attention_flagged' })` — all attention events
-3. `list_tasks({ status: 'done' })` — the set of completed task IDs
-
-Call `analyzePhaseTimings(milestoneEvents, attentionEvents, doneTaskIds)` to get the report.
+**Data collection**: Call `analyze_phase_timings` (no parameters). Returns a `PhaseTimingReport` with `taskCount`, `insufficientData`, `transitions[]`, `worstBottleneck`, `worstFailurePhase`.
 
 **Minimum data threshold**: If `report.insufficientData` is true, report "Insufficient milestone data (N tasks) — skip timing analysis" and move on.
 
@@ -389,16 +449,58 @@ Low resolution rate suggests the human review loop is backlogged.
 If `fix` flag: for each common pattern with count >= 3, call `create_idea`
 describing the plan template or rule improvement needed.
 
+### 9e. Rule-Attention Correlation
+
+**Purpose:** Identify knowledge gaps (stale or low-quality rule files) correlated
+with worker failures. Cross-reference rule quality grades (A–D) with task attention
+rates using fileIntents matching.
+
+**Steps:**
+
+1. Call `correlate_rules_attention` (no parameters).
+   Returns `RuleCorrelationReport` with:
+   - `globalAttentionRate` — baseline attention rate across all tasks
+   - `totalTasks` — number of tasks analyzed
+   - `rules[]` — per-rule correlation data
+   - `problematicRules[]` — filtered subset where low grade + elevated signal
+
+2. Report a table sorted by signal strength (high/elevated first):
+
+| Rule File                  | Grade | Matching Tasks | Local Attention Rate | Signal             | Status               |
+| -------------------------- | ----- | -------------- | -------------------- | ------------------ | -------------------- |
+| .claude/rules/testing.md   | C     | 12             | 58%                  | ⚠ high (2.4×)      | Low grade + high     |
+| .claude/rules/bun-local.md | B     | 8              | 40%                  | ⚡ elevated (1.6×) | Moderate quality fit |
+| .claude/rules/git.md       | A     | 15             | 30%                  | —                  | Well-understood      |
+
+**Signal interpretation:**
+
+- `⚠ high` (ratio ≥ 2.0×): Local attention rate is 2× higher than global — strong signal the rule is insufficient or unclear
+- `⚡ elevated` (1.5–2.0×): 1.5–2× higher — worth investigating; workers may be struggling with the topic
+- `—` (ratio < 1.5×): No signal — rule is well-understood relative to baseline
+- `insufficient-data` (< 3 matching tasks): Cannot compute correlation
+
+**Problematic rules** are flagged when:
+
+- Grade is C or D (has issues)
+- AND signal is high or elevated (affecting task success)
+
+**Action items:**
+
+- Problematic rules (low grade + high/elevated signal): "Rewrite rule — workers frequently struggle with this guidance"
+- High-signal rules with B/A grades: No action (clear guidance, elevated attention may reflect inherent complexity)
+
+If `fix` flag: for each problematic rule, call `create_idea`:
+`"[introspect] Rewrite {rulePath} — grade {grade} + {signal} attention signal ({matchingTasks} tasks, {localAttentionRate}% attention rate)"`
+
 ---
 
 ## Phase 10: File Access Frequency (data-driven)
 
 Call `query_file_access` with default parameters.
 
-For each returned file:
-
-1. Check if the file path appears in CLAUDE.md links or `.claude/rules/` content
-2. Classify as: "Covered" (already in docs/rules) or "Not covered" (extraction candidate)
+The tool output includes a `Covered?` column — files already referenced in CLAUDE.md
+links or `.claude/rules/` content are marked Yes. Focus recommendations on uncovered
+files with high task counts.
 
 Report:
 
@@ -415,40 +517,56 @@ suggesting a doc/rule extraction.
 
 ---
 
-## Phase 11: Uncovered Pattern Analysis (data-driven)
+## Phase 11: Context Pressure Analysis (data-driven)
 
-Call `extract_patterns` with default parameters.
+Call `analyze_context_pressure` with no parameters.
 
-If the result has `totalTasksAnalyzed === 0`, report "No completed tasks — pattern analysis requires task history" and move on.
+**If no data** (totalTasksWithSnapshots = 0):
 
-If `uncoveredPatterns` is empty, report "All detected patterns are covered by existing rules — no gaps found."
+> ⚠ No budget snapshots found. Context budget hook may not be active.
 
-Otherwise, report:
+**If data exists**, render:
 
-### 11a. Coverage Summary
+### Fleet Summary
 
-- Tasks analyzed: N
-- Text chunks scanned: N (attention messages + notes + learnings)
-- Keywords covered by existing rules: N
-- Uncovered patterns found: N
+| Metric                | Value                               |
+| --------------------- | ----------------------------------- |
+| Tasks with snapshots  | {totalTasksWithSnapshots}           |
+| Average peak weighted | {averagePeakWeighted}               |
+| Median peak weighted  | {medianPeakWeighted}                |
+| Max peak weighted     | {maxPeakWeighted}                   |
+| Coverage              | {covered}/{total} ({coverageRate}%) |
 
-### 11b. Uncovered Patterns
+### High Pressure Tasks (peak > 150 weighted)
 
-| Theme                 | Frequency (tasks) | Suggested Rule File | Example Reasons                              |
-| --------------------- | ----------------- | ------------------- | -------------------------------------------- |
-| context window crash  | 5                 | context-budgets.md  | "Worker ran out of context mid-typecheck..." |
-| worktree cleanup fail | 3                 | worktree-cleanup.md | "Dirty worktree blocked checkout..."         |
+Table: taskId (short), title, type, status, peakWeighted, growthRate
 
-Show all returned patterns (up to 20, pre-capped by the tool).
+Show top 20 if more exist. Sort by peakWeighted descending.
 
-**Interpretation:**
+### Pressure by Task Type
 
-- Frequency ≥ 5: strong signal — likely warrants a new rule file
-- Frequency 3–4: moderate signal — worth reviewing examples before creating a rule
-- Frequency 2: weak signal — monitor, may consolidate with other patterns over time
+| Type | Task Count | Avg Peak Weighted | High Pressure Count |
+| ---- | ---------- | ----------------- | ------------------- |
+| feat | 8          | 145               | 2                   |
+| fix  | 5          | 130               | 0                   |
 
-If `fix` flag: for each pattern with frequency ≥ 3, call `create_idea` with:
-`"[introspect] Create rule {suggestedRuleFile} — {theme} (seen in {frequency} tasks). Examples: {first example reason truncated to 80 chars}"`
+### Recommendations
+
+Bullet list of recommendations from the analysis:
+
+- "Low snapshot coverage (X%) — budget hook may not be active on all workers"
+- "N high-pressure tasks detected — monitor context consumption closely"
+- "Task {id} reached extreme pressure (>200 weighted) — urgent action needed"
+- "{type} tasks average X weighted peak — review plan complexity"
+- "N task(s) show steep context growth — may need /compact checkpoints"
+
+**Grading**: Phase grade based on fleet health:
+
+- A: No high-pressure tasks, coverage > 80%
+- B: ≤2 high-pressure tasks, coverage > 60%
+- C: 3-5 high-pressure tasks or coverage 40-60%
+- D: >5 high-pressure tasks or coverage < 40%
+- F: >10 high-pressure tasks or no snapshot data
 
 ---
 
@@ -501,11 +619,11 @@ If `report` flag: write to `.claude/reviews/introspect-YYYY-MM-DD.md`.
 - Phase 4 requires reading ~15 rule files + ~20 docs/\*.md files + spot-check greps — moderate context cost
 - Phase 5 requires N git log calls + 1 `list_tasks` call (for failure correlation) — moderate context cost
 - Phase 6 requires reading ~3-4 command files — cheap
-- Phase 7 requires 2 list_events calls + 1 list_tasks call — cheap
+- Phase 7 requires 1 analyze_phase_timings call — cheap
 - Phase 8 requires 1 list_tasks call + plan text analysis (no extra calls) — cheap
 - Phase 9 requires 1 analyze_attention call — cheap
 - Phase 10 requires 1 query_file_access call — cheap (single MCP tool call)
-- Phase 11 requires 1 extract_patterns call — cheap (single MCP tool call, computation is server-side)
+- Phase 11 requires 1 analyze_context_pressure call — cheap
 
 For single-phase runs, skip the summary table and just show that phase's detail.
 
