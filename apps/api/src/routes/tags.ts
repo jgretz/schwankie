@@ -11,16 +11,17 @@ tagsRouter.get('/api/tags', async (c) => {
   const canonical = c.req.query('canonical') === 'true' ? true : undefined;
   const all = c.req.query('all') === 'true';
 
-  // Read tag count floor setting for default tag list (skip when all=true for admin)
+  // Read tag count floor setting — only for saved/default lists, not queue or admin
+  const status = c.req.query('status') || undefined;
   let minCount: number | undefined;
-  if (!needs_normalization && !canonical && !all) {
+  if (!needs_normalization && !canonical && !all && status !== 'queued') {
     const floorValue = await getSetting('tagCountFloor');
     const floor = floorValue ? Number(floorValue) : 1;
     minCount = Number.isNaN(floor) ? 1 : floor;
   }
 
   const parsed = listTagsParamsSchema.safeParse({
-    status: c.req.query('status') || undefined,
+    status,
     needs_normalization,
     canonical,
     limit: c.req.query('limit') || undefined,
