@@ -74,6 +74,28 @@ export const resetEnrichmentAction = createServerFn({method: 'POST'})
     return resetEnrichment(data.id);
   });
 
+const refetchLinkInput = z.object({id: z.number()});
+
+export const refetchLinkAction = createServerFn({method: 'POST'})
+  .inputValidator(refetchLinkInput)
+  .handler(async ({data}) => {
+    await getClient();
+    await requireAuth();
+    const {refetchLink} = await import('client');
+    return refetchLink(data.id);
+  });
+
+const suggestTagsInput = z.object({id: z.number()});
+
+export const suggestTagsAction = createServerFn({method: 'POST'})
+  .inputValidator(suggestTagsInput)
+  .handler(async ({data}) => {
+    await getClient();
+    await requireAuth();
+    const {suggestTags} = await import('client');
+    return suggestTags(data.id);
+  });
+
 const deleteLinkInput = z.object({id: z.number()});
 
 export const deleteLinkAction = createServerFn({method: 'POST'})

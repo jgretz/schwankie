@@ -1,6 +1,9 @@
-import {useEffect, useMemo, useRef} from 'react';
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {useQueryClient} from '@tanstack/react-query';
 import type {LinkData, LinkStatus} from 'client';
+import {toast} from 'sonner';
 import {useLinkModal} from '@www/components/modal/link-modal-context';
+import {refetchLinkAction} from '@www/lib/link-actions';
 import {FilterStrip} from './filter-strip';
 import {LinkItem} from './link-item';
 import {useInfiniteLinks} from '@www/hooks/use-infinite-links';
@@ -29,7 +32,27 @@ export function FeedPage({
   onClearAll,
 }: FeedPageProps) {
   const {openEdit} = useLinkModal();
+  const queryClient = useQueryClient();
   const selectedTagIds = useMemo(() => parseTagIds(tagsParam), [tagsParam]);
+  const [refetchingId, setRefetchingId] = useState<number | null>(null);
+
+  const handleRefetch = useCallback(
+    async (linkId: number) => {
+      setRefetchingId(linkId);
+      try {
+        await refetchLinkAction({data: {id: linkId}});
+        queryClient.invalidateQueries({queryKey: ['links']});
+        queryClient.invalidateQueries({queryKey: ['tags']});
+        toast.success('Link re-fetched');
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Failed to re-fetch link';
+        toast.error(message);
+      } finally {
+        setRefetchingId(null);
+      }
+    },
+    [queryClient],
+  );
 
   const {data, hasNextPage, fetchNextPage, isFetchingNextPage, isLoading, isError} =
     useInfiniteLinks({
@@ -127,6 +150,9 @@ export function FeedPage({
               onTagClick={onTagClick}
               showEditButton={isAuthenticated}
               onEditClick={() => openEdit(item as LinkData)}
+              showRefetchButton={isAuthenticated && status === 'queued'}
+              onRefetchClick={handleRefetch}
+              isRefetching={refetchingId === item.id}
             />
           ))}
         </div>

@@ -13,6 +13,7 @@ import {
   createLinkAction,
   deleteLinkAction,
   fetchMetadataAction,
+  suggestTagsAction,
   updateLinkAction,
 } from '@www/lib/link-actions';
 import {useLinkModal} from './link-modal-context';
@@ -97,6 +98,7 @@ export function LinkModal() {
   const [stage, setStage] = useState<Stage>('url-entry');
   const [form, setForm] = useState<FormData>(emptyForm);
   const [saving, setSaving] = useState(false);
+  const [suggestingTags, setSuggestingTags] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [error, setError] = useState('');
   const {errors, validate, touch, touched, reset} = useFormValidation(formValidationSchema, form);
@@ -107,6 +109,7 @@ export function LinkModal() {
       setStage('url-entry');
       setForm(emptyForm);
       setSaving(false);
+      setSuggestingTags(false);
       setConfirmDelete(false);
       setError('');
       reset();
@@ -192,6 +195,33 @@ export function LinkModal() {
       setSaving(false);
     }
   }, [mode, editLink, form, queryClient, close, validate]);
+
+  const handleSuggestTags = useCallback(async () => {
+    if (!editLink) return;
+    setSuggestingTags(true);
+    try {
+      const {tags: suggested} = await suggestTagsAction({data: {id: editLink.id}});
+      if (suggested.length === 0) {
+        toast('No tag suggestions available');
+        return;
+      }
+      setForm((prev) => {
+        const merged = [...prev.tags];
+        for (const tag of suggested) {
+          const normalized = tag.trim().toLowerCase();
+          if (normalized && !merged.includes(normalized)) {
+            merged.push(normalized);
+          }
+        }
+        return {...prev, tags: merged};
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to suggest tags';
+      toast.error(message);
+    } finally {
+      setSuggestingTags(false);
+    }
+  }, [editLink]);
 
   const handleDelete = useCallback(async () => {
     if (!editLink) return;
@@ -284,6 +314,23 @@ export function LinkModal() {
 
             <Field label="Tags">
               <TagChipInput tags={form.tags} onChange={(tags) => updateField('tags', tags)} />
+              {mode === 'edit' && (
+                <button
+                  type="button"
+                  onClick={handleSuggestTags}
+                  disabled={suggestingTags || saving}
+                  className="mt-1.5 flex items-center gap-1.5 font-sans text-[0.75rem] text-text-muted transition-colors hover:text-accent disabled:opacity-50"
+                >
+                  {suggestingTags ? (
+                    <>
+                      <span className="inline-block h-3 w-3 animate-spin rounded-full border-[1.5px] border-text-muted border-t-accent" />
+                      Suggesting…
+                    </>
+                  ) : (
+                    'Suggest tags'
+                  )}
+                </button>
+              )}
             </Field>
 
             <Field label="Status">

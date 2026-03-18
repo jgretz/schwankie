@@ -1,6 +1,8 @@
 import {Hono} from 'hono';
 import {authMiddleware} from '../middleware/auth';
 import {listLinks, createLink, updateLink, deleteLink, getLink, resetEnrichment} from '@domain';
+import {refetchLink} from '../commands/refetch-link';
+import {suggestTags} from '../commands/suggest-tags';
 import {createLinkSchema, updateLinkSchema, listLinksParamsSchema} from '../validators/links';
 
 export const linksRoutes = new Hono();
@@ -71,6 +73,30 @@ linksRoutes.patch('/api/links/:id/reset-enrichment', auth, async (c) => {
     return c.json({error: 'Link not found'}, 404);
   }
   return c.json({reset: true});
+});
+
+linksRoutes.post('/api/links/:id/refetch', auth, async (c) => {
+  const id = Number(c.req.param('id'));
+  if (Number.isNaN(id)) {
+    return c.json({error: 'Invalid link ID'}, 400);
+  }
+  const result = await refetchLink(id);
+  if (!result) {
+    return c.json({error: 'Link not found'}, 404);
+  }
+  return c.json(result);
+});
+
+linksRoutes.post('/api/links/:id/suggest-tags', auth, async (c) => {
+  const id = Number(c.req.param('id'));
+  if (Number.isNaN(id)) {
+    return c.json({error: 'Invalid link ID'}, 400);
+  }
+  const result = await suggestTags(id, process.env.ANTHROPIC_API_KEY);
+  if (!result) {
+    return c.json({error: 'Link not found'}, 404);
+  }
+  return c.json(result);
 });
 
 linksRoutes.delete('/api/links/:id', auth, async (c) => {

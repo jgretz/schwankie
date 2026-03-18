@@ -17,6 +17,8 @@ export {markTagNormalized} from './calls/mark-tag-normalized';
 export {reportEnrichmentFailure} from './calls/report-enrichment-failure';
 export {resetEnrichment} from './calls/reset-enrichment';
 export {fetchDeadLinks} from './calls/fetch-dead-links';
+export {refetchLink} from './calls/refetch-link';
+export {suggestTags} from './calls/suggest-tags';
 
 // types
 export type {
