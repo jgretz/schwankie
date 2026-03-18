@@ -13,6 +13,8 @@ export {updateLinkContent} from './calls/update-link-content';
 export {getTagsNeedingNormalization} from './calls/get-tags-needing-normalization';
 export {getCanonicalTags} from './calls/get-canonical-tags';
 export {mergeTag} from './calls/merge-tag';
+export {renameTag} from './calls/rename-tag';
+export {deleteTag} from './calls/delete-tag';
 export {markTagNormalized} from './calls/mark-tag-normalized';
 export {reportEnrichmentFailure} from './calls/report-enrichment-failure';
 export {resetEnrichment} from './calls/reset-enrichment';

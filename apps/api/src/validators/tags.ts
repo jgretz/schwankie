@@ -11,3 +11,7 @@ export const listTagsParamsSchema = z.object({
 export const mergeTagSchema = z.object({
   canonicalTagId: z.number().int().positive(),
 });
+
+export const renameTagSchema = z.object({
+  text: z.string().min(1).max(200),
+});

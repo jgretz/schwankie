@@ -1,7 +1,7 @@
 import {Hono} from 'hono';
 import {authMiddleware} from '../middleware/auth';
-import {listTags, mergeTag, markTagNormalized} from '@domain';
-import {listTagsParamsSchema, mergeTagSchema} from '../validators/tags';
+import {listTags, mergeTag, markTagNormalized, renameTag, deleteTag} from '@domain';
+import {listTagsParamsSchema, mergeTagSchema, renameTagSchema} from '../validators/tags';
 
 export const tagsRouter = new Hono();
 const auth = authMiddleware();
@@ -41,4 +41,28 @@ tagsRouter.patch('/api/tags/:id/normalize', auth, async (c) => {
   if (!normalized) return c.json({error: 'Tag not found'}, 404);
 
   return c.json({normalized: true});
+});
+
+tagsRouter.patch('/api/tags/:id', auth, async (c) => {
+  const tagId = Number(c.req.param('id'));
+  if (Number.isNaN(tagId)) return c.json({error: 'Invalid tag ID'}, 400);
+
+  const parsed = renameTagSchema.safeParse(await c.req.json());
+  if (!parsed.success)
+    return c.json({error: 'Invalid request body', details: parsed.error.flatten()}, 400);
+
+  const result = await renameTag({id: tagId, text: parsed.data.text});
+  if (!result) return c.json({error: 'Tag not found'}, 404);
+
+  return c.json({renamed: true});
+});
+
+tagsRouter.delete('/api/tags/:id', auth, async (c) => {
+  const tagId = Number(c.req.param('id'));
+  if (Number.isNaN(tagId)) return c.json({error: 'Invalid tag ID'}, 400);
+
+  const result = await deleteTag(tagId);
+  if (!result) return c.json({error: 'Tag not found'}, 404);
+
+  return c.json({deleted: true});
 });
