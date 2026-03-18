@@ -8,7 +8,27 @@ Three layers of tokens in `apps/www/src/globals.css`:
 - **shadcn tokens**: `--background`, `--foreground`, `--card`, `--primary`, `--secondary`, `--muted`, `--destructive`, `--ring`, `--input`, `--radius` — standard shadcn/ui mapping.
 - **Component tokens**: `--tag-bg`, `--tag-text`, `--tag-active-bg`, `--tag-active-text`, `--modal-bg`, `--search-bg`, `--pill-bg`, `--pill-text` — scoped to specific UI elements.
 
-All tokens defined in `:root`, overridden in `.dark` class.
+All tokens defined in `:root`; theme-adaptive tokens overridden in `.dark` class (see Dark Mode Inheritance below).
+
+## Dark Mode Inheritance
+
+Not all tokens change between themes. Categorize tokens by their dark-mode behavior:
+
+**Invariant (same value in `.light` and `.dark`):**
+
+- `--pill-bg`, `--pill-text`, `--tag-active-bg`, `--tag-active-text`, `--destructive`, `--destructive-foreground`, `--primary-foreground`, `--radius` — accent-colored UI elements stay consistent across themes; structural tokens (radius) are theme-independent.
+
+**Theme-adaptive (different values in `.dark`):**
+
+- All surface/text/border tokens: `--bg`, `--bg-subtle`, `--border`, `--text`, `--text-muted`, `--text-faint`, `--accent`, `--accent-hover`, `--tag-bg`, `--tag-text`, `--tag-active-bg-secondary`, `--modal-bg`, `--search-bg`, `--background`, `--foreground`, `--card`, `--card-foreground`, `--popover`, `--popover-foreground`, `--primary`, `--secondary`, `--secondary-foreground`, `--muted`, `--muted-foreground`, `--ring`, `--input`, `--accent-foreground`.
+
+**When Adding a New Token:**
+
+- Structural tokens (spacing, radius) → define in `:root` only; no `.dark` override needed
+- Color tokens referencing accent or white-on-accent → can be invariant if the accent itself adapts
+- All surface, text, or border tokens → must have a `.dark` override with contrasting value
+
+**CSS Cleanup:** Remove redundant `.dark` redeclarations for invariant tokens — makes the token system self-documenting (if a token appears in `.dark`, it genuinely changes).
 
 ## Theme — Stone & Slate
 
@@ -41,7 +61,7 @@ All tokens defined in `:root`, overridden in `.dark` class.
 
 ## Adding New Tokens
 
-- Define in both `:root` and `.dark` blocks in `globals.css`
+- Define in `:root`; add a `.dark` override only for theme-adaptive tokens (see Dark Mode Inheritance above)
 - Add Tailwind mapping in `tailwind.config.ts` `colors` extend
 - Use semantic names (`--sidebar-bg`) not raw values (`--blue-200`)
 - Keep warm palette — no cool grays, no pure blacks/whites

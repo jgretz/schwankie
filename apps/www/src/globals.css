@@ -53,13 +53,9 @@
     --accent-hover: #91aacb;
     --tag-bg: #222a35;
     --tag-text: #8aa0be;
-    --tag-active-bg: #5b6f8a;
     --tag-active-bg-secondary: #6e89a8;
-    --tag-active-text: #ffffff;
     --modal-bg: #21252a;
     --search-bg: #21252a;
-    --pill-bg: #5b6f8a;
-    --pill-text: #ffffff;
 
     --background: #1a1c1e;
     --foreground: #e2e4e8;
@@ -68,17 +64,13 @@
     --popover: #21252a;
     --popover-foreground: #e2e4e8;
     --primary: #7b96b5;
-    --primary-foreground: #ffffff;
     --secondary: #21252a;
     --secondary-foreground: #e2e4e8;
     --muted: #21252a;
     --muted-foreground: #a0a8b8;
     --accent-foreground: #e2e4e8;
-    --destructive: #dc2626;
-    --destructive-foreground: #ffffff;
     --ring: #7b96b5;
     --input: #2c3038;
-    --radius: 0.5rem;
   }
 
   * {
