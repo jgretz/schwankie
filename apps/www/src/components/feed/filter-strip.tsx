@@ -1,7 +1,7 @@
 type FilterStripProps = {
-  activeTags: Array<{id: number; text: string}>;
+  activeTags: Array<{text: string}>;
   totalCount: number;
-  onRemoveTag: (tagId: number) => void;
+  onRemoveTag: (tagText: string) => void;
   onClearAll: () => void;
 };
 
@@ -15,13 +15,13 @@ export function FilterStrip({activeTags, totalCount, onRemoveTag, onClearAll}: F
       </span>
 
       {activeTags.map((tag, index) => (
-        <span key={tag.id} className="inline-flex items-center gap-[0.35rem]">
+        <span key={tag.text} className="inline-flex items-center gap-[0.35rem]">
           {index > 0 && <span className="text-[0.68rem] italic text-text-faint">+</span>}
           <span className="inline-flex items-center gap-1 rounded-[3px] bg-pill-bg px-2 py-[2px] text-[0.75rem] font-medium text-pill-text">
             {tag.text}
             <button
               type="button"
-              onClick={() => onRemoveTag(tag.id)}
+              onClick={() => onRemoveTag(tag.text)}
               aria-label={`Remove ${tag.text} filter`}
               className="cursor-pointer text-[0.9rem] opacity-70 transition-opacity hover:opacity-100"
             >

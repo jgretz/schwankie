@@ -8,7 +8,7 @@ import {FilterStrip} from './filter-strip';
 import {LinkItem} from './link-item';
 import {useInfiniteLinks} from '@www/hooks/use-infinite-links';
 import {useTags} from '@www/hooks/use-tags';
-import {parseTagIds} from '@www/lib/parse-tag-ids';
+import {parseTagSlugs} from '@www/lib/parse-tag-slugs';
 
 type FeedPageProps = {
   status: LinkStatus;
@@ -16,8 +16,8 @@ type FeedPageProps = {
   tags?: string;
   q?: string;
   isAuthenticated: boolean;
-  onTagClick: (tagId: number) => void;
-  onRemoveTag: (tagId: number) => void;
+  onTagClick: (tagText: string) => void;
+  onRemoveTag: (tagText: string) => void;
   onClearAll: () => void;
 };
 
@@ -33,7 +33,7 @@ export function FeedPage({
 }: FeedPageProps) {
   const {openEdit} = useLinkModal();
   const queryClient = useQueryClient();
-  const selectedTagIds = useMemo(() => parseTagIds(tagsParam), [tagsParam]);
+  const selectedTags = useMemo(() => parseTagSlugs(tagsParam), [tagsParam]);
   const [refetchingId, setRefetchingId] = useState<number | null>(null);
 
   const handleRefetch = useCallback(
@@ -88,10 +88,10 @@ export function FeedPage({
 
   const activeTags = useMemo(
     () =>
-      selectedTagIds
-        .map((id) => allTags?.find((t) => t.id === id))
+      selectedTags
+        .map((text) => allTags?.find((t) => t.text === text))
         .filter((t): t is {id: number; text: string; count: number} => t != null),
-    [selectedTagIds, allTags],
+    [selectedTags, allTags],
   );
 
   if (isError) {
@@ -146,7 +146,7 @@ export function FeedPage({
               description={item.description}
               date={item.createDate}
               tags={item.tags}
-              activeTagIds={selectedTagIds}
+              activeTags={selectedTags}
               onTagClick={onTagClick}
               showEditButton={isAuthenticated}
               onEditClick={() => openEdit(item as LinkData)}

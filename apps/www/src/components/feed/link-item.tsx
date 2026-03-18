@@ -7,8 +7,8 @@ type LinkItemProps = {
   description: string | null;
   date: string;
   tags: Array<{id: number; text: string}>;
-  activeTagIds: number[];
-  onTagClick: (tagId: number) => void;
+  activeTags: string[];
+  onTagClick: (tagText: string) => void;
   showEditButton: boolean;
   onEditClick: (linkId: number) => void;
   showRefetchButton?: boolean;
@@ -17,7 +17,9 @@ type LinkItemProps = {
 };
 
 function formatDate(iso: string): string {
-  return new Intl.DateTimeFormat('en-US', {month: 'short', day: 'numeric', year: 'numeric'}).format(new Date(iso));
+  return new Intl.DateTimeFormat('en-US', {month: 'short', day: 'numeric', year: 'numeric'}).format(
+    new Date(iso),
+  );
 }
 
 export function LinkItem({
@@ -27,7 +29,7 @@ export function LinkItem({
   description,
   date,
   tags,
-  activeTagIds,
+  activeTags,
   onTagClick,
   showEditButton,
   onEditClick,
@@ -58,12 +60,12 @@ export function LinkItem({
         </span>
 
         {tags.map((tag) => {
-          const isActive = activeTagIds.includes(tag.id);
+          const isActive = activeTags.includes(tag.text);
           return (
             <button
               key={tag.id}
               type="button"
-              onClick={() => onTagClick(tag.id)}
+              onClick={() => onTagClick(tag.text)}
               className={cn(
                 'inline-flex cursor-pointer items-center rounded-[3px] px-2 py-[2px] font-sans text-[0.72rem] leading-[1.6] transition-colors duration-100',
                 isActive

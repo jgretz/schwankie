@@ -2,7 +2,7 @@ import {createFileRoute, useNavigate} from '@tanstack/react-router';
 import {useCallback, useMemo} from 'react';
 import {z} from 'zod';
 import {FeedPage} from '@www/components/feed/feed-page';
-import {parseTagIds} from '@www/lib/parse-tag-ids';
+import {parseTagSlugs} from '@www/lib/parse-tag-slugs';
 
 const searchSchema = z.object({
   tags: z.string().optional().catch(undefined),
@@ -25,23 +25,23 @@ function QueuePage() {
   const {tags, q} = Route.useSearch();
   const navigate = useNavigate({from: '/queue'});
 
-  const selectedTagIds = useMemo(() => parseTagIds(tags), [tags]);
+  const selectedTags = useMemo(() => parseTagSlugs(tags), [tags]);
 
   const handleTagClick = useCallback(
-    (tagId: number) => {
-      if (selectedTagIds.includes(tagId)) return;
-      const next = [...selectedTagIds, tagId];
+    (tagText: string) => {
+      if (selectedTags.includes(tagText)) return;
+      const next = [...selectedTags, tagText];
       navigate({search: {tags: next.join(','), q}});
     },
-    [selectedTagIds, navigate, q],
+    [selectedTags, navigate, q],
   );
 
   const handleRemoveTag = useCallback(
-    (tagId: number) => {
-      const next = selectedTagIds.filter((id) => id !== tagId);
+    (tagText: string) => {
+      const next = selectedTags.filter((t) => t !== tagText);
       navigate({search: {tags: next.length > 0 ? next.join(',') : undefined, q}});
     },
-    [selectedTagIds, navigate, q],
+    [selectedTags, navigate, q],
   );
 
   const handleClearAll = useCallback(() => {

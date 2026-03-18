@@ -5,7 +5,16 @@ import type {ListLinksParams, ListLinksResult} from '../types';
 
 export async function listLinks(params: ListLinksParams): Promise<ListLinksResult> {
   const db = getDb();
-  const {limit, offset, status, tags: tagsParam, q, ids, needs_enrichment, dead_enrichment} = params;
+  const {
+    limit,
+    offset,
+    status,
+    tags: tagsParam,
+    q,
+    ids,
+    needs_enrichment,
+    dead_enrichment,
+  } = params;
 
   const conditions = [];
 
@@ -28,14 +37,15 @@ export async function listLinks(params: ListLinksParams): Promise<ListLinksResul
   }
 
   if (tagsParam) {
-    const tagIds = tagsParam.split(',').map(Number).filter(Boolean);
-    if (tagIds.length > 0) {
+    const tagTexts = tagsParam.split(',').filter(Boolean);
+    if (tagTexts.length > 0) {
       const subquery = sql`(
         SELECT ${linkTag.linkId}
         FROM ${linkTag}
-        WHERE ${inArray(linkTag.tagId, tagIds)}
+        INNER JOIN ${tag} ON ${tag.id} = ${linkTag.tagId}
+        WHERE ${inArray(tag.text, tagTexts)}
         GROUP BY ${linkTag.linkId}
-        HAVING COUNT(DISTINCT ${linkTag.tagId}) = ${tagIds.length}
+        HAVING COUNT(DISTINCT ${linkTag.tagId}) = ${tagTexts.length}
       )`;
       conditions.push(sql`${link.id} IN ${subquery}`);
     }

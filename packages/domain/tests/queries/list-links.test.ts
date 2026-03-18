@@ -49,11 +49,10 @@ describe('listLinks', function () {
     expect(result.items[0]!.title).toBe(unique);
   });
 
-  it('should filter by tag ids', async function () {
+  it('should filter by tag slugs', async function () {
     const withTag = await makeLink({title: 'With Tag', tags: ['filter-tag']});
 
-    const tagId = withTag.tags[0]!.id;
-    const result = await listLinks({limit: 100, offset: 0, tags: String(tagId)});
+    const result = await listLinks({limit: 100, offset: 0, tags: 'filter-tag'});
 
     const found = result.items.find((i) => i.id === withTag.id);
     expect(found).toBeDefined();

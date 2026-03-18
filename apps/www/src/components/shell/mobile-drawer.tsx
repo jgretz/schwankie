@@ -5,15 +5,15 @@ import type {Tag} from './types';
 
 type MobileDrawerProps = {
   tags: Tag[];
-  selectedTagIds: number[];
-  onTagToggle: (tagId: number) => void;
+  selectedTags: string[];
+  onTagToggle: (tagText: string) => void;
   isOpen: boolean;
   onClose: () => void;
 };
 
 export function MobileDrawer({
   tags,
-  selectedTagIds,
+  selectedTags,
   onTagToggle,
   isOpen,
   onClose,
@@ -100,7 +100,7 @@ export function MobileDrawer({
         </div>
 
         <div className="p-4">
-          <TagList tags={tags} selectedTagIds={selectedTagIds} onTagToggle={onTagToggle} />
+          <TagList tags={tags} selectedTags={selectedTags} onTagToggle={onTagToggle} />
         </div>
       </div>
     </>

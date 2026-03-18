@@ -16,7 +16,7 @@ import {LinkModal} from '@www/components/modal/link-modal';
 import {LinkModalProvider, useLinkModal} from '@www/components/modal/link-modal-context';
 import {AppShell} from '@www/components/shell/app-shell';
 import {useTags} from '@www/hooks/use-tags';
-import {parseTagIds} from '@www/lib/parse-tag-ids';
+import {parseTagSlugs} from '@www/lib/parse-tag-slugs';
 import type {FeedSearch} from '@www/routes/index';
 import '../globals.css';
 import {getAuthState} from '../lib/session-actions';
@@ -115,7 +115,7 @@ function ShellWithData() {
   const tagsParam = search.tags;
   const qParam = search.q ?? '';
 
-  const selectedTagIds = useMemo(() => parseTagIds(tagsParam), [tagsParam]);
+  const selectedTags = useMemo(() => parseTagSlugs(tagsParam), [tagsParam]);
 
   const {data: tags} = useTags(status);
 
@@ -148,23 +148,23 @@ function ShellWithData() {
   );
 
   const handleTagToggle = useCallback(
-    (tagId: number) => {
+    (tagText: string) => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
-      const next = selectedTagIds.includes(tagId)
-        ? selectedTagIds.filter((id) => id !== tagId)
-        : [...selectedTagIds, tagId];
+      const next = selectedTags.includes(tagText)
+        ? selectedTags.filter((t) => t !== tagText)
+        : [...selectedTags, tagText];
       navigate({
         to: currentPath,
         search: {tags: next.length > 0 ? next.join(',') : undefined, q: search.q},
       });
     },
-    [selectedTagIds, navigate, search.q, currentPath],
+    [selectedTags, navigate, search.q, currentPath],
   );
 
   return (
     <AppShell
       tags={tags ?? []}
-      selectedTagIds={selectedTagIds}
+      selectedTags={selectedTags}
       onTagToggle={handleTagToggle}
       searchValue={searchValue}
       onSearchChange={handleSearchChange}
