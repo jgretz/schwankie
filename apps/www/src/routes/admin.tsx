@@ -2,8 +2,12 @@ import {createFileRoute, redirect} from '@tanstack/react-router';
 import {useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
 import {useDeadLinks} from '@www/hooks/use-dead-links';
 import {Button} from '@www/components/ui/button';
-import {getSetting, setSetting} from 'client';
+import {getSetting} from 'client';
+import {setSettingAction} from '@www/lib/settings-actions';
+import {initClient} from '@www/lib/init-client';
 import {useState, useEffect} from 'react';
+
+initClient();
 
 export const Route = createFileRoute('/admin')({
   beforeLoad: ({context}) => {
@@ -22,7 +26,10 @@ function AdminPage() {
   const items = data?.items ?? [];
   const queryClient = useQueryClient();
 
-  // Tag count floor settings
+  // Tag count floor settings — only fetch client-side (client not initialized during SSR)
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   const {data: settingData, isLoading: settingLoading} = useQuery({
     queryKey: ['setting', 'tagCountFloor'],
     queryFn: async () => {
@@ -36,6 +43,7 @@ function AdminPage() {
         throw error;
       }
     },
+    enabled: mounted,
   });
 
   const [floorValue, setFloorValue] = useState('1');
@@ -49,7 +57,7 @@ function AdminPage() {
 
   const floorMutation = useMutation({
     mutationFn: async (value: string) => {
-      await setSetting('tagCountFloor', value);
+      await setSettingAction({data: {key: 'tagCountFloor', value}});
     },
     onSuccess: () => {
       setFloorSaveError(null);
