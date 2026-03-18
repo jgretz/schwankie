@@ -29,6 +29,11 @@ export function AppShell({
 }: AppShellProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
+  function handleMobileTagToggle(tagText: string) {
+    onTagToggle(tagText);
+    setDrawerOpen(false);
+  }
+
   return (
     <>
       <Topbar
@@ -50,7 +55,7 @@ export function AppShell({
       <MobileDrawer
         tags={tags}
         selectedTags={selectedTags}
-        onTagToggle={onTagToggle}
+        onTagToggle={handleMobileTagToggle}
         isOpen={drawerOpen}
         onClose={() => setDrawerOpen(false)}
       />
