@@ -8,7 +8,7 @@ Three layers of tokens in `apps/www/src/globals.css`:
 - **shadcn tokens**: `--background`, `--foreground`, `--card`, `--primary`, `--secondary`, `--muted`, `--destructive`, `--ring`, `--input`, `--radius` — standard shadcn/ui mapping.
 - **Component tokens**: `--tag-bg`, `--tag-text`, `--tag-active-bg`, `--tag-active-text`, `--modal-bg`, `--search-bg`, `--pill-bg`, `--pill-text` — scoped to specific UI elements.
 
-All tokens defined in `:root`, overridden in `.dark` class.
+All tokens defined in `:root`; theme-adaptive tokens overridden in `.dark` class (see Dark Mode Inheritance below).
 
 ## Dark Mode Inheritance
 
@@ -61,7 +61,7 @@ Not all tokens change between themes. Categorize tokens by their dark-mode behav
 
 ## Adding New Tokens
 
-- Define in both `:root` and `.dark` blocks in `globals.css`
+- Define in `:root`; add a `.dark` override only for theme-adaptive tokens (see Dark Mode Inheritance above)
 - Add Tailwind mapping in `tailwind.config.ts` `colors` extend
 - Use semantic names (`--sidebar-bg`) not raw values (`--blue-200`)
 - Keep warm palette — no cool grays, no pure blacks/whites
