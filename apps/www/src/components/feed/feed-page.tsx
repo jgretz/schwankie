@@ -129,10 +129,10 @@ export function FeedPage({
           <button
             type="button"
             onClick={() => onSortChange('date')}
-            className={`font-sans text-[0.72rem] transition-colors ${
+            className={`px-3 py-[2px] rounded-[3px] font-sans text-[0.72rem] transition-colors ${
               sort !== 'score'
                 ? 'bg-accent text-white'
-                : 'text-text-muted hover:text-text'
+                : 'text-text-muted hover:text-text hover:bg-bg-subtle'
             }`}
           >
             Newest
@@ -140,10 +140,10 @@ export function FeedPage({
           <button
             type="button"
             onClick={() => onSortChange('score')}
-            className={`font-sans text-[0.72rem] transition-colors ${
+            className={`px-3 py-[2px] rounded-[3px] font-sans text-[0.72rem] transition-colors ${
               sort === 'score'
                 ? 'bg-accent text-white'
-                : 'text-text-muted hover:text-text'
+                : 'text-text-muted hover:text-text hover:bg-bg-subtle'
             }`}
           >
             Best
