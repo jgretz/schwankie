@@ -2,7 +2,7 @@ import {createFileRoute, redirect} from '@tanstack/react-router';
 import {useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
 import {useDeadLinks} from '@www/hooks/use-dead-links';
 import {Button} from '@www/components/ui/button';
-import {getSetting, setSetting} from 'client';
+import {getSettingAction, setSettingAction} from '@www/lib/settings-actions';
 import {useState, useEffect} from 'react';
 
 export const Route = createFileRoute('/admin')({
@@ -27,10 +27,11 @@ function AdminPage() {
     queryKey: ['setting', 'tagCountFloor'],
     queryFn: async () => {
       try {
-        return await getSetting('tagCountFloor');
+        return await getSettingAction({data: {key: 'tagCountFloor'}});
       } catch (error) {
         // 404 = setting not yet created, fall back to default
-        if (error instanceof Error && error.message.includes('404')) {
+        const message = error instanceof Error ? error.message : String(error);
+        if (message.includes('404')) {
           return {key: 'tagCountFloor', value: '1'};
         }
         throw error;
@@ -49,7 +50,7 @@ function AdminPage() {
 
   const floorMutation = useMutation({
     mutationFn: async (value: string) => {
-      await setSetting('tagCountFloor', value);
+      await setSettingAction({data: {key: 'tagCountFloor', value}});
     },
     onSuccess: () => {
       setFloorSaveError(null);
