@@ -14,6 +14,8 @@ type LinkItemProps = {
   showEditButton: boolean;
   onEditClick: (linkId: number) => void;
   searchQuery?: string;
+  score?: number | null;
+  showScore?: boolean;
 };
 
 function formatDate(iso: string): string {
@@ -34,6 +36,8 @@ export function LinkItem({
   showEditButton,
   onEditClick,
   searchQuery,
+  score,
+  showScore,
 }: LinkItemProps) {
   return (
     <div className="group border-b border-border py-[0.9rem] last:border-b-0">
@@ -56,6 +60,10 @@ export function LinkItem({
         <span className="mr-[0.25rem] font-sans text-[0.72rem] font-medium tabular-nums text-text-faint">
           {formatDate(date)}
         </span>
+
+        {showScore && score != null && (
+          <span className="font-sans text-[0.68rem] tabular-nums text-text-faint">{score}</span>
+        )}
 
         {tags.map((tag) => {
           const activeIndex = activeTags.indexOf(tag.text);
