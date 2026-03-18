@@ -6,7 +6,7 @@ type StatusToggleProps = {
 };
 
 const options: {value: 'saved' | 'queued'; label: string}[] = [
-  {value: 'saved', label: 'Feed'},
+  {value: 'saved', label: 'Compendium'},
   {value: 'queued', label: 'Queue'},
 ];
 

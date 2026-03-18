@@ -53,7 +53,7 @@ function IndexPage() {
   return (
     <FeedPage
       status="saved"
-      title="Feed"
+      title="Compendium"
       tags={tags}
       q={q}
       isAuthenticated={auth.authenticated}
