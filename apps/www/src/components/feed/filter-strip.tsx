@@ -5,10 +5,24 @@ type FilterStripProps = {
   totalCount: number;
   onRemoveTag: (tagText: string) => void;
   onClearAll: () => void;
+  searchQuery?: string;
+  onClearSearch?: () => void;
 };
 
-export function FilterStrip({activeTags, totalCount, onRemoveTag, onClearAll}: FilterStripProps) {
-  if (activeTags.length === 0) return null;
+export function FilterStrip({
+  activeTags,
+  totalCount,
+  onRemoveTag,
+  onClearAll,
+  searchQuery,
+  onClearSearch,
+}: FilterStripProps) {
+  if (activeTags.length === 0 && !searchQuery) return null;
+
+  const handleClearAll = () => {
+    onClearAll();
+    onClearSearch?.();
+  };
 
   return (
     <div className="mb-[1.1rem] flex flex-wrap items-center gap-[0.4rem] rounded-[6px] border border-border bg-bg-subtle px-3 py-2 font-sans text-[0.8rem] text-text-muted">
@@ -16,9 +30,27 @@ export function FilterStrip({activeTags, totalCount, onRemoveTag, onClearAll}: F
         Filtering by
       </span>
 
+      {searchQuery && (
+        <span className="inline-flex items-center gap-[0.35rem]">
+          <span className="inline-flex items-center gap-1 rounded-[3px] bg-accent/15 px-2 py-[2px] text-[0.75rem] font-medium text-accent">
+            &ldquo;{searchQuery}&rdquo;
+            <button
+              type="button"
+              onClick={onClearSearch}
+              aria-label="Remove search filter"
+              className="cursor-pointer text-[0.9rem] opacity-70 transition-opacity hover:opacity-100"
+            >
+              ×
+            </button>
+          </span>
+        </span>
+      )}
+
       {activeTags.map((tag, index) => (
         <span key={tag.text} className="inline-flex items-center gap-[0.35rem]">
-          {index > 0 && <span className="text-[0.68rem] italic text-text-faint">+</span>}
+          {(index > 0 || searchQuery) && (
+            <span className="text-[0.68rem] italic text-text-faint">+</span>
+          )}
           <span
             className={cn(
               'inline-flex items-center gap-1 rounded-[3px] px-2 py-[2px] text-[0.75rem] font-medium text-pill-text',
@@ -42,7 +74,7 @@ export function FilterStrip({activeTags, totalCount, onRemoveTag, onClearAll}: F
 
       <button
         type="button"
-        onClick={onClearAll}
+        onClick={handleClearAll}
         className="cursor-pointer text-[0.72rem] text-text-faint underline transition-colors hover:text-text"
       >
         Clear all

@@ -19,7 +19,22 @@ type FeedPageProps = {
   onTagClick: (tagText: string) => void;
   onRemoveTag: (tagText: string) => void;
   onClearAll: () => void;
+  onClearSearch?: () => void;
 };
+
+function buildEmptyMessage(q: string | undefined, tags: string[]): string {
+  const tagNames = tags.join(' + ');
+  if (q && tags.length > 0) {
+    return `No results for "${q}" in ${tagNames}. Try clearing the search or removing a tag.`;
+  }
+  if (q) {
+    return `No results for "${q}". Try a different search term.`;
+  }
+  if (tags.length > 0) {
+    return `No links tagged ${tagNames}.`;
+  }
+  return 'No links found.';
+}
 
 export function FeedPage({
   status,
@@ -30,6 +45,7 @@ export function FeedPage({
   onTagClick,
   onRemoveTag,
   onClearAll,
+  onClearSearch,
 }: FeedPageProps) {
   const {openEdit} = useLinkModal();
   const queryClient = useQueryClient();
@@ -131,10 +147,26 @@ export function FeedPage({
         totalCount={total}
         onRemoveTag={onRemoveTag}
         onClearAll={onClearAll}
+        searchQuery={q}
+        onClearSearch={onClearSearch}
       />
 
       {items.length === 0 ? (
-        <p className="py-12 text-center font-sans text-[0.9rem] text-text-muted">No links found.</p>
+        <div className="py-12 text-center font-sans text-[0.9rem] text-text-muted">
+          <p>{buildEmptyMessage(q, selectedTags)}</p>
+          {(q || selectedTags.length > 0) && (
+            <button
+              type="button"
+              onClick={() => {
+                onClearAll();
+                onClearSearch?.();
+              }}
+              className="mt-3 cursor-pointer text-[0.82rem] text-accent underline transition-colors hover:text-accent-hover"
+            >
+              Clear filters
+            </button>
+          )}
+        </div>
       ) : (
         <div>
           {items.map((item) => (
