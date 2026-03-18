@@ -83,7 +83,7 @@ export function Topbar({
           />
         </div>
 
-        <nav className="ml-auto flex gap-1 md:gap-2">
+        <nav className="ml-auto hidden items-center gap-1 md:flex md:gap-2">
           {navLinks.map(({to, label, exact, icon}) => (
             <Link
               key={to}
@@ -93,7 +93,7 @@ export function Topbar({
                   ? 'flex h-8 w-8 items-center justify-center rounded-md text-text-muted transition-colors hover:bg-bg-subtle hover:text-text'
                   : 'rounded-[5px] px-3 py-1.5 text-[0.8rem] font-medium text-text-muted transition-colors hover:bg-bg-subtle hover:text-text'
               }
-              activeProps={{className: icon === 'settings' ? '!text-accent' : '!text-accent'}}
+              activeProps={{className: '!text-accent'}}
               activeOptions={{exact}}
             >
               {icon === 'settings' ? (
@@ -145,7 +145,7 @@ export function Topbar({
                   ? 'flex h-8 w-8 items-center justify-center rounded-md text-text-muted transition-colors hover:bg-bg-subtle hover:text-text'
                   : 'rounded-[5px] px-3 py-1 text-[0.8rem] font-medium text-text-muted transition-colors hover:bg-bg-subtle hover:text-text'
               }
-              activeProps={{className: icon === 'settings' ? '!text-accent' : '!text-accent'}}
+              activeProps={{className: '!text-accent'}}
               activeOptions={{exact}}
             >
               {icon === 'settings' ? (
