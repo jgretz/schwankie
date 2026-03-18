@@ -14,17 +14,6 @@ async function getClient() {
   initClientServer();
 }
 
-const getSettingInput = z.object({key: z.string()});
-
-export const getSettingAction = createServerFn({method: 'GET'})
-  .inputValidator(getSettingInput)
-  .handler(async ({data}) => {
-    await getClient();
-    await requireAuth();
-    const {getSetting} = await import('client');
-    return getSetting(data.key);
-  });
-
 const setSettingInput = z.object({key: z.string(), value: z.string()});
 
 export const setSettingAction = createServerFn({method: 'POST'})
