@@ -18,6 +18,8 @@ linksRoutes.get('/api/links', async (c) => {
     ids: c.req.query('ids') || undefined,
     needs_enrichment: c.req.query('needs_enrichment') || undefined,
     dead_enrichment: c.req.query('dead_enrichment') || undefined,
+    sort: c.req.query('sort') || undefined,
+    needs_scoring: c.req.query('needs_scoring') || undefined,
   });
   if (!parsed.success) {
     return c.json({error: 'Invalid query parameters', details: parsed.error.flatten()}, 400);

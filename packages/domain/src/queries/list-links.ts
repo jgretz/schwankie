@@ -1,5 +1,5 @@
 import {link, tag, linkTag} from 'database';
-import {eq, and, ilike, or, inArray, desc, sql, count, isNull, ne, gte, lt} from 'drizzle-orm';
+import {eq, and, ilike, or, inArray, desc, sql, count, isNull, ne, gte, lt, asc} from 'drizzle-orm';
 import {getDb} from '../db';
 import type {ListLinksParams, ListLinksResult} from '../types';
 
@@ -14,6 +14,8 @@ export async function listLinks(params: ListLinksParams): Promise<ListLinksResul
     ids,
     needs_enrichment,
     dead_enrichment,
+    sort,
+    needs_scoring,
   } = params;
 
   const conditions = [];
@@ -26,6 +28,12 @@ export async function listLinks(params: ListLinksParams): Promise<ListLinksResul
 
   if (dead_enrichment) {
     conditions.push(gte(link.enrichmentFailCount, 3));
+  }
+
+  if (needs_scoring) {
+    conditions.push(isNull(link.score));
+    conditions.push(eq(link.status, 'queued'));
+    conditions.push(ne(link.status, 'trashed'));
   }
 
   if (status) {
@@ -60,8 +68,10 @@ export async function listLinks(params: ListLinksParams): Promise<ListLinksResul
 
   const where = conditions.length > 0 ? and(...conditions) : undefined;
 
+  const orderByClause = sort === 'score' ? [desc(link.score), desc(link.createDate)] : [desc(link.createDate)];
+
   const [items, totalResult] = await Promise.all([
-    db.select().from(link).where(where).orderBy(desc(link.createDate)).limit(limit).offset(offset),
+    db.select().from(link).where(where).orderBy(...orderByClause).limit(limit).offset(offset),
     db.select({count: count()}).from(link).where(where),
   ]);
 

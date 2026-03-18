@@ -10,6 +10,8 @@ export {deleteLink} from './calls/delete-link';
 export {fetchMetadata} from './calls/fetch-metadata';
 export {getLinksNeedingEnrichment} from './calls/get-links-needing-enrichment';
 export {updateLinkContent} from './calls/update-link-content';
+export {getLinksNeedingScoring} from './calls/get-links-needing-scoring';
+export {updateLinkScore} from './calls/update-link-score';
 export {getTagsNeedingNormalization} from './calls/get-tags-needing-normalization';
 export {getCanonicalTags} from './calls/get-canonical-tags';
 export {mergeTag} from './calls/merge-tag';
