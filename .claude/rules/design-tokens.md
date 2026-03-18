@@ -20,7 +20,7 @@ Not all tokens change between themes. Categorize tokens by their dark-mode behav
 
 **Theme-adaptive (different values in `.dark`):**
 
-- All surface/text/border tokens: `--bg`, `--bg-subtle`, `--border`, `--text`, `--text-muted`, `--text-faint`, `--accent`, `--accent-hover`, `--tag-bg`, `--tag-text`, `--modal-bg`, `--search-bg`, `--background`, `--foreground`, `--card`, `--card-foreground`, `--popover`, `--popover-foreground`, `--primary`, `--secondary`, `--muted`, `--ring`, `--input`, `--accent-foreground`.
+- All surface/text/border tokens: `--bg`, `--bg-subtle`, `--border`, `--text`, `--text-muted`, `--text-faint`, `--accent`, `--accent-hover`, `--tag-bg`, `--tag-text`, `--tag-active-bg-secondary`, `--modal-bg`, `--search-bg`, `--background`, `--foreground`, `--card`, `--card-foreground`, `--popover`, `--popover-foreground`, `--primary`, `--secondary`, `--secondary-foreground`, `--muted`, `--muted-foreground`, `--ring`, `--input`, `--accent-foreground`.
 
 **When Adding a New Token:**
 
