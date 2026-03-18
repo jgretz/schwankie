@@ -9,10 +9,11 @@ const auth = authMiddleware();
 tagsRouter.get('/api/tags', async (c) => {
   const needs_normalization = c.req.query('needs_normalization') === 'true' ? true : undefined;
   const canonical = c.req.query('canonical') === 'true' ? true : undefined;
+  const all = c.req.query('all') === 'true';
 
-  // Read tag count floor setting for default tag list
+  // Read tag count floor setting for default tag list (skip when all=true for admin)
   let minCount: number | undefined;
-  if (!needs_normalization && !canonical) {
+  if (!needs_normalization && !canonical && !all) {
     const floorValue = await getSetting('tagCountFloor');
     const floor = floorValue ? Number(floorValue) : 1;
     minCount = Number.isNaN(floor) ? 1 : floor;
