@@ -305,7 +305,7 @@ export function LinkModal() {
               />
             </Field>
 
-            {mode === 'edit' && editLink?.status === 'queued' && (
+            {mode === 'edit' && (
               <button
                 type="button"
                 onClick={handleRefetch}
