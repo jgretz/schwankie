@@ -1,4 +1,5 @@
 import {cn} from '@www/lib/utils';
+import {HighlightText} from './highlight-text';
 
 type LinkItemProps = {
   id: number;
@@ -14,6 +15,7 @@ type LinkItemProps = {
   showRefetchButton?: boolean;
   onRefetchClick?: (linkId: number) => void;
   isRefetching?: boolean;
+  searchQuery?: string;
 };
 
 function formatDate(iso: string): string {
@@ -36,6 +38,7 @@ export function LinkItem({
   showRefetchButton,
   onRefetchClick,
   isRefetching,
+  searchQuery,
 }: LinkItemProps) {
   return (
     <div className="group border-b border-border py-[0.9rem] last:border-b-0">
@@ -45,12 +48,12 @@ export function LinkItem({
         rel="noopener noreferrer"
         className="mb-[0.3rem] block font-serif text-[0.975rem] font-medium leading-[1.35] text-text transition-colors duration-100 hover:text-accent"
       >
-        {title}
+        <HighlightText text={title} query={searchQuery} />
       </a>
 
       {description && (
         <p className="mb-[0.5rem] line-clamp-2 font-sans text-[0.82rem] leading-[1.5] text-text-muted">
-          {description}
+          <HighlightText text={description} query={searchQuery} />
         </p>
       )}
 

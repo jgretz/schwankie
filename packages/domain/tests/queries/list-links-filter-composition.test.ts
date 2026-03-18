@@ -20,8 +20,7 @@ describe('listLinks — search + tag filter composition', function () {
     const dbLink = await makeLink({title: 'PostgreSQL performance tips', tags: ['database']});
     await makeLink({title: 'Baking sourdough bread', tags: ['recipe']});
 
-    const tagId = dbLink.tags[0]!.id;
-    const result = await listLinks({limit: 100, offset: 0, tags: String(tagId)});
+    const result = await listLinks({limit: 100, offset: 0, tags: 'database'});
 
     const ids = result.items.map((i) => i.id);
     expect(ids).toContain(dbLink.id);
@@ -32,8 +31,7 @@ describe('listLinks — search + tag filter composition', function () {
     const dbLink = await makeLink({title: 'PostgreSQL performance tips', tags: ['database']});
     await makeLink({title: 'Baking sourdough bread', tags: ['recipe']});
 
-    const tagId = dbLink.tags[0]!.id;
-    const result = await listLinks({limit: 100, offset: 0, q: 'postgres', tags: String(tagId)});
+    const result = await listLinks({limit: 100, offset: 0, q: 'postgres', tags: 'database'});
 
     expect(result.items).toHaveLength(1);
     expect(result.items[0]!.id).toBe(dbLink.id);
@@ -44,12 +42,11 @@ describe('listLinks — search + tag filter composition', function () {
     const recipeLink = await makeLink({title: 'Baking sourdough bread', tags: ['recipe']});
 
     // postgres is in the database-tagged link, but we filter by recipe tag
-    const recipeTagId = recipeLink.tags[0]!.id;
     const result = await listLinks({
       limit: 100,
       offset: 0,
       q: 'postgres',
-      tags: String(recipeTagId),
+      tags: 'recipe',
     });
 
     expect(result.items).toHaveLength(0);
@@ -67,16 +64,13 @@ describe('listLinks — search + tag filter composition', function () {
     await makeLink({title: 'PostgreSQL performance tips', tags: ['database']});
     await makeLink({title: 'Classic bread recipes', tags: ['recipe']});
 
-    const dbTagId = dualLink.tags.find((t) => t.text === 'database')!.id;
-    const recipeTagId = dualLink.tags.find((t) => t.text === 'recipe')!.id;
-
     // q='recipe' matches "Database-backed recipe manager" and "Classic bread recipes"
     // tags=database,recipe requires both tags — only dualLink qualifies
     const result = await listLinks({
       limit: 100,
       offset: 0,
       q: 'recipe',
-      tags: `${dbTagId},${recipeTagId}`,
+      tags: 'database,recipe',
     });
 
     expect(result.items).toHaveLength(1);
@@ -91,8 +85,7 @@ describe('listLinks — search + tag filter composition', function () {
     });
     await makeLink({title: 'Other App', tags: ['database']});
 
-    const tagId = descLink.tags[0]!.id;
-    const result = await listLinks({limit: 100, offset: 0, q: 'postgres', tags: String(tagId)});
+    const result = await listLinks({limit: 100, offset: 0, q: 'postgres', tags: 'database'});
 
     expect(result.items).toHaveLength(1);
     expect(result.items[0]!.id).toBe(descLink.id);
@@ -110,14 +103,12 @@ describe('listLinks — search + tag filter composition', function () {
       tags: ['database'],
     });
 
-    // Both share the same 'database' tag ID
-    const tagId = savedLink.tags[0]!.id;
     const result = await listLinks({
       limit: 100,
       offset: 0,
       status: 'saved',
       q: 'postgres',
-      tags: String(tagId),
+      tags: 'database',
     });
 
     const ids = result.items.map((i) => i.id);

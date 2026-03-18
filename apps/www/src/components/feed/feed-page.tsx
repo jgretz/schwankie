@@ -148,6 +148,7 @@ export function FeedPage({
               tags={item.tags}
               activeTags={selectedTags}
               onTagClick={onTagClick}
+              searchQuery={q}
               showEditButton={isAuthenticated}
               onEditClick={() => openEdit(item as LinkData)}
               showRefetchButton={isAuthenticated && status === 'queued'}

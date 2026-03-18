@@ -204,20 +204,29 @@ function evaluateCondition(row: any, condition: any, _rowTable: any): boolean {
 }
 
 function extractTagIdsFromSubquery(condition: any): number[] {
-  // Walk all chunks recursively looking for Param objects with numeric values
-  const ids: number[] = [];
+  // Walk all chunks recursively looking for Param objects
+  const nums: number[] = [];
+  const strs: string[] = [];
   function walk(obj: any) {
     if (!obj) return;
     if (Array.isArray(obj)) {
       obj.forEach(walk);
     } else if (obj?.value !== undefined && obj?.encoder) {
-      if (typeof obj.value === 'number') ids.push(obj.value);
+      if (typeof obj.value === 'number') nums.push(obj.value);
+      else if (typeof obj.value === 'string') strs.push(obj.value);
     } else if (obj?.queryChunks) {
       obj.queryChunks.forEach(walk);
     }
   }
   walk(condition);
-  return ids;
+
+  // Prefer string tag texts — the HAVING COUNT() value is a false numeric match
+  if (strs.length > 0) {
+    return strs
+      .map((text) => store.tags.find((t) => t.text === text)?.id)
+      .filter((id): id is number => id != null);
+  }
+  return nums;
 }
 
 function isAndCondition(chunks: any[]): boolean {
@@ -472,7 +481,7 @@ function createSelectBuilder(targetTable?: any, fields?: any) {
 
       if (joinConfigs.length > 0) {
         const baseRows = [...getStoreForTable(fromTable)];
-        // Perform joins first, then apply WHERE on the merged rows
+        // Join first, then apply WHERE on merged rows (matches SQL semantics)
         let mergedRows = performJoins(baseRows, fromTable, joinConfigs, undefined);
         if (whereCondition) {
           mergedRows = mergedRows.filter((r) => evaluateCondition(r, whereCondition, fromTable));
