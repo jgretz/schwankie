@@ -4,6 +4,6 @@ import {getDb} from '../db';
 
 export async function deleteTag(id: number): Promise<boolean> {
   const db = getDb();
-  const result = await db.delete(tag).where(eq(tag.id, id));
-  return (result.rowCount ?? 0) > 0;
+  const rows = await db.delete(tag).where(eq(tag.id, id)).returning({id: tag.id});
+  return rows.length > 0;
 }
