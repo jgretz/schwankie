@@ -13,9 +13,6 @@ type LinkItemProps = {
   onTagClick: (tagText: string) => void;
   showEditButton: boolean;
   onEditClick: (linkId: number) => void;
-  showRefetchButton?: boolean;
-  onRefetchClick?: (linkId: number) => void;
-  isRefetching?: boolean;
   searchQuery?: string;
 };
 
@@ -36,9 +33,6 @@ export function LinkItem({
   onTagClick,
   showEditButton,
   onEditClick,
-  showRefetchButton,
-  onRefetchClick,
-  isRefetching,
   searchQuery,
 }: LinkItemProps) {
   return (
@@ -83,59 +77,28 @@ export function LinkItem({
           );
         })}
 
-        {(showRefetchButton || showEditButton) && (
+        {showEditButton && (
           <span className="ml-auto flex items-center gap-2 opacity-0 transition-opacity duration-100 group-hover:opacity-100">
-            {showRefetchButton && (
-              <button
-                type="button"
-                onClick={() => onRefetchClick?.(id)}
-                disabled={isRefetching}
-                aria-label="Re-fetch link"
-                className="text-text-faint transition-colors hover:text-text-muted disabled:opacity-50"
+            <button
+              type="button"
+              onClick={() => onEditClick(id)}
+              aria-label="Edit link"
+              className="p-1 text-text-faint transition-colors hover:text-text-muted"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               >
-                {isRefetching ? (
-                  <span className="block h-[13px] w-[13px] animate-spin rounded-full border-[1.5px] border-text-faint border-t-accent" />
-                ) : (
-                  <svg
-                    width="13"
-                    height="13"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M21.5 2v6h-6" />
-                    <path d="M2.5 22v-6h6" />
-                    <path d="M2.5 11.5a10 10 0 0 1 18.8-4.3" />
-                    <path d="M21.5 12.5a10 10 0 0 1-18.8 4.2" />
-                  </svg>
-                )}
-              </button>
-            )}
-            {showEditButton && (
-              <button
-                type="button"
-                onClick={() => onEditClick(id)}
-                aria-label="Edit link"
-                className="text-text-faint transition-colors hover:text-text-muted"
-              >
-                <svg
-                  width="13"
-                  height="13"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                </svg>
-              </button>
-            )}
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+              </svg>
+            </button>
           </span>
         )}
       </div>
