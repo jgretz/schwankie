@@ -171,9 +171,7 @@ function evaluateCondition(row: any, condition: any, _rowTable: any): boolean {
     if (tagIds.length > 0 && col) {
       const field = colToField(col.table, col.name);
       const linkId = row[field];
-      const linkTagIds = store.linkTags
-        .filter((lt) => lt.linkId === linkId)
-        .map((lt) => lt.tagId);
+      const linkTagIds = store.linkTags.filter((lt) => lt.linkId === linkId).map((lt) => lt.tagId);
       return tagIds.every((tid) => linkTagIds.includes(tid));
     }
     return true;
@@ -225,14 +223,18 @@ function extractTagIdsFromSubquery(condition: any): number[] {
 function isAndCondition(chunks: any[]): boolean {
   return chunks.some(
     (c: any) =>
-      c?.value && Array.isArray(c.value) && c.value.some((v: any) => typeof v === 'string' && v.includes(' and ')),
+      c?.value &&
+      Array.isArray(c.value) &&
+      c.value.some((v: any) => typeof v === 'string' && v.includes(' and ')),
   );
 }
 
 function isOrCondition(chunks: any[]): boolean {
   return chunks.some(
     (c: any) =>
-      c?.value && Array.isArray(c.value) && c.value.some((v: any) => typeof v === 'string' && v.includes(' or ')),
+      c?.value &&
+      Array.isArray(c.value) &&
+      c.value.some((v: any) => typeof v === 'string' && v.includes(' or ')),
   );
 }
 
@@ -243,7 +245,7 @@ function getOperator(chunks: any[]): string {
         if (typeof v === 'string') {
           if (v.includes(' = ')) return '=';
           if (v.includes(' != ') || v.includes(' <> ')) return '!=';
-          if (v.includes(' in ')) return 'in';
+          if (v.toLowerCase().includes(' in ')) return 'in';
           if (v.includes(' ilike ')) return 'ilike';
           if (v.includes(' is not null')) return 'is not null';
           if (v.includes(' is null')) return 'is null';
@@ -368,7 +370,7 @@ function getJoinColumns(onCondition: any): {leftField: string; rightField: strin
 
 function performJoins(
   baseRows: any[],
-  baseTable: any,
+  _baseTable: any,
   joins: Array<{table: any; onCondition: any}>,
   fields?: any,
 ): any[] {
