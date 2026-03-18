@@ -1,5 +1,6 @@
 import {z} from 'zod';
 import {linkStatusEnum, type LinkStatus} from 'database';
+import {normalizeTag} from '@domain/lib/normalize-tag';
 
 export const listTagsParamsSchema = z.object({
   status: z.enum(linkStatusEnum.enumValues as [LinkStatus, ...LinkStatus[]]).optional(),
@@ -13,5 +14,11 @@ export const mergeTagSchema = z.object({
 });
 
 export const renameTagSchema = z.object({
-  text: z.string().min(1).max(200),
+  text: z
+    .string()
+    .min(1)
+    .max(200)
+    .refine((text) => normalizeTag(text) !== null, {
+      message: 'Tag must contain at least one letter or number',
+    }),
 });

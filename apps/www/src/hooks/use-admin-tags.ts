@@ -18,6 +18,9 @@ export function useAdminTags() {
       queryClient.invalidateQueries({queryKey: ['admin-tags']});
       queryClient.invalidateQueries({queryKey: ['tags']});
     },
+    onError: (error) => {
+      console.error('Failed to rename tag:', error);
+    },
   });
 
   const mergeMutation = useMutation({
@@ -27,6 +30,9 @@ export function useAdminTags() {
       queryClient.invalidateQueries({queryKey: ['admin-tags']});
       queryClient.invalidateQueries({queryKey: ['tags']});
     },
+    onError: (error) => {
+      console.error('Failed to merge tag:', error);
+    },
   });
 
   const deleteMutation = useMutation({
@@ -34,6 +40,9 @@ export function useAdminTags() {
     onSuccess: () => {
       queryClient.invalidateQueries({queryKey: ['admin-tags']});
       queryClient.invalidateQueries({queryKey: ['tags']});
+    },
+    onError: (error) => {
+      console.error('Failed to delete tag:', error);
     },
   });
 

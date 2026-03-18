@@ -11,7 +11,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@www/components/ui/select';
-import {fetchTags} from 'client';
 
 export const Route = createFileRoute('/admin/tags')({
   beforeLoad: ({context}) => {
@@ -81,6 +80,7 @@ function AdminTagsPage() {
                 <TagRow
                   key={tag.id}
                   tag={tag}
+                  allTags={sorted}
                   onRename={rename}
                   onMerge={merge}
                   onDelete={remove}
@@ -96,17 +96,18 @@ function AdminTagsPage() {
 
 interface TagRowProps {
   tag: {id: number; text: string; count?: number};
+  allTags: Array<{id: number; text: string; count?: number}>;
   onRename: (input: {id: number; text: string}) => void;
   onMerge: (input: {aliasId: number; canonicalTagId: number}) => void;
   onDelete: (id: number) => void;
 }
 
-function TagRow({tag, onRename, onMerge, onDelete}: TagRowProps) {
+function TagRow({tag, allTags, onRename, onMerge, onDelete}: TagRowProps) {
   const [isRenaming, setIsRenaming] = useState(false);
   const [newText, setNewText] = useState(tag.text);
   const [isMergeDialogOpen, setIsMergeDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedCanonicalId, setSelectedCanonicalId] = useState<string>('');
-  const [allTags, setAllTags] = useState<Array<{id: number; text: string; count?: number}>>([]);
 
   const handleRenameSubmit = () => {
     if (newText.trim() && newText !== tag.text) {
@@ -118,9 +119,7 @@ function TagRow({tag, onRename, onMerge, onDelete}: TagRowProps) {
     }
   };
 
-  const handleMergeClick = async () => {
-    const tags = await fetchTags({status: 'saved'});
-    setAllTags(tags.tags);
+  const handleMergeClick = () => {
     setIsMergeDialogOpen(true);
   };
 
@@ -175,19 +174,7 @@ function TagRow({tag, onRename, onMerge, onDelete}: TagRowProps) {
             <Button size="sm" variant="outline" onClick={handleMergeClick}>
               Merge
             </Button>
-            <Button
-              size="sm"
-              variant="destructive"
-              onClick={() => {
-                if (
-                  window.confirm(
-                    `Delete tag '${tag.text}'? This will remove it from ${tag.count ?? 0} links.`,
-                  )
-                ) {
-                  onDelete(tag.id);
-                }
-              }}
-            >
+            <Button size="sm" variant="destructive" onClick={() => setIsDeleteDialogOpen(true)}>
               Delete
             </Button>
           </div>
@@ -229,6 +216,33 @@ function TagRow({tag, onRename, onMerge, onDelete}: TagRowProps) {
               </Button>
               <Button onClick={handleMergeSubmit} disabled={!selectedCanonicalId}>
                 Merge
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete tag: {tag.text}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="font-sans text-[0.9rem] text-text-muted">
+              This will remove this tag from {tag.count ?? 0} links. This action cannot be undone.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  onDelete(tag.id);
+                  setIsDeleteDialogOpen(false);
+                }}
+              >
+                Delete
               </Button>
             </div>
           </div>

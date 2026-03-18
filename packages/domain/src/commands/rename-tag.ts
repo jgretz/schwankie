@@ -1,9 +1,10 @@
 import {tag} from 'database';
 import {eq} from 'drizzle-orm';
+import type {RenameTagInput} from '../types';
 import {getDb} from '../db';
 import {normalizeTag} from '../lib/normalize-tag';
 
-export async function renameTag(input: {id: number; text: string}): Promise<boolean> {
+export async function renameTag(input: RenameTagInput): Promise<boolean> {
   const db = getDb();
   const normalized = normalizeTag(input.text);
 
