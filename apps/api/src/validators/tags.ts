@@ -7,6 +7,7 @@ export const listTagsParamsSchema = z.object({
   needs_normalization: z.boolean().optional(),
   canonical: z.boolean().optional(),
   limit: z.coerce.number().int().positive().max(1000).optional(),
+  minCount: z.coerce.number().int().min(1).optional(),
 });
 
 export const mergeTagSchema = z.object({

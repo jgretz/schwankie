@@ -35,6 +35,7 @@ function AdminPage() {
   });
 
   const [floorValue, setFloorValue] = useState('1');
+  const [floorSaveError, setFloorSaveError] = useState<string | null>(null);
 
   useEffect(() => {
     if (settingData) {
@@ -47,10 +48,11 @@ function AdminPage() {
       await setSetting('tagCountFloor', value);
     },
     onSuccess: () => {
+      setFloorSaveError(null);
       queryClient.invalidateQueries({queryKey: ['tags']});
     },
-    onError: (error) => {
-      console.error('Failed to save tag count floor:', error);
+    onError: () => {
+      setFloorSaveError('Failed to save. Please try again.');
     },
   });
 
@@ -96,6 +98,11 @@ function AdminPage() {
           <p className="font-sans text-[0.8rem] text-text-faint">
             Tags with fewer links than this value will be hidden from the sidebar.
           </p>
+          {floorSaveError && (
+            <p className="font-sans text-[0.8rem] text-red-600 dark:text-red-400">
+              {floorSaveError}
+            </p>
+          )}
         </div>
       </div>
 

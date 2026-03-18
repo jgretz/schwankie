@@ -7,21 +7,24 @@ export const tagsRouter = new Hono();
 const auth = authMiddleware();
 
 tagsRouter.get('/api/tags', async (c) => {
-  const params = {
-    status: c.req.query('status') || undefined,
-    needs_normalization: c.req.query('needs_normalization') === 'true' ? true : undefined,
-    canonical: c.req.query('canonical') === 'true' ? true : undefined,
-    limit: c.req.query('limit') || undefined,
-  };
+  const needs_normalization = c.req.query('needs_normalization') === 'true' ? true : undefined;
+  const canonical = c.req.query('canonical') === 'true' ? true : undefined;
 
   // Read tag count floor setting for default tag list
-  if (!params.needs_normalization && !params.canonical) {
+  let minCount: number | undefined;
+  if (!needs_normalization && !canonical) {
     const floorValue = await getSetting('tagCountFloor');
     const floor = floorValue ? Number(floorValue) : 1;
-    params.minCount = Number.isNaN(floor) ? 1 : floor;
+    minCount = Number.isNaN(floor) ? 1 : floor;
   }
 
-  const parsed = listTagsParamsSchema.safeParse(params);
+  const parsed = listTagsParamsSchema.safeParse({
+    status: c.req.query('status') || undefined,
+    needs_normalization,
+    canonical,
+    limit: c.req.query('limit') || undefined,
+    minCount,
+  });
   if (!parsed.success) return c.json({error: 'Invalid query parameters'}, 400);
 
   const result = await listTags(parsed.data);
