@@ -12,7 +12,7 @@ All tokens defined in `:root`, overridden in `.dark` class.
 
 ## Theme — Stone & Slate
 
-- **Light**: off-white base (#f4f2f0), dark text (#1e1e1e), slate-blue accent (#5b6f8a)
+- **Light**: warm parchment base (#f7f3ed), dark text (#1e1e1e), slate-blue accent (#5b6f8a); tag chips use terracotta warm (#e4d5c4 bg, #4a3728 text)
 - **Dark**: charcoal base (#1a1c1e), cream text (#e2e4e8), light slate-blue (#7b96b5)
 - Dark mode uses `.dark` class toggle on `html` (not `prefers-color-scheme`), with localStorage persistence
 - Neutrals are warm-tinted (no cool grays, no pure black/white)
