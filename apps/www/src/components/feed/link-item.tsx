@@ -1,4 +1,5 @@
 import {cn} from '@www/lib/utils';
+import {selectionBg} from '@www/lib/selection-styles';
 import {HighlightText} from './highlight-text';
 
 type LinkItemProps = {
@@ -74,8 +75,7 @@ export function LinkItem({
               className={cn(
                 'inline-flex cursor-pointer items-center rounded-[3px] px-2 py-[2px] font-sans text-[0.72rem] leading-[1.6] transition-colors duration-100',
                 !isActive && 'bg-tag-bg text-tag-text hover:bg-accent hover:text-white',
-                isActive && isPrimary && 'bg-tag-active-bg text-white',
-                isActive && !isPrimary && 'bg-tag-active-bg-secondary text-white',
+                isActive && cn(selectionBg(isPrimary), 'text-white'),
               )}
             >
               {tag.text}

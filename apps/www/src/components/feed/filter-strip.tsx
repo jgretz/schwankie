@@ -1,4 +1,5 @@
 import {cn} from '@www/lib/utils';
+import {selectionBg} from '@www/lib/selection-styles';
 
 type FilterStripProps = {
   activeTags: Array<{text: string}>;
@@ -53,8 +54,8 @@ export function FilterStrip({
           )}
           <span
             className={cn(
-              'inline-flex items-center gap-1 rounded-[3px] px-2 py-[2px] text-[0.75rem] font-medium text-pill-text',
-              index === 0 ? 'bg-pill-bg' : 'bg-tag-active-bg-secondary',
+              'inline-flex items-center gap-1 rounded-[3px] px-2 py-[2px] text-[0.75rem] font-medium text-tag-active-text',
+              selectionBg(index === 0),
             )}
           >
             {tag.text}

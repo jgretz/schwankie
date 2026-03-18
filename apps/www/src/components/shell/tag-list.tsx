@@ -1,5 +1,6 @@
 import {useRef, useState} from 'react';
 import {cn} from '@www/lib/utils';
+import {selectionBg} from '@www/lib/selection-styles';
 import type {Tag} from './types';
 
 type TagListProps = {
@@ -91,8 +92,7 @@ export function TagList({tags, selectedTags, onTagToggle}: TagListProps) {
               className={cn(
                 'flex cursor-pointer select-none items-start justify-between rounded-[5px] px-2 py-[5px] transition-[background] duration-100',
                 !isSelected && 'hover:bg-bg-subtle',
-                isSelected && isFirst && 'bg-tag-active-bg',
-                isSelected && !isFirst && 'bg-tag-active-bg-secondary',
+                isSelected && selectionBg(isFirst),
               )}
             >
               <span
