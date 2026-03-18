@@ -171,9 +171,7 @@ function evaluateCondition(row: any, condition: any, _rowTable: any): boolean {
     if (tagIds.length > 0 && col) {
       const field = colToField(col.table, col.name);
       const linkId = row[field];
-      const linkTagIds = store.linkTags
-        .filter((lt) => lt.linkId === linkId)
-        .map((lt) => lt.tagId);
+      const linkTagIds = store.linkTags.filter((lt) => lt.linkId === linkId).map((lt) => lt.tagId);
       return tagIds.every((tid) => linkTagIds.includes(tid));
     }
     return true;
@@ -225,14 +223,18 @@ function extractTagIdsFromSubquery(condition: any): number[] {
 function isAndCondition(chunks: any[]): boolean {
   return chunks.some(
     (c: any) =>
-      c?.value && Array.isArray(c.value) && c.value.some((v: any) => typeof v === 'string' && v.includes(' and ')),
+      c?.value &&
+      Array.isArray(c.value) &&
+      c.value.some((v: any) => typeof v === 'string' && v.includes(' and ')),
   );
 }
 
 function isOrCondition(chunks: any[]): boolean {
   return chunks.some(
     (c: any) =>
-      c?.value && Array.isArray(c.value) && c.value.some((v: any) => typeof v === 'string' && v.includes(' or ')),
+      c?.value &&
+      Array.isArray(c.value) &&
+      c.value.some((v: any) => typeof v === 'string' && v.includes(' or ')),
   );
 }
 
@@ -469,12 +471,27 @@ function createSelectBuilder(targetTable?: any, fields?: any) {
       let result: any[];
 
       if (joinConfigs.length > 0) {
-        // For joins, filter base rows first
-        let baseRows = [...getStoreForTable(fromTable)];
+        const baseRows = [...getStoreForTable(fromTable)];
+        // Perform joins first, then apply WHERE on the merged rows
+        let mergedRows = performJoins(baseRows, fromTable, joinConfigs, undefined);
         if (whereCondition) {
-          baseRows = baseRows.filter((r) => evaluateCondition(r, whereCondition, fromTable));
+          mergedRows = mergedRows.filter((r) => evaluateCondition(r, whereCondition, fromTable));
         }
-        result = performJoins(baseRows, fromTable, joinConfigs, fields);
+        // Project fields from the filtered merged rows
+        result = fields
+          ? mergedRows.map((r) => {
+              const projected: any = {};
+              for (const [alias, col] of Object.entries(fields)) {
+                const c = col as any;
+                if (c?.name && c?.table) {
+                  projected[alias] = r[colToField(c.table, c.name)];
+                } else {
+                  projected[alias] = 0;
+                }
+              }
+              return projected;
+            })
+          : mergedRows;
 
         // Handle groupBy with count for getTagsWithCount
         if (hasGroupBy && fields && hasCountField(fields)) {

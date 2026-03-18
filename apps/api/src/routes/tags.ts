@@ -9,8 +9,8 @@ const auth = authMiddleware();
 tagsRouter.get('/api/tags', async (c) => {
   const parsed = listTagsParamsSchema.safeParse({
     status: c.req.query('status') || undefined,
-    needs_normalization: c.req.query('needs_normalization') || undefined,
-    canonical: c.req.query('canonical') || undefined,
+    needs_normalization: c.req.query('needs_normalization') === 'true' ? true : undefined,
+    canonical: c.req.query('canonical') === 'true' ? true : undefined,
     limit: c.req.query('limit') || undefined,
   });
   if (!parsed.success) return c.json({error: 'Invalid query parameters'}, 400);
