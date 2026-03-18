@@ -29,7 +29,7 @@ function AdminTagsPage() {
   const items = data?.tags ?? [];
 
   // Sort by count descending
-  const sorted = [...items].sort((a, b) => (b.count ?? 0) - (a.count ?? 0));
+  const sorted = [...items].sort((a, b) => b.count - a.count);
 
   return (
     <div className="px-6 py-6">
@@ -95,8 +95,8 @@ function AdminTagsPage() {
 }
 
 interface TagRowProps {
-  tag: {id: number; text: string; count?: number};
-  allTags: Array<{id: number; text: string; count?: number}>;
+  tag: {id: number; text: string; count: number};
+  allTags: Array<{id: number; text: string; count: number}>;
   onRename: (input: {id: number; text: string}) => void;
   onMerge: (input: {aliasId: number; canonicalTagId: number}) => void;
   onDelete: (id: number) => void;
@@ -167,7 +167,7 @@ function TagRow({tag, allTags, onRename, onMerge, onDelete}: TagRowProps) {
           )}
         </td>
         <td className="py-3 px-4 text-center font-sans text-[0.9rem] text-text-muted">
-          {tag.count ?? 0}
+          {tag.count}
         </td>
         <td className="py-3 px-4 text-right">
           <div className="flex gap-2 justify-end">
@@ -229,7 +229,7 @@ function TagRow({tag, allTags, onRename, onMerge, onDelete}: TagRowProps) {
           </DialogHeader>
           <div className="space-y-4">
             <p className="font-sans text-[0.9rem] text-text-muted">
-              This will remove this tag from {tag.count ?? 0} links. This action cannot be undone.
+              This will remove this tag from {tag.count} links. This action cannot be undone.
             </p>
             <div className="flex gap-3 justify-end">
               <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
