@@ -58,3 +58,6 @@ CLAUDE-WORKING.md
 .claude/commands/night-shift.md
 .claude/commands/introspect.md
 .claude/commands/curate-ideas.md
+.claude/skills/planner-default.md
+.claude/skills/worker-default.md
+.claude/skills/reviewer-default.md
