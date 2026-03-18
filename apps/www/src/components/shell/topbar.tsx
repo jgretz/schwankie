@@ -12,13 +12,13 @@ type TopbarProps = {
   isAuthenticated?: boolean;
 };
 
-type NavLink = {to: '/' | '/queue' | '/admin'; label: string; exact: boolean};
+type NavLink = {to: '/' | '/queue' | '/admin'; label: string; exact: boolean; icon?: 'settings'};
 
 const publicLinks: NavLink[] = [{to: '/', label: 'Compendium', exact: true}];
 
 const adminLinks: NavLink[] = [
   {to: '/queue', label: 'Queue', exact: true},
-  {to: '/admin', label: 'Admin', exact: true},
+  {to: '/admin', label: 'Admin', exact: true, icon: 'settings'},
 ];
 
 export function Topbar({
@@ -33,7 +33,7 @@ export function Topbar({
   const navLinks = isAuthenticated ? [...publicLinks, ...adminLinks] : publicLinks;
   return (
     <header className="sticky top-0 z-[100] border-b border-border bg-bg">
-      <div className="flex h-14 items-center gap-4 px-4 md:gap-8 md:px-8">
+      <div className="flex h-14 items-center gap-3 px-4 md:gap-4 md:px-8">
         {showMenuButton && (
           <button
             type="button"
@@ -83,16 +83,34 @@ export function Topbar({
           />
         </div>
 
-        <nav className="ml-auto hidden md:flex">
-          {navLinks.map(({to, label, exact}) => (
+        <nav className="ml-auto flex gap-1 md:gap-2">
+          {navLinks.map(({to, label, exact, icon}) => (
             <Link
               key={to}
               to={to}
-              className="rounded-[5px] px-3 py-1.5 text-[0.8rem] font-medium text-text-muted transition-colors hover:bg-bg-subtle hover:text-text"
-              activeProps={{className: '!text-accent'}}
+              className={
+                icon === 'settings'
+                  ? 'flex h-8 w-8 items-center justify-center rounded-md text-text-muted transition-colors hover:bg-bg-subtle hover:text-text'
+                  : 'rounded-[5px] px-3 py-1.5 text-[0.8rem] font-medium text-text-muted transition-colors hover:bg-bg-subtle hover:text-text'
+              }
+              activeProps={{className: icon === 'settings' ? '!text-accent' : '!text-accent'}}
               activeOptions={{exact}}
             >
-              {label}
+              {icon === 'settings' ? (
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <circle cx="12" cy="12" r="3" />
+                  <path d="M12 1v6m0 6v6M4.22 4.22l4.24 4.24m5.08 5.08l4.24 4.24M1 12h6m6 0h6M4.22 19.78l4.24-4.24m5.08-5.08l4.24-4.24" />
+                </svg>
+              ) : (
+                label
+              )}
             </Link>
           ))}
         </nav>
@@ -106,7 +124,7 @@ export function Topbar({
             type="button"
             onClick={onAddClick}
             className={cn(
-              'ml-2 hidden h-[30px] w-[30px] items-center justify-center rounded-md border-[1.5px] border-border text-text-muted transition-colors md:flex',
+              'ml-1 hidden h-[30px] w-[30px] items-center justify-center rounded-md border-[1.5px] border-border text-text-muted transition-colors md:flex',
               'hover:border-accent hover:bg-bg-subtle hover:text-accent',
             )}
             aria-label="Add link"
@@ -117,16 +135,34 @@ export function Topbar({
       </div>
 
       <div className="flex items-center justify-center gap-1 border-t border-border px-4 py-1.5 md:hidden">
-        <nav className="flex">
-          {navLinks.map(({to, label, exact}) => (
+        <nav className="flex gap-1">
+          {navLinks.map(({to, label, exact, icon}) => (
             <Link
               key={to}
               to={to}
-              className="rounded-[5px] px-3 py-1 text-[0.8rem] font-medium text-text-muted transition-colors hover:bg-bg-subtle hover:text-text"
-              activeProps={{className: '!text-accent'}}
+              className={
+                icon === 'settings'
+                  ? 'flex h-8 w-8 items-center justify-center rounded-md text-text-muted transition-colors hover:bg-bg-subtle hover:text-text'
+                  : 'rounded-[5px] px-3 py-1 text-[0.8rem] font-medium text-text-muted transition-colors hover:bg-bg-subtle hover:text-text'
+              }
+              activeProps={{className: icon === 'settings' ? '!text-accent' : '!text-accent'}}
               activeOptions={{exact}}
             >
-              {label}
+              {icon === 'settings' ? (
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <circle cx="12" cy="12" r="3" />
+                  <path d="M12 1v6m0 6v6M4.22 4.22l4.24 4.24m5.08 5.08l4.24 4.24M1 12h6m6 0h6M4.22 19.78l4.24-4.24m5.08-5.08l4.24-4.24" />
+                </svg>
+              ) : (
+                label
+              )}
             </Link>
           ))}
         </nav>
