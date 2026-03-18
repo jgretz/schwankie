@@ -28,6 +28,12 @@ export async function mergeTag(input: MergeTagInput): Promise<boolean> {
 
     await tx.update(linkTag).set({tagId: canonicalTagId}).where(eq(linkTag.tagId, aliasTagId));
 
+    // Re-point any existing aliases that reference the alias tag to the new canonical
+    await tx
+      .update(tagAlias)
+      .set({canonicalTagId})
+      .where(eq(tagAlias.canonicalTagId, aliasTagId));
+
     await tx.insert(tagAlias).values({
       aliasText: aliasRow.text,
       canonicalTagId,
