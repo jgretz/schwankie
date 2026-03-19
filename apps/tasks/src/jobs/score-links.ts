@@ -3,7 +3,7 @@ import {generate} from '../lib/ollama';
 
 type OllamaQualityResponse = {quality: number};
 
-function computeHeuristicScore(link: {
+export function computeHeuristicScore(link: {
   title: string;
   description: string | null;
   content: string | null;
