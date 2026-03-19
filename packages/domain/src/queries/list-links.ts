@@ -67,7 +67,8 @@ export async function listLinks(params: ListLinksParams): Promise<ListLinksResul
 
   const where = conditions.length > 0 ? and(...conditions) : undefined;
 
-  const orderByClause = sort === 'score' ? [desc(link.score), desc(link.createDate)] : [desc(link.createDate)];
+  const orderByClause =
+    sort === 'score' ? [sql`${link.score} DESC NULLS LAST`, desc(link.createDate)] : [desc(link.createDate)];
 
   const [items, totalResult] = await Promise.all([
     db.select().from(link).where(where).orderBy(...orderByClause).limit(limit).offset(offset),
