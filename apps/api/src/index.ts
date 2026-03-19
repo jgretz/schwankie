@@ -3,7 +3,6 @@ import {cors} from 'hono/cors';
 import z from 'zod';
 import {parseEnv} from 'env';
 import {init as initDomain} from '@domain';
-import {authMiddleware} from './middleware/auth';
 import {healthRoutes} from './routes/health';
 import {tagsRouter} from './routes/tags';
 import {linksRoutes} from './routes/links';
@@ -23,18 +22,13 @@ const app = new Hono();
 
 app.use('/*', cors());
 
-// public
+// auth: each router handles its own auth
+// reads (GET) are public; mutations require Bearer token
+// see middleware/auth.ts
 app.route('/', healthRoutes);
 app.route('/', tagsRouter);
-
-// links — handles its own auth (GET is public, mutations are protected)
 app.route('/', linksRoutes);
-
-// settings — handles its own auth
 app.route('/', settingsRouter);
-
-// protected
-app.use('/api/*', authMiddleware());
 app.route('/api/metadata', metadataRoutes);
 
 app.onError((err, c) => {
