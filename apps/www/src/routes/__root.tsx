@@ -13,16 +13,16 @@ import {lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState} from 
 import {toast} from 'sonner';
 import {Toaster} from '@www/components/ui/toaster';
 import {LinkModalProvider, useLinkModal} from '@www/components/modal/link-modal-context';
-
-const LinkModal = lazy(() =>
-  import('@www/components/modal/link-modal').then((m) => ({default: m.LinkModal})),
-);
 import {AppShell} from '@www/components/shell/app-shell';
 import {useTags} from '@www/hooks/use-tags';
 import {parseTagSlugs} from '@www/lib/parse-tag-slugs';
 import type {FeedSearch} from '@www/routes/index';
 import '../globals.css';
 import {getAuthState} from '../lib/session-actions';
+
+const LinkModal = lazy(() =>
+  import('@www/components/modal/link-modal').then((m) => ({default: m.LinkModal})),
+);
 
 export const logout = createServerFn({method: 'POST'}).handler(async () => {
   const {destroySession} = await import('../lib/session.server');

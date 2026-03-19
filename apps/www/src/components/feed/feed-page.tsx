@@ -181,7 +181,6 @@ export function FeedPage({
           {items.map((item) => (
             <LinkItem
               key={item.id}
-              id={item.id}
               url={item.url}
               title={item.title}
               description={item.description}

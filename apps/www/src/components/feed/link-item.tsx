@@ -11,7 +11,6 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
 });
 
 type LinkItemProps = {
-  id: number;
   url: string;
   title: string;
   description: string | null;
@@ -39,7 +38,6 @@ function scoreStyle(score: number): React.CSSProperties {
 }
 
 function LinkItemComponent({
-  id,
   url,
   title,
   description,
