@@ -1,6 +1,6 @@
 import {extractMetadata} from 'metadata';
 import {getLink, updateLink} from '@domain';
-import type {LinkWithTags} from '@domain';
+import type {LinkWithTags, UpdateLinkInput} from '@domain';
 
 export async function refetchLink(id: number): Promise<LinkWithTags | null> {
   const link = await getLink(id);
@@ -21,7 +21,7 @@ export async function refetchLink(id: number): Promise<LinkWithTags | null> {
     console.warn(`[refetch] link ${id}: jina failed`, content.reason);
   }
 
-  const updates: Record<string, unknown> = {};
+  const updates: Partial<UpdateLinkInput> = {};
 
   if (metaData) {
     updates.title = metaData.title;
