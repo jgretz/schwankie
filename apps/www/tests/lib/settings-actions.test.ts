@@ -86,8 +86,9 @@ describe('setSettingAction', function () {
     try {
       await setSettingAction({data: {key: 'theme', value: 'dark'}});
       expect.fail('should have thrown');
-    } catch (error: any) {
-      expect(error.message).toBe('Unauthorized');
+    } catch (error) {
+      expect(error).toBeInstanceOf(Error);
+      expect((error as Error).message).toBe('Unauthorized');
     }
   });
 });

@@ -92,8 +92,9 @@ describe('renameTagAction', function () {
     try {
       await renameTagAction({data: {id: 1, text: 'new-name'}});
       expect.fail('should have thrown');
-    } catch (error: any) {
-      expect(error.message).toBe('Unauthorized');
+    } catch (error) {
+      expect(error).toBeInstanceOf(Error);
+      expect((error as Error).message).toBe('Unauthorized');
     }
   });
 });
@@ -120,8 +121,9 @@ describe('mergeTagAction', function () {
     try {
       await mergeTagAction({data: {aliasId: 1, canonicalTagId: 2}});
       expect.fail('should have thrown');
-    } catch (error: any) {
-      expect(error.message).toBe('Unauthorized');
+    } catch (error) {
+      expect(error).toBeInstanceOf(Error);
+      expect((error as Error).message).toBe('Unauthorized');
     }
   });
 });
@@ -148,8 +150,9 @@ describe('deleteTagAction', function () {
     try {
       await deleteTagAction({data: {id: 1}});
       expect.fail('should have thrown');
-    } catch (error: any) {
-      expect(error.message).toBe('Unauthorized');
+    } catch (error) {
+      expect(error).toBeInstanceOf(Error);
+      expect((error as Error).message).toBe('Unauthorized');
     }
   });
 });

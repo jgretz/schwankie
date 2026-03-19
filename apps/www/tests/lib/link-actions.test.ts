@@ -100,8 +100,9 @@ describe('fetchMetadataAction', function () {
     try {
       await fetchMetadataAction({data: {url: 'https://example.com'}});
       expect.fail('should have thrown');
-    } catch (error: any) {
-      expect(error.message).toBe('Unauthorized');
+    } catch (error) {
+      expect(error).toBeInstanceOf(Error);
+      expect((error as Error).message).toBe('Unauthorized');
     }
   });
 });
@@ -129,8 +130,9 @@ describe('createLinkAction', function () {
     try {
       await createLinkAction({data: {url: 'https://example.com', title: 'Test'}});
       expect.fail('should have thrown');
-    } catch (error: any) {
-      expect(error.message).toBe('Unauthorized');
+    } catch (error) {
+      expect(error).toBeInstanceOf(Error);
+      expect((error as Error).message).toBe('Unauthorized');
     }
   });
 });
@@ -158,8 +160,9 @@ describe('updateLinkAction', function () {
     try {
       await updateLinkAction({data: {id: 1, title: 'Updated'}});
       expect.fail('should have thrown');
-    } catch (error: any) {
-      expect(error.message).toBe('Unauthorized');
+    } catch (error) {
+      expect(error).toBeInstanceOf(Error);
+      expect((error as Error).message).toBe('Unauthorized');
     }
   });
 });
@@ -186,8 +189,9 @@ describe('resetEnrichmentAction', function () {
     try {
       await resetEnrichmentAction({data: {id: 1}});
       expect.fail('should have thrown');
-    } catch (error: any) {
-      expect(error.message).toBe('Unauthorized');
+    } catch (error) {
+      expect(error).toBeInstanceOf(Error);
+      expect((error as Error).message).toBe('Unauthorized');
     }
   });
 });
@@ -214,8 +218,9 @@ describe('refetchLinkAction', function () {
     try {
       await refetchLinkAction({data: {id: 1}});
       expect.fail('should have thrown');
-    } catch (error: any) {
-      expect(error.message).toBe('Unauthorized');
+    } catch (error) {
+      expect(error).toBeInstanceOf(Error);
+      expect((error as Error).message).toBe('Unauthorized');
     }
   });
 });
@@ -242,8 +247,9 @@ describe('suggestTagsAction', function () {
     try {
       await suggestTagsAction({data: {id: 1}});
       expect.fail('should have thrown');
-    } catch (error: any) {
-      expect(error.message).toBe('Unauthorized');
+    } catch (error) {
+      expect(error).toBeInstanceOf(Error);
+      expect((error as Error).message).toBe('Unauthorized');
     }
   });
 });
@@ -270,8 +276,9 @@ describe('deleteLinkAction', function () {
     try {
       await deleteLinkAction({data: {id: 1}});
       expect.fail('should have thrown');
-    } catch (error: any) {
-      expect(error.message).toBe('Unauthorized');
+    } catch (error) {
+      expect(error).toBeInstanceOf(Error);
+      expect((error as Error).message).toBe('Unauthorized');
     }
   });
 });
