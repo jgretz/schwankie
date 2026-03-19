@@ -46,7 +46,11 @@ export type UpdateLinkInput = {
   title?: string;
   description?: string;
   imageUrl?: string;
+  content?: string;
   status?: 'saved' | 'queued' | 'archived';
+  enrichmentFailCount?: number;
+  enrichmentLastError?: string | null;
+  score?: number | null;
   tags?: string[];
 };
 
