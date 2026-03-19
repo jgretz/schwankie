@@ -68,8 +68,8 @@ async function getOllamaQuality(
     const response = await fetch(`${ollamaUrl}/api/generate`, {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({model: ollamaModel, prompt, stream: false}),
-      signal: AbortSignal.timeout(60_000),
+      body: JSON.stringify({model: ollamaModel, prompt, stream: false, format: 'json', options: {num_predict: 50}}),
+      signal: AbortSignal.timeout(120_000),
     });
 
     if (!response.ok) {
