@@ -20,6 +20,7 @@ export {setSetting} from './commands/set-setting';
 
 // lib
 export {normalizeTag} from './lib/normalize-tag';
+export {validateSettingValue} from './lib/setting-schemas';
 
 // types
 export type {
