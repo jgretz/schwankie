@@ -199,7 +199,7 @@ describe('PATCH /api/links/:id', function () {
     const app = makeApp();
     const res = await app.request('/api/links/1', {
       method: 'PATCH',
-      body: JSON.stringify({}),
+      body: JSON.stringify({url: 'not-a-url'}),
       headers: {...authHeader, 'Content-Type': 'application/json'},
     });
     expect(res.status).toBe(400);
