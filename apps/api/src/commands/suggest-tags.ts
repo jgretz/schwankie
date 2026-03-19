@@ -72,7 +72,9 @@ async function callAnthropic(
   }
 
   const data = (await response.json()) as {content: Array<{type: string; text: string}>};
-  const text = data.content.find((c) => c.type === 'text')?.text ?? '{}';
+  const raw = data.content.find((c) => c.type === 'text')?.text ?? '{}';
+  // Strip markdown code fences if present
+  const text = raw.replace(/^```(?:json)?\s*\n?/m, '').replace(/\n?```\s*$/m, '');
   const parsed = JSON.parse(text) as {tags?: string[]};
   return Array.isArray(parsed.tags) ? parsed.tags : [];
 }
