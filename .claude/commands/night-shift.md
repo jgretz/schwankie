@@ -1,4 +1,4 @@
-Autonomous overnight orchestrator. Start the backlog, shepherd tasks through the pipeline, auto-merge low-risk PRs.
+Autonomous overnight orchestrator. Promote the backlog, shepherd tasks through the pipeline, auto-merge low-risk PRs.
 
 No new tools needed — uses existing MCP tools + `gh` CLI.
 
@@ -6,10 +6,12 @@ No new tools needed — uses existing MCP tools + `gh` CLI.
 
 1. Call `list_tasks` with `status: "planned"` and `detail: "summary"`
 2. Filter to tasks where `blockedBy` is empty
-3. If any exist, call `start_bulk_tasks` with their IDs (use `skipPermissions: true`)
-4. Log how many tasks were started
+3. For tasks with `needsAttention: true`, triage the attention (see §2c rules) — resolve if non-human-requiring
+4. Promote unblocked tasks to `ready` via `update_task` with `status: "ready"` — the scheduler handles starting
+5. Also check `list_tasks` with `status: "ready"` — triage any `needsAttention` flags blocking scheduler pickup
+6. Log how many tasks were promoted
 
-Existing auto-start-on-complete handles downstream dependency chains — don't manage that here.
+The scheduler auto-starts `ready` tasks when slots are available. Existing auto-start-on-complete handles downstream dependency chains — don't manage that here.
 
 ## Phase 2: Orchestration Loop
 
@@ -70,11 +72,25 @@ Scan `user_review` tasks for merge-eligible PRs:
 
 ### 2b. Catch stragglers
 
-Call `list_tasks` with `status: "planned"` and `detail: "summary"`. Start any tasks with empty `blockedBy` that weren't caught in Phase 1 (edge case: tasks became unblocked mid-cycle).
+Call `list_tasks` with `status: "planned"` and `detail: "summary"`. Promote any tasks with empty `blockedBy` to `ready` via `update_task` (edge case: tasks became unblocked mid-cycle via dependency completion).
 
-### 2c. Monitor attention
+### 2c. Triage attention flags
 
-Call `list_tasks` and check for any tasks with `needsAttention: true` across all active statuses. Log them but do NOT resolve attention messages — those are for the human.
+Check for tasks with `needsAttention: true` across all active statuses. For each flagged task, read the attention message and decide:
+
+**Resolve immediately** (these don't need a human):
+- Daemon timeouts on `submit_for_review` or `complete_review` — the operation usually completed despite the timeout
+- Stale planner clarification questions — the plan is already written and the task is planned/ready
+- Mechanical issues — worker crashed and was auto-recovered, worktree cleanup messages
+- Worker self-reported "implementation complete" but couldn't transition — manually transition if appropriate
+
+**Escalate to human** (leave `needsAttention` unresolved):
+- Architectural tradeoffs requiring human judgment
+- Security concerns
+- Ambiguous requirements where multiple valid interpretations exist
+- Repeated arbitration failures (same task flagged after prior night-shift intervention)
+
+When resolving, call `update_task` with `resolveAttention: true` and optionally a note explaining the resolution.
 
 ### 2d. Crash detection
 
@@ -116,7 +132,32 @@ For each `user_review` task already fetched in step 2a:
 
 The pr-monitor daemon will detect the new PR comment and automatically restart the worker — no further action needed here.
 
-### 2f. Status line
+### 2f. Detect stuck workers
+
+Track executing tasks across cycles. A worker is "stuck" if:
+- It has been in `executing` with `needsAttention: true` for **5+ consecutive cycles** (~7.5 min)
+- OR its PR has had **no new commits for 10+ cycles** (~15 min) while still in executing
+
+When a stuck worker is detected:
+
+1. Read the task's unresolved attention messages and handoff context to understand what's blocking
+2. Send a precise `directive` message via `send_message` with specific instructions (file paths, exact fix needed)
+3. Call `restart_task` to give the worker a fresh context with the directive in its inbox
+4. Call `update_task` with `note: "[night-shift] Restarted stuck worker with directive: <summary>"`
+
+Only intervene once per task per session. If the same task gets stuck again after a restart+directive, log it and move on — the health monitor will handle further recovery.
+
+### 2g. Clean up stale worktrees
+
+When a task fails to start due to a stale branch or worktree (error contains "branch already exists" or "worktree already in use"):
+
+1. Remove the stale worktree: `git worktree remove <path> --force`
+2. Delete the stale branch: `git branch -D <branch>`
+3. The scheduler will retry the task on its next cycle
+
+Only clean up worktrees for tasks that are in `ready` status and failed to start — never touch worktrees for active executing tasks.
+
+### 2h. Status line
 
 Print a compact one-line summary each cycle:
 
@@ -124,11 +165,11 @@ Print a compact one-line summary each cycle:
 [night-shift] cycle N | executing: X | agent_review: X | user_review: X (Y merge-eligible) | attention: X | merged: X | arbitrated: X | crashed: X | blocked-reengaged: X
 ```
 
-### 2g. Context hygiene
+### 2i. Context hygiene
 
-Run `/compact` every 10 cycles with a summary of actions taken so far (cycle count, tasks started, PRs merged/skipped, crashes detected). This prevents context exhaustion during long overnight runs. No need to include arbitrated task IDs — the once-per-task guard in step 2h uses persisted task notes, not conversation context.
+Run `/compact` every 10 cycles with a summary of actions taken so far (cycle count, tasks started, PRs merged/skipped, crashes detected). This prevents context exhaustion during long overnight runs. No need to include arbitrated task IDs — the once-per-task guard in step 2j uses persisted task notes, not conversation context.
 
-### 2h. Arbitrate agent_review disputes
+### 2j. Arbitrate agent_review disputes
 
 Check for `agent_review` tasks stuck in a worker/reviewer disagreement:
 
@@ -136,7 +177,6 @@ Check for `agent_review` tasks stuck in a worker/reviewer disagreement:
 2. For each task where `needsAttention: true`:
 
    **Identify dispute** — look for worker-targeted attention messages (reviewer requested changes).
-   Skip tasks where attention is human-targeted (those need human judgment).
    Skip tasks where the most recent note is `re-engaged worker to address reviewer feedback`
    (the pr-monitor already handled it — give the worker time to respond).
 
@@ -204,14 +244,15 @@ On exit, gather a full session snapshot and print a structured morning report.
 
 ```
 ## [night-shift] Morning Report — YYYY-MM-DD
-Duration: Xh Ym | Tasks started: N | PRs merged: N | PRs skipped: N
+Duration: Xh Ym | Tasks promoted: N | PRs merged: N | PRs skipped: N
 
 ### What Happened
-- Started: <task titles + IDs>
+- Promoted: <task titles + IDs>
 - Merged: <task titles + IDs, with score/complexity from merge notes>
 - Skipped: <task titles + IDs, with skip reason>
 - BLOCKED re-engaged: <task titles + IDs, with PR comment posted>
 - Arbitrated: <task titles + IDs, with verdict (overrode reviewer / directed worker)>
+- Stuck workers restarted: <task titles + IDs, with directive summary>
 - Still in flight: <task titles + IDs + current status>
 
 ### What Went Well
@@ -234,14 +275,13 @@ Duration: Xh Ym | Tasks started: N | PRs merged: N | PRs skipped: N
 
 - Never auto-merge `high` complexity or `high` risk — no exceptions
 - Never auto-merge when `needsAttention` is true
-- Never resolve attention messages — those are for the human
 - Never call `complete_task` — delegate to merge-watcher
 - Every merge/skip decision is appended as a `note` via `update_task` for auditability
 - Every BLOCKED PR comment is preceded by a dedup check — never post the same findings twice
 - Run `/compact` every ~10 cycles to prevent context exhaustion
 - Arbitrate at most once per task (checked via `[night-shift] Arbitrated dispute` note) — if the dispute recurs, log and defer to human
-- Never arbitrate tasks with human-targeted attention — those require human judgment
 - Post the reasoning as a PR comment for auditability before taking action
+- Only clean up worktrees for `ready` tasks that failed to start — never for active tasks
 
 ## Relationship to Existing Daemons
 
@@ -249,8 +289,11 @@ Night-shift works alongside all daemons — it replaces nothing:
 
 | Gap                                 | Who fills it               |
 | ----------------------------------- | -------------------------- |
-| Start initial planned tasks         | **Night-shift**            |
+| Promote planned tasks to ready      | **Night-shift**            |
+| Triage attention flags              | **Night-shift**            |
 | Decide to merge PRs                 | **Night-shift**            |
+| Detect & unstick stalled workers    | **Night-shift**            |
+| Start ready tasks                   | scheduler (unchanged)      |
 | Detect merge → complete task        | merge-watcher (unchanged)  |
 | Detect PR comments → restart worker | pr-monitor (unchanged)     |
 | Detect crashes → restart            | health-monitor (unchanged) |
