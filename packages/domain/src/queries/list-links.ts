@@ -33,7 +33,6 @@ export async function listLinks(params: ListLinksParams): Promise<ListLinksResul
   if (needs_scoring) {
     conditions.push(isNull(link.score));
     conditions.push(eq(link.status, 'queued'));
-    conditions.push(ne(link.status, 'trashed'));
   }
 
   if (status) {

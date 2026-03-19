@@ -17,6 +17,7 @@ export async function updateLink(id: number, input: UpdateLinkInput): Promise<Li
     ...(fields.status !== undefined && {status: fields.status}),
     ...(fields.enrichmentFailCount !== undefined && {enrichmentFailCount: fields.enrichmentFailCount}),
     ...(fields.enrichmentLastError !== undefined && {enrichmentLastError: fields.enrichmentLastError}),
+    ...(fields.score !== undefined && {score: fields.score}),
     updateDate: new Date(),
   };
 
