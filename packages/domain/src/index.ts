@@ -33,5 +33,6 @@ export type {
   UpdateLinkInput,
   MergeTagInput,
   RenameTagInput,
+  SettingResponse,
 } from './types';
 export type {LinkStatus} from './queries/get-tags-with-count';
