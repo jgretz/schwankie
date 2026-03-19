@@ -1,6 +1,14 @@
+import {memo} from 'react';
+import type {LinkData} from 'client';
 import {cn} from '@www/lib/utils';
 import {selectionBg} from '@www/lib/selection-styles';
 import {HighlightText} from './highlight-text';
+
+const dateFormatter = new Intl.DateTimeFormat('en-US', {
+  month: 'short',
+  day: 'numeric',
+  year: 'numeric',
+});
 
 type LinkItemProps = {
   id: number;
@@ -12,25 +20,25 @@ type LinkItemProps = {
   activeTags: string[];
   onTagClick: (tagText: string) => void;
   showEditButton: boolean;
-  onEditClick: (linkId: number) => void;
+  onEditClick: (link: LinkData) => void;
+  linkData: LinkData;
   searchQuery?: string;
   score?: number | null;
   showScore?: boolean;
 };
 
 function formatDate(iso: string): string {
-  return new Intl.DateTimeFormat('en-US', {month: 'short', day: 'numeric', year: 'numeric'}).format(
-    new Date(iso),
-  );
+  return dateFormatter.format(new Date(iso));
 }
 
 function scoreStyle(score: number): React.CSSProperties {
-  if (score >= 70) return {backgroundColor: 'var(--score-high-bg)', color: 'var(--score-high-text)'};
+  if (score >= 70)
+    return {backgroundColor: 'var(--score-high-bg)', color: 'var(--score-high-text)'};
   if (score >= 40) return {backgroundColor: 'var(--score-mid-bg)', color: 'var(--score-mid-text)'};
   return {backgroundColor: 'var(--score-low-bg)', color: 'var(--score-low-text)'};
 }
 
-export function LinkItem({
+function LinkItemComponent({
   id,
   url,
   title,
@@ -41,6 +49,7 @@ export function LinkItem({
   onTagClick,
   showEditButton,
   onEditClick,
+  linkData,
   searchQuery,
   score,
   showScore,
@@ -101,7 +110,7 @@ export function LinkItem({
           <span className="ml-auto flex items-center gap-2 opacity-0 transition-opacity duration-100 group-hover:opacity-100">
             <button
               type="button"
-              onClick={() => onEditClick(id)}
+              onClick={() => onEditClick(linkData)}
               aria-label="Edit link"
               className="p-1 text-text-faint transition-colors hover:text-text-muted"
             >
@@ -125,3 +134,5 @@ export function LinkItem({
     </div>
   );
 }
+
+export const LinkItem = memo(LinkItemComponent);

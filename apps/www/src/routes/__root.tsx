@@ -9,11 +9,14 @@ import {
   useSearch,
 } from '@tanstack/react-router';
 import {createServerFn} from '@tanstack/react-start';
-import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {toast} from 'sonner';
 import {Toaster} from '@www/components/ui/toaster';
-import {LinkModal} from '@www/components/modal/link-modal';
 import {LinkModalProvider, useLinkModal} from '@www/components/modal/link-modal-context';
+
+const LinkModal = lazy(() =>
+  import('@www/components/modal/link-modal').then((m) => ({default: m.LinkModal})),
+);
 import {AppShell} from '@www/components/shell/app-shell';
 import {useTags} from '@www/hooks/use-tags';
 import {parseTagSlugs} from '@www/lib/parse-tag-slugs';
@@ -92,7 +95,9 @@ function RootComponent() {
         <QueryClientProvider client={queryClient}>
           <LinkModalProvider>
             <ShellWithData />
-            <LinkModal />
+            <Suspense fallback={null}>
+              <LinkModal />
+            </Suspense>
           </LinkModalProvider>
         </QueryClientProvider>
         <Toaster />

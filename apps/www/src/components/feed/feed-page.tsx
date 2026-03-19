@@ -191,7 +191,8 @@ export function FeedPage({
               onTagClick={onTagClick}
               searchQuery={q}
               showEditButton={isAuthenticated}
-              onEditClick={() => openEdit(item as LinkData)}
+              onEditClick={openEdit}
+              linkData={item as LinkData}
               score={item.score}
               showScore={status === 'queued'}
             />
