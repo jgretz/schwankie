@@ -28,6 +28,7 @@
     "start:www": "cd apps/www && bun run start",
     "start:tasks": "cd apps/tasks && bun run start",
     "test": "concurrently bun:test:*",
+    "test:client": "bun test --cwd packages/client",
     "test:domain": "bun test --cwd packages/domain",
     "test:metadata": "bun test --cwd packages/metadata",
     "test:api": "bun test --cwd apps/api",

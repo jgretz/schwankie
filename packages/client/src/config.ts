@@ -9,6 +9,10 @@ export function init(clientConfig: ClientConfig): void {
   config = clientConfig;
 }
 
+export function reset(): void {
+  config = null;
+}
+
 function getConfig(): ClientConfig {
   if (!config) throw new Error('client not initialized — call init() first');
   return config;
