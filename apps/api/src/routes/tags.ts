@@ -1,7 +1,15 @@
 import {Hono} from 'hono';
 import {authMiddleware} from '../middleware/auth';
-import {listTags, mergeTag, markTagNormalized, renameTag, deleteTag, getSetting} from '@domain';
+import {
+  listTags,
+  mergeTag,
+  markTagNormalized,
+  renameTag,
+  deleteTag,
+  resolveTagMinCount,
+} from '@domain';
 import {listTagsParamsSchema, mergeTagSchema, renameTagSchema} from '../validators/tags';
+import {parseIdParam} from '../lib/parse-id-param';
 
 export const tagsRouter = new Hono();
 const auth = authMiddleware();
@@ -15,9 +23,7 @@ tagsRouter.get('/api/tags', async (c) => {
   const status = c.req.query('status') || undefined;
   let minCount: number | undefined;
   if (!needs_normalization && !canonical && !all && status !== 'queued') {
-    const floorValue = await getSetting('tagCountFloor');
-    const floor = floorValue ? Number(floorValue) : 1;
-    minCount = Number.isNaN(floor) ? 1 : floor;
+    minCount = await resolveTagMinCount();
   }
 
   const parsed = listTagsParamsSchema.safeParse({
@@ -34,8 +40,8 @@ tagsRouter.get('/api/tags', async (c) => {
 });
 
 tagsRouter.post('/api/tags/:id/merge', auth, async (c) => {
-  const aliasTagId = Number(c.req.param('id'));
-  if (Number.isNaN(aliasTagId)) return c.json({error: 'Invalid tag ID'}, 400);
+  const aliasTagId = parseIdParam(c);
+  if (aliasTagId === null) return c.json({error: 'Invalid tag ID'}, 400);
 
   const parsed = mergeTagSchema.safeParse(await c.req.json());
   if (!parsed.success)
@@ -48,8 +54,8 @@ tagsRouter.post('/api/tags/:id/merge', auth, async (c) => {
 });
 
 tagsRouter.patch('/api/tags/:id/normalize', auth, async (c) => {
-  const tagId = Number(c.req.param('id'));
-  if (Number.isNaN(tagId)) return c.json({error: 'Invalid tag ID'}, 400);
+  const tagId = parseIdParam(c);
+  if (tagId === null) return c.json({error: 'Invalid tag ID'}, 400);
 
   const normalized = await markTagNormalized(tagId);
   if (!normalized) return c.json({error: 'Tag not found'}, 404);
@@ -58,8 +64,8 @@ tagsRouter.patch('/api/tags/:id/normalize', auth, async (c) => {
 });
 
 tagsRouter.patch('/api/tags/:id', auth, async (c) => {
-  const tagId = Number(c.req.param('id'));
-  if (Number.isNaN(tagId)) return c.json({error: 'Invalid tag ID'}, 400);
+  const tagId = parseIdParam(c);
+  if (tagId === null) return c.json({error: 'Invalid tag ID'}, 400);
 
   const parsed = renameTagSchema.safeParse(await c.req.json());
   if (!parsed.success)
@@ -72,8 +78,8 @@ tagsRouter.patch('/api/tags/:id', auth, async (c) => {
 });
 
 tagsRouter.delete('/api/tags/:id', auth, async (c) => {
-  const tagId = Number(c.req.param('id'));
-  if (Number.isNaN(tagId)) return c.json({error: 'Invalid tag ID'}, 400);
+  const tagId = parseIdParam(c);
+  if (tagId === null) return c.json({error: 'Invalid tag ID'}, 400);
 
   const result = await deleteTag(tagId);
   if (!result) return c.json({error: 'Tag not found'}, 404);
