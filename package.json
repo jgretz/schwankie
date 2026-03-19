@@ -34,6 +34,7 @@
     "test:api": "bun test --cwd apps/api",
     "test:www": "bun test --cwd apps/www",
     "test:env": "bun test --cwd packages/env",
+    "test:tasks": "bun test --cwd apps/tasks",
     "db:generate": "bun run --cwd packages/database generate",
     "db:migrate": "bun run --cwd packages/database migrate",
     "deploy:api": "fly deploy --config ./deploy/api/fly.toml --dockerfile ./deploy/api/Dockerfile",

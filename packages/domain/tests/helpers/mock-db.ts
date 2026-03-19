@@ -37,7 +37,7 @@ type TagAliasRow = {
   aliasText: string;
   canonicalTagId: number;
   source: string;
-  createdAt: Date;
+  createDate: Date;
 };
 
 export const store = {
@@ -131,7 +131,7 @@ const COLUMN_MAP: Record<string, Record<string, string>> = {
     alias_text: 'aliasText',
     canonical_tag_id: 'canonicalTagId',
     source: 'source',
-    created_at: 'createdAt',
+    create_date: 'createDate',
   },
 };
 
@@ -344,7 +344,7 @@ function defaultsForTable(table: any, values: any, id: number): any {
         aliasText: values.aliasText ?? values.alias_text ?? '',
         canonicalTagId: values.canonicalTagId ?? values.canonical_tag_id,
         source: values.source ?? '',
-        createdAt: values.createdAt ?? now,
+        createDate: values.createDate ?? now,
       };
     default:
       return {id, ...values};

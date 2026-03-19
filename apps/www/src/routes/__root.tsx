@@ -1,25 +1,18 @@
 import {QueryCache, QueryClient, QueryClientProvider} from '@tanstack/react-query';
-import {
-  HeadContent,
-  Outlet,
-  Scripts,
-  createRootRoute,
-  useNavigate,
-  useRouterState,
-  useSearch,
-} from '@tanstack/react-router';
+import {HeadContent, Outlet, Scripts, createRootRoute} from '@tanstack/react-router';
 import {createServerFn} from '@tanstack/react-start';
-import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {lazy, Suspense, useState} from 'react';
 import {toast} from 'sonner';
 import {Toaster} from '@www/components/ui/toaster';
-import {LinkModal} from '@www/components/modal/link-modal';
 import {LinkModalProvider, useLinkModal} from '@www/components/modal/link-modal-context';
 import {AppShell} from '@www/components/shell/app-shell';
-import {useTags} from '@www/hooks/use-tags';
-import {parseTagSlugs} from '@www/lib/parse-tag-slugs';
-import type {FeedSearch} from '@www/routes/index';
+import {useFeedFilters} from '@www/hooks/use-feed-filters';
 import '../globals.css';
 import {getAuthState} from '../lib/session-actions';
+
+const LinkModal = lazy(() =>
+  import('@www/components/modal/link-modal').then((m) => ({default: m.LinkModal})),
+);
 
 export const logout = createServerFn({method: 'POST'}).handler(async () => {
   const {destroySession} = await import('../lib/session.server');
@@ -92,7 +85,9 @@ function RootComponent() {
         <QueryClientProvider client={queryClient}>
           <LinkModalProvider>
             <ShellWithData />
-            <LinkModal />
+            <Suspense fallback={null}>
+              <LinkModal />
+            </Suspense>
           </LinkModalProvider>
         </QueryClientProvider>
         <Toaster />
@@ -103,72 +98,17 @@ function RootComponent() {
 }
 
 function ShellWithData() {
-  const navigate = useNavigate();
   const {openAdd} = useLinkModal();
   const {auth} = Route.useRouteContext();
-
-  const pathname = useRouterState({select: (s) => s.location.pathname});
-  const isAdmin = pathname.startsWith('/admin');
-  const status = pathname === '/queue' ? 'queued' : 'saved';
-  const currentPath = pathname === '/queue' ? '/queue' : '/';
-
-  const search = useSearch({strict: false}) as FeedSearch;
-  const tagsParam = search.tags;
-  const qParam = search.q ?? '';
-
-  const selectedTags = useMemo(() => parseTagSlugs(tagsParam), [tagsParam]);
-
-  const {data: tags} = useTags(status);
-
-  // Debounced search
-  const [searchValue, setSearchValue] = useState(qParam);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    setSearchValue(qParam);
-  }, [qParam]);
-
-  useEffect(() => {
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, []);
-
-  const handleSearchChange = useCallback(
-    (value: string) => {
-      setSearchValue(value);
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(() => {
-        navigate({
-          to: currentPath,
-          search: {tags: tagsParam, q: value || undefined},
-        });
-      }, 300);
-    },
-    [navigate, tagsParam, currentPath],
-  );
-
-  const handleTagToggle = useCallback(
-    (tagText: string) => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-      const next = selectedTags.includes(tagText)
-        ? selectedTags.filter((t) => t !== tagText)
-        : [...selectedTags, tagText];
-      navigate({
-        to: currentPath,
-        search: {tags: next.length > 0 ? next.join(',') : undefined, q: search.q},
-      });
-    },
-    [selectedTags, navigate, search.q, currentPath],
-  );
+  const {tags, selectedTags, searchValue, onSearchChange, onTagToggle, isAdmin} = useFeedFilters();
 
   return (
     <AppShell
-      tags={tags ?? []}
+      tags={tags}
       selectedTags={selectedTags}
-      onTagToggle={handleTagToggle}
+      onTagToggle={onTagToggle}
       searchValue={searchValue}
-      onSearchChange={handleSearchChange}
+      onSearchChange={onSearchChange}
       showAddButton={auth.authenticated}
       onAddClick={openAdd}
       isAuthenticated={auth.authenticated}

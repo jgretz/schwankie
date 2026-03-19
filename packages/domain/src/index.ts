@@ -5,6 +5,7 @@ export {listLinks} from './queries/list-links';
 export {listTags} from './queries/list-tags';
 export {getLink} from './queries/get-link';
 export {getSetting} from './queries/get-setting';
+export {resolveTagMinCount} from './queries/resolve-tag-min-count';
 
 // commands
 export {createLink} from './commands/create-link';
@@ -19,6 +20,7 @@ export {setSetting} from './commands/set-setting';
 
 // lib
 export {normalizeTag} from './lib/normalize-tag';
+export {validateSettingValue} from './lib/setting-schemas';
 
 // types
 export type {

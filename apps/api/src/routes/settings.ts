@@ -1,6 +1,6 @@
 import {Hono} from 'hono';
 import {authMiddleware} from '../middleware/auth';
-import {getSetting, setSetting, type SettingResponse} from '@domain';
+import {getSetting, setSetting, validateSettingValue, type SettingResponse} from '@domain';
 import {updateSettingSchema} from '../validators/settings';
 
 export const settingsRouter = new Hono();
@@ -23,6 +23,11 @@ settingsRouter.put('/api/settings/:key', auth, async (c) => {
   const parsed = updateSettingSchema.safeParse(await c.req.json());
   if (!parsed.success) {
     return c.json({error: 'Invalid request body', details: parsed.error.flatten()}, 400);
+  }
+
+  const validation = validateSettingValue(key, parsed.data.value);
+  if (!validation.success) {
+    return c.json({error: 'Invalid setting value', details: validation.error}, 400);
   }
 
   await setSetting(key, parsed.data.value);

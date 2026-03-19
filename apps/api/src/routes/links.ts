@@ -4,6 +4,7 @@ import {listLinks, createLink, updateLink, deleteLink, getLink, resetEnrichment}
 import {refetchLink} from '../commands/refetch-link';
 import {suggestTags} from '../commands/suggest-tags';
 import {createLinkSchema, updateLinkSchema, listLinksParamsSchema} from '../validators/links';
+import {parseIdParam} from '../lib/parse-id-param';
 
 export const linksRoutes = new Hono();
 const auth = authMiddleware();
@@ -38,8 +39,8 @@ linksRoutes.post('/api/links', auth, async (c) => {
 });
 
 linksRoutes.get('/api/links/:id', async (c) => {
-  const id = Number(c.req.param('id'));
-  if (Number.isNaN(id)) {
+  const id = parseIdParam(c);
+  if (id === null) {
     return c.json({error: 'Invalid link ID'}, 400);
   }
   const result = await getLink(id);
@@ -50,8 +51,8 @@ linksRoutes.get('/api/links/:id', async (c) => {
 });
 
 linksRoutes.patch('/api/links/:id', auth, async (c) => {
-  const id = Number(c.req.param('id'));
-  if (Number.isNaN(id)) {
+  const id = parseIdParam(c);
+  if (id === null) {
     return c.json({error: 'Invalid link ID'}, 400);
   }
   const parsed = updateLinkSchema.safeParse(await c.req.json());
@@ -66,8 +67,8 @@ linksRoutes.patch('/api/links/:id', auth, async (c) => {
 });
 
 linksRoutes.patch('/api/links/:id/reset-enrichment', auth, async (c) => {
-  const id = Number(c.req.param('id'));
-  if (Number.isNaN(id)) {
+  const id = parseIdParam(c);
+  if (id === null) {
     return c.json({error: 'Invalid link ID'}, 400);
   }
   const result = await resetEnrichment(id);
@@ -78,8 +79,8 @@ linksRoutes.patch('/api/links/:id/reset-enrichment', auth, async (c) => {
 });
 
 linksRoutes.post('/api/links/:id/refetch', auth, async (c) => {
-  const id = Number(c.req.param('id'));
-  if (Number.isNaN(id)) {
+  const id = parseIdParam(c);
+  if (id === null) {
     return c.json({error: 'Invalid link ID'}, 400);
   }
   const result = await refetchLink(id);
@@ -90,8 +91,8 @@ linksRoutes.post('/api/links/:id/refetch', auth, async (c) => {
 });
 
 linksRoutes.post('/api/links/:id/suggest-tags', auth, async (c) => {
-  const id = Number(c.req.param('id'));
-  if (Number.isNaN(id)) {
+  const id = parseIdParam(c);
+  if (id === null) {
     return c.json({error: 'Invalid link ID'}, 400);
   }
   const result = await suggestTags(id, process.env.ANTHROPIC_API_KEY);
@@ -102,8 +103,8 @@ linksRoutes.post('/api/links/:id/suggest-tags', auth, async (c) => {
 });
 
 linksRoutes.delete('/api/links/:id', auth, async (c) => {
-  const id = Number(c.req.param('id'));
-  if (Number.isNaN(id)) {
+  const id = parseIdParam(c);
+  if (id === null) {
     return c.json({error: 'Invalid link ID'}, 400);
   }
   const deleted = await deleteLink(id);
