@@ -1,8 +1,7 @@
 import {createFileRoute, useNavigate} from '@tanstack/react-router';
-import {useCallback, useMemo} from 'react';
 import {z} from 'zod';
 import {FeedPage} from '@www/components/feed/feed-page';
-import {parseTagSlugs} from '@www/lib/parse-tag-slugs';
+import {useFeedNavigation} from '@www/hooks/use-feed-navigation';
 
 const searchSchema = z.object({
   tags: z.string().optional().catch(undefined),
@@ -27,32 +26,11 @@ function IndexPage() {
   const {tags, q} = Route.useSearch();
   const navigate = useNavigate({from: '/'});
 
-  const selectedTags = useMemo(() => parseTagSlugs(tags), [tags]);
-
-  const handleTagClick = useCallback(
-    (tagText: string) => {
-      if (selectedTags.includes(tagText)) return;
-      const next = [...selectedTags, tagText];
-      navigate({search: {tags: next.join(','), q}});
-    },
-    [selectedTags, navigate, q],
-  );
-
-  const handleRemoveTag = useCallback(
-    (tagText: string) => {
-      const next = selectedTags.filter((t) => t !== tagText);
-      navigate({search: {tags: next.length > 0 ? next.join(',') : undefined, q}});
-    },
-    [selectedTags, navigate, q],
-  );
-
-  const handleClearAll = useCallback(() => {
-    navigate({search: {q}});
-  }, [navigate, q]);
-
-  const handleClearSearch = useCallback(() => {
-    navigate({search: {tags, q: undefined}});
-  }, [navigate, tags]);
+  const {handleTagClick, handleRemoveTag, handleClearAll, handleClearSearch} = useFeedNavigation({
+    tags,
+    q,
+    navigate,
+  });
 
   return (
     <FeedPage
