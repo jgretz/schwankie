@@ -195,6 +195,7 @@ describe('PATCH /api/links/:id', function () {
   });
 
   it('should return 400 on invalid body', async function () {
+    mockUpdateLink.mockResolvedValue({id: 1, title: 'Link'} as any);
     const app = makeApp();
     const res = await app.request('/api/links/1', {
       method: 'PATCH',
@@ -382,6 +383,6 @@ describe('POST /api/links/:id/suggest-tags', function () {
     });
     expect(res.status).toBe(200);
     const body = await res.json();
-    expect(body.suggestions).toBeDefined();
+    expect(body.suggestions).toEqual(['tag1', 'tag2']);
   });
 });

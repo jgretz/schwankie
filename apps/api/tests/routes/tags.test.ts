@@ -5,20 +5,37 @@ import {Hono} from 'hono';
 mock.module('env', () => ({parseEnv: () => ({API_KEY: 'test-key'})}));
 
 // Mock @domain exports
+// Includes all symbols needed by links, tags, and settings routes
+const mockGetLink = mock(async () => null as any);
+const mockListLinks = mock(async () => ({links: [], total: 0}));
+const mockCreateLink = mock(async () => null as any);
+const mockUpdateLink = mock(async () => null as any);
+const mockDeleteLink = mock(async () => false);
+const mockResetEnrichment = mock(async () => false);
 const mockListTags = mock(async () => ({tags: [], total: 0}));
 const mockMergeTag = mock(async () => false);
 const mockMarkTagNormalized = mock(async () => false);
 const mockRenameTag = mock(async () => false);
 const mockDeleteTag = mock(async () => false);
+const mockNormalizeTag = mock(async () => '');
 const mockGetSetting = mock(async () => null as any);
+const mockSetSetting = mock(async () => undefined);
 
 mock.module('@domain', () => ({
+  getLink: mockGetLink,
+  listLinks: mockListLinks,
+  createLink: mockCreateLink,
+  updateLink: mockUpdateLink,
+  deleteLink: mockDeleteLink,
+  resetEnrichment: mockResetEnrichment,
   listTags: mockListTags,
   mergeTag: mockMergeTag,
   markTagNormalized: mockMarkTagNormalized,
   renameTag: mockRenameTag,
   deleteTag: mockDeleteTag,
+  normalizeTag: mockNormalizeTag,
   getSetting: mockGetSetting,
+  setSetting: mockSetSetting,
 }));
 
 type TagsModule = typeof import('../../src/routes/tags');
