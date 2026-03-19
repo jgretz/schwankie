@@ -84,7 +84,7 @@ describe('GET /api/tags', function () {
     mockGetSetting.mockResolvedValue('1');
     const app = makeApp();
     await app.request('/api/tags');
-    expect(mockGetSetting).toHaveBeenCalledWith('tagCountFloor');
+    expect(mockResolveTagMinCount).toHaveBeenCalled();
   });
 
   it('should skip tagCountFloor when needs_normalization=true', async function () {

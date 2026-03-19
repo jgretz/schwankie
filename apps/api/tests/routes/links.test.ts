@@ -11,6 +11,16 @@ const mockCreateLink = mock(async () => null as any);
 const mockUpdateLink = mock(async () => null as any);
 const mockDeleteLink = mock(async () => false);
 const mockResetEnrichment = mock(async () => false);
+const mockListTags = mock(async () => ({tags: [], total: 0}));
+const mockMergeTag = mock(async () => false);
+const mockMarkTagNormalized = mock(async () => false);
+const mockRenameTag = mock(async () => false);
+const mockDeleteTag = mock(async () => false);
+const mockNormalizeTag = mock(async () => '');
+const mockGetSetting = mock(async () => null as any);
+const mockSetSetting = mock(async () => undefined);
+const mockResolveTagMinCount = mock(async () => 1);
+const mockValidateSettingValue = mock((...args: any[]) => ({success: true}));
 
 mock.module('@domain', () => ({
   getLink: mockGetLink,
@@ -19,6 +29,16 @@ mock.module('@domain', () => ({
   updateLink: mockUpdateLink,
   deleteLink: mockDeleteLink,
   resetEnrichment: mockResetEnrichment,
+  listTags: mockListTags,
+  mergeTag: mockMergeTag,
+  markTagNormalized: mockMarkTagNormalized,
+  renameTag: mockRenameTag,
+  deleteTag: mockDeleteTag,
+  normalizeTag: mockNormalizeTag,
+  getSetting: mockGetSetting,
+  setSetting: mockSetSetting,
+  resolveTagMinCount: mockResolveTagMinCount,
+  validateSettingValue: mockValidateSettingValue,
 }));
 
 // Mock API commands
