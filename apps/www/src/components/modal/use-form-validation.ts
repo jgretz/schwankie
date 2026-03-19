@@ -1,5 +1,5 @@
 import {useCallback, useState} from 'react';
-import {type FieldConfig, type SchemaConfig, validateAll, validateField} from './form-validation';
+import {type SchemaConfig, validateAll, validateField} from './form-validation';
 
 export type {FieldConfig, SchemaConfig} from './form-validation';
 export type {ValidationRule} from './form-validation';
