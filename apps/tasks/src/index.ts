@@ -16,12 +16,20 @@ const env = parseEnv(envSchema);
 
 init({apiUrl: env.API_URL, apiKey: env.API_KEY});
 
+async function runJob(name: string, job: () => Promise<void>): Promise<void> {
+  try {
+    await job();
+  } catch (error) {
+    console.error(`[poll] job "${name}" failed:`, error);
+  }
+}
+
 async function poll() {
-  await enrichContent();
-  await scoreLinks(env.OLLAMA_URL, env.OLLAMA_MODEL);
+  await runJob('enrich-content', enrichContent);
+  await runJob('score-links', () => scoreLinks(env.OLLAMA_URL, env.OLLAMA_MODEL));
 
   if (env.OLLAMA_URL) {
-    await normalizeTags(env.OLLAMA_URL, env.OLLAMA_MODEL);
+    await runJob('normalize-tags', () => normalizeTags(env.OLLAMA_URL!, env.OLLAMA_MODEL));
   } else {
     console.log('[poll] OLLAMA_URL not set, skipping tag normalization');
   }
@@ -39,7 +47,11 @@ function shutdown() {
 
 async function scheduleNext() {
   if (!running) return;
-  await poll();
+  try {
+    await poll();
+  } catch (error) {
+    console.error('[poll] unexpected error:', error);
+  }
   if (running) {
     timeoutId = setTimeout(scheduleNext, env.POLL_INTERVAL_MS);
   }
