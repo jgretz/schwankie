@@ -181,7 +181,6 @@ export function FeedPage({
           {items.map((item) => (
             <LinkItem
               key={item.id}
-              id={item.id}
               url={item.url}
               title={item.title}
               description={item.description}
@@ -191,7 +190,8 @@ export function FeedPage({
               onTagClick={onTagClick}
               searchQuery={q}
               showEditButton={isAuthenticated}
-              onEditClick={() => openEdit(item as LinkData)}
+              onEditClick={openEdit}
+              linkData={item as LinkData}
               score={item.score}
               showScore={status === 'queued'}
             />
