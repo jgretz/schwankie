@@ -127,7 +127,7 @@ describe('computeHeuristicScore', function () {
 
   it('should score 50 for everything but bare URL title', function () {
     const link = {
-      title: 'Example Article',
+      title: 'http://example.com',
       description: 'good description',
       content: 'a'.repeat(2500),
       tags: [
@@ -136,9 +136,9 @@ describe('computeHeuristicScore', function () {
         {id: 3, text: 'tag3'},
       ],
     };
-    const expectedScore = 10 + 15 + 15 + 20;
-    expect(computeHeuristicScore(link)).toBe(Math.min(expectedScore, 60));
-    expect(computeHeuristicScore(link)).toBe(60);
+    const expectedScore = 0 + 15 + 15 + 20;
+    expect(computeHeuristicScore(link)).toBe(expectedScore);
+    expect(computeHeuristicScore(link)).toBe(50);
   });
 
   it('should handle exactly 500 chars as short content', function () {
