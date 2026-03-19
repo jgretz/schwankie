@@ -1,18 +1,6 @@
 import {createServerFn} from '@tanstack/react-start';
 import {z} from 'zod';
-
-async function requireAuth() {
-  const {getSession} = await import('./session.server');
-  const session = await getSession();
-  if (!session?.authenticated) {
-    throw new Error('Unauthorized');
-  }
-}
-
-async function getClient() {
-  const {initClientServer} = await import('./init-client.server');
-  initClientServer();
-}
+import {getClient, requireAuth} from './server-helpers';
 
 const renameTagInput = z.object({id: z.number(), text: z.string()});
 
