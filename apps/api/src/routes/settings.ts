@@ -1,6 +1,7 @@
 import {Hono} from 'hono';
 import {authMiddleware} from '../middleware/auth';
 import {getSetting, setSetting} from '@domain';
+import type {SettingResponse} from '@domain';
 import {updateSettingSchema} from '../validators/settings';
 
 export const settingsRouter = new Hono();
@@ -14,7 +15,7 @@ settingsRouter.get('/api/settings/:key', async (c) => {
     return c.json({error: 'Setting not found'}, 404);
   }
 
-  return c.json({key, value});
+  return c.json<SettingResponse>({key, value});
 });
 
 settingsRouter.put('/api/settings/:key', auth, async (c) => {
@@ -22,12 +23,9 @@ settingsRouter.put('/api/settings/:key', auth, async (c) => {
 
   const parsed = updateSettingSchema.safeParse(await c.req.json());
   if (!parsed.success) {
-    return c.json(
-      {error: 'Invalid request body', details: parsed.error.flatten()},
-      400
-    );
+    return c.json({error: 'Invalid request body', details: parsed.error.flatten()}, 400);
   }
 
   await setSetting(key, parsed.data.value);
-  return c.json({key, value: parsed.data.value});
+  return c.json<SettingResponse>({key, value: parsed.data.value});
 });

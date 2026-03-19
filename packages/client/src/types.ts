@@ -50,7 +50,4 @@ export type UpdateLinkInput = {
   tags?: string[];
 };
 
-export type SettingResponse = {
-  key: string;
-  value: string;
-};
+export type {SettingResponse} from '@domain';

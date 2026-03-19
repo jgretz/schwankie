@@ -60,3 +60,4 @@ export type UpdateLinkInput = {
 
 export type MergeTagInput = {aliasTagId: number; canonicalTagId: number};
 export type RenameTagInput = {id: number; text: string};
+export type SettingResponse = {key: string; value: string};
