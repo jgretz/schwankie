@@ -8,7 +8,7 @@ type OllamaResponse = OllamaMerge | OllamaNoMerge;
 const SIMILARITY_THRESHOLD = 0.6;
 const MAX_CANDIDATES = 10;
 
-function levenshtein(a: string, b: string): number {
+export function levenshtein(a: string, b: string): number {
   const m = a.length;
   const n = b.length;
   const dp: number[][] = Array.from({length: m + 1}, (_, i) =>
@@ -27,13 +27,13 @@ function levenshtein(a: string, b: string): number {
   return dp[m][n];
 }
 
-function similarity(a: string, b: string): number {
+export function similarity(a: string, b: string): number {
   const maxLen = Math.max(a.length, b.length);
   if (maxLen === 0) return 1;
   return 1 - levenshtein(a, b) / maxLen;
 }
 
-function findCandidates(newTag: string, canonicalTags: string[]): string[] {
+export function findCandidates(newTag: string, canonicalTags: string[]): string[] {
   const scored = canonicalTags
     .map(function (tag) {
       const sim = similarity(newTag, tag);
@@ -48,7 +48,7 @@ function findCandidates(newTag: string, canonicalTags: string[]): string[] {
   return scored.map((r) => r.tag);
 }
 
-function buildPrompt(candidates: string[], newTag: string): string {
+export function buildPrompt(candidates: string[], newTag: string): string {
   return [
     `Given these existing tags: ${JSON.stringify(candidates)}`,
     `Should the new tag "${newTag}" be merged into one of these existing tags?`,
