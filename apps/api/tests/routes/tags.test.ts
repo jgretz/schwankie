@@ -20,6 +20,12 @@ const mockDeleteTag = mock(async () => false);
 const mockNormalizeTag = mock(async () => '');
 const mockGetSetting = mock(async () => null as any);
 const mockSetSetting = mock(async () => undefined);
+const mockResolveTagMinCount = mock(async () => {
+  const value = await mockGetSetting('tagCountFloor');
+  const floor = value ? Number(value) : 1;
+  return Number.isNaN(floor) ? 1 : floor;
+});
+const mockValidateSettingValue = mock(() => ({success: true}));
 
 mock.module('@domain', () => ({
   getLink: mockGetLink,
@@ -36,6 +42,8 @@ mock.module('@domain', () => ({
   normalizeTag: mockNormalizeTag,
   getSetting: mockGetSetting,
   setSetting: mockSetSetting,
+  resolveTagMinCount: mockResolveTagMinCount,
+  validateSettingValue: mockValidateSettingValue,
 }));
 
 type TagsModule = typeof import('../../src/routes/tags');

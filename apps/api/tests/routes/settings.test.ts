@@ -7,10 +7,12 @@ mock.module('env', () => ({parseEnv: () => ({API_KEY: 'test-key'})}));
 // Mock @domain exports
 const mockGetSetting = mock(async () => null as any);
 const mockSetSetting = mock(async () => undefined);
+const mockValidateSettingValue = mock(() => ({success: true}));
 
 mock.module('@domain', () => ({
   getSetting: mockGetSetting,
   setSetting: mockSetSetting,
+  validateSettingValue: mockValidateSettingValue,
 }));
 
 type SettingsModule = typeof import('../../src/routes/settings');
