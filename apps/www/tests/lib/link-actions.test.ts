@@ -7,7 +7,7 @@ const cookies: Record<string, string> = {};
 mock.module('@tanstack/react-start', () => ({
   createServerFn: () => ({
     inputValidator: () => ({
-      handler: (fn: Function) => fn,
+      handler: (fn: (...args: unknown[]) => unknown) => fn,
     }),
   }),
 }));
@@ -101,7 +101,7 @@ describe('fetchMetadataAction', function () {
       await fetchMetadataAction({data: {url: 'https://example.com'}});
       expect.fail('should have thrown');
     } catch (error: any) {
-      expect(error).toBeDefined();
+      expect(error.message).toBe('Unauthorized');
     }
   });
 });
@@ -130,7 +130,7 @@ describe('createLinkAction', function () {
       await createLinkAction({data: {url: 'https://example.com', title: 'Test'}});
       expect.fail('should have thrown');
     } catch (error: any) {
-      expect(error).toBeDefined();
+      expect(error.message).toBe('Unauthorized');
     }
   });
 });
@@ -159,7 +159,7 @@ describe('updateLinkAction', function () {
       await updateLinkAction({data: {id: 1, title: 'Updated'}});
       expect.fail('should have thrown');
     } catch (error: any) {
-      expect(error).toBeDefined();
+      expect(error.message).toBe('Unauthorized');
     }
   });
 });
@@ -187,7 +187,7 @@ describe('resetEnrichmentAction', function () {
       await resetEnrichmentAction({data: {id: 1}});
       expect.fail('should have thrown');
     } catch (error: any) {
-      expect(error).toBeDefined();
+      expect(error.message).toBe('Unauthorized');
     }
   });
 });
@@ -215,7 +215,7 @@ describe('refetchLinkAction', function () {
       await refetchLinkAction({data: {id: 1}});
       expect.fail('should have thrown');
     } catch (error: any) {
-      expect(error).toBeDefined();
+      expect(error.message).toBe('Unauthorized');
     }
   });
 });
@@ -243,7 +243,7 @@ describe('suggestTagsAction', function () {
       await suggestTagsAction({data: {id: 1}});
       expect.fail('should have thrown');
     } catch (error: any) {
-      expect(error).toBeDefined();
+      expect(error.message).toBe('Unauthorized');
     }
   });
 });
@@ -271,7 +271,7 @@ describe('deleteLinkAction', function () {
       await deleteLinkAction({data: {id: 1}});
       expect.fail('should have thrown');
     } catch (error: any) {
-      expect(error).toBeDefined();
+      expect(error.message).toBe('Unauthorized');
     }
   });
 });

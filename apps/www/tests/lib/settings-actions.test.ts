@@ -7,7 +7,7 @@ const cookies: Record<string, string> = {};
 mock.module('@tanstack/react-start', () => ({
   createServerFn: () => ({
     inputValidator: () => ({
-      handler: (fn: Function) => fn,
+      handler: (fn: (...args: unknown[]) => unknown) => fn,
     }),
   }),
 }));
@@ -87,7 +87,7 @@ describe('setSettingAction', function () {
       await setSettingAction({data: {key: 'theme', value: 'dark'}});
       expect.fail('should have thrown');
     } catch (error: any) {
-      expect(error).toBeDefined();
+      expect(error.message).toBe('Unauthorized');
     }
   });
 });

@@ -7,7 +7,7 @@ const cookies: Record<string, string> = {};
 mock.module('@tanstack/react-start', () => ({
   createServerFn: () => ({
     inputValidator: () => ({
-      handler: (fn: Function) => fn,
+      handler: (fn: (...args: unknown[]) => unknown) => fn,
     }),
   }),
 }));
@@ -93,7 +93,7 @@ describe('renameTagAction', function () {
       await renameTagAction({data: {id: 1, text: 'new-name'}});
       expect.fail('should have thrown');
     } catch (error: any) {
-      expect(error).toBeDefined();
+      expect(error.message).toBe('Unauthorized');
     }
   });
 });
@@ -121,7 +121,7 @@ describe('mergeTagAction', function () {
       await mergeTagAction({data: {aliasId: 1, canonicalTagId: 2}});
       expect.fail('should have thrown');
     } catch (error: any) {
-      expect(error).toBeDefined();
+      expect(error.message).toBe('Unauthorized');
     }
   });
 });
@@ -149,7 +149,7 @@ describe('deleteTagAction', function () {
       await deleteTagAction({data: {id: 1}});
       expect.fail('should have thrown');
     } catch (error: any) {
-      expect(error).toBeDefined();
+      expect(error.message).toBe('Unauthorized');
     }
   });
 });
