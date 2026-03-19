@@ -140,6 +140,103 @@ describe('apiFetch', () => {
     }
   });
 
+  it('should retry on transient HTTP errors and succeed', async () => {
+    init({apiUrl: 'http://localhost:3001'});
+
+    let attempts = 0;
+
+    global.fetch = mock(async () => {
+      attempts++;
+      if (attempts <= 2) {
+        return {
+          ok: false,
+          status: 502,
+          statusText: 'Bad Gateway',
+          text: async () => '',
+        } as unknown as Response;
+      }
+      return {
+        ok: true,
+        json: async () => ({recovered: true}),
+      } as unknown as Response;
+    });
+
+    const result = await apiFetch('/api/test');
+
+    expect(result).toEqual({recovered: true});
+    expect(attempts).toBe(3);
+  });
+
+  it('should throw after exhausting retries on transient errors', async () => {
+    init({apiUrl: 'http://localhost:3001'});
+
+    let attempts = 0;
+
+    global.fetch = mock(async () => {
+      attempts++;
+      return {
+        ok: false,
+        status: 502,
+        statusText: 'Bad Gateway',
+        text: async () => 'upstream down',
+      } as unknown as Response;
+    });
+
+    try {
+      await apiFetch('/api/test');
+      expect.unreachable('should have thrown');
+    } catch (error) {
+      expect((error as Error).message).toBe('API error: 502 Bad Gateway — upstream down');
+    }
+
+    expect(attempts).toBe(4); // 1 initial + 3 retries
+  });
+
+  it('should not retry on non-transient HTTP errors', async () => {
+    init({apiUrl: 'http://localhost:3001'});
+
+    let attempts = 0;
+
+    global.fetch = mock(async () => {
+      attempts++;
+      return {
+        ok: false,
+        status: 404,
+        statusText: 'Not Found',
+        text: async () => 'not found',
+      } as unknown as Response;
+    });
+
+    try {
+      await apiFetch('/api/test');
+      expect.unreachable('should have thrown');
+    } catch (error) {
+      expect((error as Error).message).toBe('API error: 404 Not Found — not found');
+    }
+
+    expect(attempts).toBe(1);
+  });
+
+  it('should retry on network errors', async () => {
+    init({apiUrl: 'http://localhost:3001'});
+
+    let attempts = 0;
+
+    global.fetch = mock(async () => {
+      attempts++;
+      if (attempts <= 2) throw new Error('ECONNREFUSED');
+      return {
+        ok: true,
+        json: async () => ({recovered: true}),
+      } as unknown as Response;
+    });
+
+    const result = await apiFetch('/api/test');
+
+    expect(result).toEqual({recovered: true});
+    expect(attempts).toBe(3);
+  });
+
   it('should handle unreadable error body gracefully', async () => {
     init({apiUrl: 'http://localhost:3001'});
 

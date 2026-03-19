@@ -18,6 +18,10 @@ function getConfig(): ClientConfig {
   return config;
 }
 
+const TRANSIENT_STATUS_CODES = new Set([502, 503, 504]);
+const MAX_RETRIES = 3;
+const RETRY_BASE_MS = 500;
+
 export async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const {apiUrl, apiKey} = getConfig();
 
@@ -30,15 +34,33 @@ export async function apiFetch<T>(path: string, options?: RequestInit): Promise<
     headers['Authorization'] = `Bearer ${apiKey}`;
   }
 
-  const res = await fetch(`${apiUrl}${path}`, {
-    ...options,
-    headers,
-  });
+  let lastError: Error | null = null;
 
-  if (!res.ok) {
-    const body = await res.text().catch(() => '');
-    throw new Error(`API error: ${res.status} ${res.statusText} — ${body}`);
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    if (attempt > 0) {
+      const delay = RETRY_BASE_MS * 2 ** (attempt - 1);
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+
+    try {
+      const res = await fetch(`${apiUrl}${path}`, {
+        ...options,
+        headers,
+      });
+
+      if (res.ok) return res.json();
+
+      const body = await res.text().catch(() => '');
+      lastError = new Error(`API error: ${res.status} ${res.statusText} — ${body}`);
+
+      if (!TRANSIENT_STATUS_CODES.has(res.status)) throw lastError;
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+      // non-transient API errors (4xx, 500, 501) — don't retry
+      if (lastError.message.startsWith('API error:')) throw lastError;
+      // network errors (fetch threw) are transient — retry
+    }
   }
 
-  return res.json();
+  throw lastError!;
 }
