@@ -11,7 +11,7 @@ export const tagAlias = pgTable(
       .notNull()
       .references(() => tag.id, {onDelete: 'restrict'}),
     source: varchar('source', {length: 20}).notNull(),
-    createdAt: timestamp('created_at', {withTimezone: true}).notNull().defaultNow(),
+    createDate: timestamp('create_date', {precision: 6, withTimezone: true}).notNull().defaultNow(),
   },
   (table) => ({
     canonicalIdx: index('idx_tag_alias_canonical').on(table.canonicalTagId),

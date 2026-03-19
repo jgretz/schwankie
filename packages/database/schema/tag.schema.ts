@@ -6,7 +6,7 @@ export const tag = pgTable(
   'tag',
   {
     id: serial('id').primaryKey(),
-    text: varchar('text', {length: 200}).notNull().unique(),
+    text: varchar('text', {length: 200}).notNull(),
     normalizedAt: timestamp('normalized_at', {withTimezone: true}),
     ...dates,
   },
