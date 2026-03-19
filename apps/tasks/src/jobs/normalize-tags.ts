@@ -1,4 +1,5 @@
 import {getCanonicalTags, getTagsNeedingNormalization, markTagNormalized, mergeTag} from 'client';
+import {generate} from '../lib/ollama';
 
 type OllamaMerge = {merge: true; canonical: string};
 type OllamaNoMerge = {merge: false};
@@ -61,19 +62,11 @@ async function callOllama(
   model: string,
   prompt: string,
 ): Promise<OllamaResponse> {
-  const response = await fetch(`${ollamaUrl}/api/generate`, {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({model, prompt, stream: false}),
-    signal: AbortSignal.timeout(60_000),
+  return generate<OllamaResponse>({
+    url: ollamaUrl,
+    model,
+    prompt,
   });
-
-  if (!response.ok) {
-    throw new Error(`Ollama HTTP ${response.status}`);
-  }
-
-  const body = (await response.json()) as {response: string};
-  return JSON.parse(body.response) as OllamaResponse;
 }
 
 export async function normalizeTags(ollamaUrl: string, ollamaModel: string): Promise<void> {
