@@ -1,18 +1,8 @@
 import {useCallback, useState} from 'react';
+import {type SchemaConfig, validateAll, validateField} from './form-validation';
 
-type ValidationRule<T> = {
-  validate: (value: T) => boolean;
-  message: string;
-};
-
-type FieldConfig<T> = {
-  required?: boolean;
-  rules?: ValidationRule<T>[];
-};
-
-type SchemaConfig<T extends Record<string, unknown>> = {
-  [K in keyof T]?: FieldConfig<T[K]>;
-};
+export type {FieldConfig, SchemaConfig} from './form-validation';
+export type {ValidationRule} from './form-validation';
 
 type UseFormValidationReturn = {
   errors: Record<string, string | undefined>;
@@ -29,58 +19,25 @@ export function useFormValidation<T extends Record<string, unknown>>(
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [errors, setErrors] = useState<Record<string, string | undefined>>({});
 
-  // Helper to validate a single field
-  const validateField = useCallback(
-    (fieldName: string, value: unknown): string | undefined => {
-      const config = schema[fieldName];
-
-      if (config?.required && !value) {
-        return 'Required';
-      }
-
-      if (value && config?.rules) {
-        for (const rule of config.rules) {
-          if (!rule.validate(value as T[string])) {
-            return rule.message;
-          }
-        }
-      }
-
-      return undefined;
-    },
-    [schema],
-  );
-
   const validate = useCallback(() => {
-    const newErrors: Record<string, string | undefined> = {};
-    let isValid = true;
+    const result = validateAll(schema, values);
 
-    for (const fieldName of Object.keys(schema)) {
-      const value = values[fieldName];
-      const fieldError = validateField(fieldName, value);
-
-      if (fieldError) {
-        newErrors[fieldName] = fieldError;
-        isValid = false;
-      }
-    }
-
-    setErrors(newErrors);
+    setErrors(result.errors);
     setTouched((prev) => ({
       ...prev,
       ...Object.keys(schema).reduce((acc, key) => ({...acc, [key]: true}), {}),
     }));
-    return isValid;
-  }, [schema, values, validateField]);
+    return result.isValid;
+  }, [schema, values]);
 
   const touch = useCallback(
     (field: string) => {
       setTouched((prev) => ({...prev, [field]: true}));
       const value = values[field];
-      const fieldError = validateField(field, value);
+      const fieldError = validateField(schema[field], value);
       setErrors((prev) => ({...prev, [field]: fieldError}));
     },
-    [values, validateField],
+    [schema, values],
   );
 
   const reset = useCallback(() => {
