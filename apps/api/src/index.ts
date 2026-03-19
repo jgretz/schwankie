@@ -5,7 +5,6 @@ import {parseEnv} from 'env';
 import {init as initDomain} from '@domain';
 import {authMiddleware} from './middleware/auth';
 import {healthRoutes} from './routes/health';
-import {helloRoutes} from './routes/hello';
 import {tagsRouter} from './routes/tags';
 import {linksRoutes} from './routes/links';
 import {metadataRoutes} from './routes/metadata';
@@ -36,7 +35,6 @@ app.route('/', settingsRouter);
 
 // protected
 app.use('/api/*', authMiddleware());
-app.route('/api/hello', helloRoutes);
 app.route('/api/metadata', metadataRoutes);
 
 app.onError((err, c) => {
