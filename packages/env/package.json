@@ -1,5 +1,6 @@
 {
   "name": "env",
+  "private": true,
   "type": "module",
   "module": "src/index.ts",
   "dependencies": {
