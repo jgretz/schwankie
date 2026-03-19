@@ -14,7 +14,6 @@ Parse arguments:
   - "budget" -> Phase 2 only (prompt budget)
   - "memories" -> Phase 3 only (memory hygiene)
   - "rules" -> Phase 4 only (rule quality)
-  - "violations" -> Phase 4b only (rule violation hot-spots)
   - "docs" -> Phase 5 only (doc freshness)
   - "skills" -> Phase 6 only (skill quality)
   - "timing" -> Phase 7 only
@@ -96,24 +95,30 @@ Report how many were merged and how many were decayed.
 
 ## Phase 4: Rule Quality Assessment
 
-Call `analyze_rule_quality` (no parameters — uses default repo).
+Scan two sets of files and grade each with appropriate criteria:
 
-The tool scans `.claude/rules/*.md` (as `rule` type) and `docs/*.md` (as `doc` type,
-excluding `docs/research/` and `docs/decisions/`), grades each file with `parseRuleQuality`,
-and aggregates via `analyzeRulesReport`.
+**Set 1 — `.claude/rules/*.md`** (prescriptive rules, `docType: 'rule'`):
 
-From the response, extract `reports` (per-file) and `summary` (aggregate).
+1. Read the file
+2. Evaluate against these criteria (from the Anthropic skill-creator blog):
+   - **Actionability**: Does every rule give a concrete do/don't? Flag vague directives ("be careful", "consider", "try to")
+   - **Testability**: Could a reviewer verify compliance? Rules that can't be checked are noise
+   - **Non-redundancy**: Does this rule duplicate another rule file or a global rule in `~/.claude/rules/`?
+   - **Currency**: Does the rule reference files, functions, or patterns that still exist in the codebase? Spot-check 2-3 specific claims by grepping
+   - **Scope clarity**: Is it clear when this rule applies and when it doesn't?
 
-### Overall Health
+**Set 2 — `docs/*.md`** (domain docs, `docType: 'doc'`, skip `docs/research/` and `docs/decisions/`):
 
-Report the summary health classification:
+1. Read the file
+2. Evaluate against doc-appropriate criteria (descriptive, not prescriptive):
+   - **Discoverability**: Is the doc linked from CLAUDE.md? Orphaned docs rot.
+   - **Currency**: Does it reference files and patterns that still exist? Spot-check 2-3 claims by grepping
+   - **Conciseness**: Excessive vague language (3+ phrases) suggests low-signal prose
+   - **Examples**: Code blocks help illustrate architectural intent
 
-- **Overall Health**: `summary.overallHealth` (healthy / needs-attention / degraded)
-- **Grade Distribution**: `summary.gradeDistribution` (counts per grade A/B/C/D)
+Grade each file: A (exemplary), B (solid), C (has issues), D (needs rework).
 
-### Per-File Table
-
-Build from `reports` array:
+Report a combined table:
 
 | File                              | Type | Lines | Grade | Issues                               |
 | --------------------------------- | ---- | ----- | ----- | ------------------------------------ |
@@ -121,74 +126,10 @@ Build from `reports` array:
 | .claude/rules/react-components.md | rule | 142   | B     | Long; could split SSR vs composition |
 | docs/architecture.md              | doc  | 45    | A     | None                                 |
 | docs/worktrees.md                 | doc  | 60    | C     | Not linked from CLAUDE.md            |
+| ...                               |      |       |       |                                      |
 
-- `File`: `report.filePath`
-- `Type`: `report.docType` (rule or doc)
-- `Lines`: `report.lineCount`
-- `Grade`: `report.grade`
-- `Issues`: comma-separated `report.findings[].message`, or "None" if empty
-
-### Worst Rules
-
-List entries from `summary.worstRules` with their specific findings:
-
-> **{filePath}** (Grade {grade}): {findings list}
-
-### Fix Mode
-
-If `fix` flag is present: for each D-grade file in `summary.worstRules`, call `create_idea`
-with a description of what needs fixing.
-
----
-
-## Phase 4b: Rule Violation Hot-Spots
-
-Call `analyze_rule_violations` (no parameters — it uses the default repo).
-
-Check `totalMatches === 0`: if yes, report "No violation patterns matched against task history — either rules lack WRONG examples or task history is sparse" and skip remaining steps.
-
-**Report overview table** — one row per rule file with violations, sorted by matchCount descending:
-
-| Rule File | Patterns Extracted | Violations Found | Top Pattern |
-| --------- | ------------------ | ---------------- | ----------- |
-
-- `Rule File`: from `byRule[].ruleFile`
-- `Patterns Extracted`: from `byRule[].patternsExtracted`
-- `Violations Found`: from `byRule[].matchCount`
-- `Top Pattern`: the pattern string with the most matches in that rule (truncated to 60 chars)
-
-Only include rules with `matchCount > 0`.
-
-**Report hot patterns table** — patterns matched by 2+ distinct tasks, sorted by matchCount descending:
-
-| Pattern (truncated) | Rule File | Tasks Matched | Category |
-| ------------------- | --------- | ------------- | -------- |
-
-- Source: `hotPatterns[]` array from the report
-- `Category`: from the underlying pattern's category (`wrong_example` or `banned_practice`)
-- If `hotPatterns` is empty: "No hot patterns (no pattern matched 2+ tasks)"
-
-**Report affected tasks table** — for each hot pattern, list the tasks that matched:
-
-| Task ID (short) | Title | Match Source | Matched Text (truncated) |
-| --------------- | ----- | ------------ | ------------------------ |
-
-- Source: drill into `byRule[].patterns[].matches[]` for hot pattern entries
-- `Match Source`: attention / note / learning
-- Limit to top 10 task matches total to avoid context bloat
-
-**Interpretation guidance:**
-
-- Hot `wrong_example` patterns: "Workers are repeating anti-patterns documented in WRONG examples — the rule's guidance may not be prominent enough"
-- Hot `banned_practice` patterns: "Workers are violating explicit prohibitions — consider adding WRONG/CORRECT code examples to make the rule more actionable"
-- Rules with many patterns extracted but zero matches: "Rule has good coverage of anti-patterns but no violations detected — rule is effective or task history is sparse"
-
-**If `fix` flag:** For each hot pattern with `matchCount >= 3`, call `create_idea`:
-
-```
-prompt: "[introspect:violations] {ruleFile}: hot pattern '{pattern}' matched {matchCount} tasks — strengthen guidance or add WRONG/CORRECT examples"
-impact: 3
-```
+If `fix` flag is present: for each D-grade file, call `create_idea` with a description
+of what needs fixing.
 
 ---
 
@@ -312,11 +253,11 @@ and track whether individual rule compliance is improving or degrading over time
 
 2. Report table with trend column:
 
-| Rule File        | Tags          | Governed Paths           | Matching Tasks | Attention Rate | Ratio | Signal            | Trend       |
-| ---------------- | ------------- | ------------------------ | -------------- | -------------- | ----- | ----------------- | ----------- |
-| security.md      | feat,fix      | packages/store, apps/mcp | 8              | 50%            | 2.3×  | ⚠ high            | ↑ degrading |
-| testing-local.md | feat,fix,test | packages/store/tests     | 12             | 25%            | 1.1×  | —                 | ↓ improving |
-| typecheck.md     | feat,fix      | apps/mcp, apps/hud       | 15             | 13%            | 0.6×  | ✓ well-understood | → stable    |
+| Rule File        | Tags          | Governed Paths           | Matching Tasks | Attention Rate | Ratio | Signal            | Trend           |
+| ---------------- | ------------- | ------------------------ | -------------- | -------------- | ----- | ----------------- | --------------- |
+| security.md      | feat,fix      | packages/store, apps/mcp | 8              | 50%            | 2.3×  | ⚠ high            | ↑ degrading     |
+| testing-local.md | feat,fix,test | packages/store/tests     | 12             | 25%            | 1.1×  | —                 | ↓ improving     |
+| typecheck.md     | feat,fix      | apps/mcp, apps/hud       | 15             | 13%            | 0.6×  | ✓ well-understood | → stable        |
 
 3. Signal and trend values:
    - **Signal** (compliance level):
@@ -337,6 +278,7 @@ and track whether individual rule compliance is improving or degrading over time
    - **Degrading (any signal)** (↑ degrading): "Rule compliance worsening — review for ambiguity and update if needed"
    - **Improving (any signal)** (↓ improving): "Rule compliance improving — current approach is working; no action needed"
    - **Well-understood** (✓): No action needed (positive signal)
+
 
 ### 5d. Regression Trend Detection
 
@@ -635,20 +577,19 @@ Bullet list of recommendations from the analysis:
 
 ## Summary
 
-| Phase      | Status                           | Key Finding                         |
-| ---------- | -------------------------------- | ----------------------------------- |
-| Links      | pass/warn/fail                   | N broken links                      |
-| Budget     | pass/warn/fail                   | ~N tokens overhead                  |
-| Memories   | healthy/attention                | N overlaps, N stale                 |
-| Rules      | A-D                              | N rules need work                   |
-| Violations | hot-spots/clean/no data          | N hot patterns, M total violations  |
-| Docs       | current/stale/stale+correlated   | N docs older than 90d, M correlated |
-| Skills     | A-D                              | N skills need work                  |
-| Timing     | pass/warn/attention              | N transitions, M bottlenecks        |
-| Plans      | healthy/needs attention/degraded | N plans analyzed, M need work       |
-| Attention  | healthy/elevated/high            | N attention events, M hot tasks     |
-| Access     | data/no data                     | N files, M extraction candidates    |
-| Patterns   | covered/gaps found/no data       | N patterns, M high-frequency        |
+| Phase     | Status                           | Key Finding                         |
+| --------- | -------------------------------- | ----------------------------------- |
+| Links     | pass/warn/fail                   | N broken links                      |
+| Budget    | pass/warn/fail                   | ~N tokens overhead                  |
+| Memories  | healthy/attention                | N overlaps, N stale                 |
+| Rules     | A-D                              | N rules need work                   |
+| Docs      | current/stale/stale+correlated   | N docs older than 90d, M correlated |
+| Skills    | A-D                              | N skills need work                  |
+| Timing    | pass/warn/attention              | N transitions, M bottlenecks        |
+| Plans     | healthy/needs attention/degraded | N plans analyzed, M need work       |
+| Attention | healthy/elevated/high            | N attention events, M hot tasks     |
+| Access    | data/no data                     | N files, M extraction candidates    |
+| Patterns  | covered/gaps found/no data       | N patterns, M high-frequency        |
 
 **Overall Health: [healthy / needs attention / degraded]**
 
@@ -675,8 +616,7 @@ If `report` flag: write to `.claude/reviews/introspect-YYYY-MM-DD.md`.
 
 - Phase 1+2 are a single `evaluate_context` call — always run together
 - Phase 3 requires N recall calls (one per rule file) — batch mentally, ~15 calls
-- Phase 4 requires 1 analyze_rule_quality call — cheap (single MCP tool call)
-- Phase 4b requires 1 analyze_rule_violations call — cheap
+- Phase 4 requires reading ~15 rule files + ~20 docs/\*.md files + spot-check greps — moderate context cost
 - Phase 5 requires N git log calls + 1 `list_tasks` call (for failure correlation) — moderate context cost
 - Phase 6 requires reading ~3-4 command files — cheap
 - Phase 7 requires 1 analyze_phase_timings call — cheap
@@ -695,8 +635,6 @@ For single-phase runs, skip the summary table and just show that phase's detail.
 - /introspect links -> just check broken links
 - /introspect memories fix -> evaluate memories and auto-consolidate/decay
 - /introspect rules -> evaluate rule file quality
-- /introspect violations -> rule violation hot-spot analysis
-- /introspect violations fix -> analyze violations and log ideas for hot patterns
 - /introspect all report -> full evaluation, save report
 - /introspect all fix report -> full evaluation, auto-fix, save report
 - /introspect timing -> phase duration analysis across completed tasks

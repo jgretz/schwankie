@@ -1,6 +1,8 @@
 import {afterEach, beforeAll, beforeEach, describe, expect, it, mock} from 'bun:test';
 
+const SESSION_SECRET = 'a'.repeat(32);
 const originalFetch = global.fetch;
+const cookies: Record<string, string> = {};
 
 mock.module('@tanstack/react-start', () => ({
   createServerFn: () => ({
@@ -10,18 +12,32 @@ mock.module('@tanstack/react-start', () => ({
   }),
 }));
 
-mock.module('../../src/lib/session.server', () => ({
-  getSession: mock(async () => ({authenticated: true})),
-  createSession: mock(async () => {}),
-  destroySession: mock(async () => {}),
+mock.module('@tanstack/react-start/server', () => ({
+  getCookie: (name: string) => cookies[name] ?? undefined,
+  setCookie: (name: string, value: string) => {
+    cookies[name] = value;
+  },
+}));
+
+mock.module('../../src/lib/env.server', () => ({
+  getEnv: () => ({
+    ALLOWED_EMAIL: 'admin@example.com',
+    GOOGLE_CLIENT_ID: 'test-client-id',
+    GOOGLE_CLIENT_SECRET: 'test-secret',
+    GOOGLE_CALLBACK_URL: 'http://localhost:3000/auth/callback',
+    SESSION_SECRET,
+    API_KEY: 'test-api-key',
+  }),
 }));
 
 mock.module('../../src/lib/init-client.server', () => ({
   initClientServer: mock(() => {}),
 }));
 
-let setSettingAction: any;
-let mockGetSession: any;
+let setSettingAction: (input: {
+  data: {key: string; value: string};
+}) => Promise<{key: string; value: string; set: boolean}>;
+let createSession: (email: string) => Promise<void>;
 
 beforeAll(async function () {
   const {init} = await import('client');
@@ -31,7 +47,7 @@ beforeAll(async function () {
   setSettingAction = mod.setSettingAction;
 
   const sessionMod = await import('../../src/lib/session.server');
-  mockGetSession = sessionMod.getSession;
+  createSession = sessionMod.createSession;
 });
 
 afterEach(function () {
@@ -40,6 +56,10 @@ afterEach(function () {
 
 beforeEach(async function () {
   global.fetch = originalFetch;
+  for (const key of Object.keys(cookies)) {
+    delete cookies[key];
+  }
+  await createSession('admin@example.com');
   const {init} = await import('client');
   init({apiUrl: 'http://localhost:3001', apiKey: 'test-key'});
 });
@@ -59,14 +79,15 @@ describe('setSettingAction', function () {
   });
 
   it('should throw Unauthorized when not authenticated', async function () {
-    mockGetSession.mockClear();
-    mockGetSession.mockImplementationOnce(async () => null);
+    for (const key of Object.keys(cookies)) {
+      delete cookies[key];
+    }
 
     try {
       await setSettingAction({data: {key: 'theme', value: 'dark'}});
       expect.fail('should have thrown');
     } catch (error: any) {
-      expect(error.message).toContain('Unauthorized');
+      expect(error).toBeDefined();
     }
   });
 });

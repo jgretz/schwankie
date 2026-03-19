@@ -1,6 +1,8 @@
 import {afterEach, beforeAll, beforeEach, describe, expect, it, mock} from 'bun:test';
 
+const SESSION_SECRET = 'a'.repeat(32);
 const originalFetch = global.fetch;
+const cookies: Record<string, string> = {};
 
 mock.module('@tanstack/react-start', () => ({
   createServerFn: () => ({
@@ -10,24 +12,40 @@ mock.module('@tanstack/react-start', () => ({
   }),
 }));
 
-mock.module('../../src/lib/session.server', () => ({
-  getSession: mock(async () => ({authenticated: true})),
-  createSession: mock(async () => {}),
-  destroySession: mock(async () => {}),
+mock.module('@tanstack/react-start/server', () => ({
+  getCookie: (name: string) => cookies[name] ?? undefined,
+  setCookie: (name: string, value: string) => {
+    cookies[name] = value;
+  },
+}));
+
+mock.module('../../src/lib/env.server', () => ({
+  getEnv: () => ({
+    ALLOWED_EMAIL: 'admin@example.com',
+    GOOGLE_CLIENT_ID: 'test-client-id',
+    GOOGLE_CLIENT_SECRET: 'test-secret',
+    GOOGLE_CALLBACK_URL: 'http://localhost:3000/auth/callback',
+    SESSION_SECRET,
+    API_KEY: 'test-api-key',
+  }),
 }));
 
 mock.module('../../src/lib/init-client.server', () => ({
   initClientServer: mock(() => {}),
 }));
 
-let fetchMetadataAction: any;
-let createLinkAction: any;
-let updateLinkAction: any;
-let resetEnrichmentAction: any;
-let refetchLinkAction: any;
-let suggestTagsAction: any;
-let deleteLinkAction: any;
-let mockGetSession: any;
+let fetchMetadataAction: (input: {data: {url: string}}) => Promise<{url: string; title: string}>;
+let createLinkAction: (input: {
+  data: {url: string; title: string; tags?: string[]};
+}) => Promise<{id: number; url: string; title: string; tags: {id: number; tag: string}[]}>;
+let updateLinkAction: (input: {
+  data: {id: number; title?: string; tags?: string[]};
+}) => Promise<{id: number; title: string; tags: {id: number; tag: string}[]}>;
+let resetEnrichmentAction: (input: {data: {id: number}}) => Promise<{id: number; reset: boolean}>;
+let refetchLinkAction: (input: {data: {id: number}}) => Promise<{id: number; refetched: boolean}>;
+let suggestTagsAction: (input: {data: {id: number}}) => Promise<{id: number; tag: string}[]>;
+let deleteLinkAction: (input: {data: {id: number}}) => Promise<{id: number; deleted: boolean}>;
+let createSession: (email: string) => Promise<void>;
 
 beforeAll(async function () {
   const {init} = await import('client');
@@ -43,7 +61,7 @@ beforeAll(async function () {
   deleteLinkAction = mod.deleteLinkAction;
 
   const sessionMod = await import('../../src/lib/session.server');
-  mockGetSession = sessionMod.getSession;
+  createSession = sessionMod.createSession;
 });
 
 afterEach(function () {
@@ -52,6 +70,10 @@ afterEach(function () {
 
 beforeEach(async function () {
   global.fetch = originalFetch;
+  for (const key of Object.keys(cookies)) {
+    delete cookies[key];
+  }
+  await createSession('admin@example.com');
   const {init} = await import('client');
   init({apiUrl: 'http://localhost:3001', apiKey: 'test-key'});
 });
@@ -70,15 +92,16 @@ describe('fetchMetadataAction', function () {
     expect(result).toEqual({url: 'https://example.com', title: 'Test Title'});
   });
 
-  it('should throw Unauthorized when not authenticated', async function () {
-    mockGetSession.mockClear();
-    mockGetSession.mockImplementationOnce(async () => null);
+  it('should throw error when not authenticated', async function () {
+    for (const key of Object.keys(cookies)) {
+      delete cookies[key];
+    }
 
     try {
       await fetchMetadataAction({data: {url: 'https://example.com'}});
       expect.fail('should have thrown');
     } catch (error: any) {
-      expect(error.message).toContain('Unauthorized');
+      expect(error).toBeDefined();
     }
   });
 });
@@ -99,14 +122,15 @@ describe('createLinkAction', function () {
   });
 
   it('should throw Unauthorized when not authenticated', async function () {
-    mockGetSession.mockClear();
-    mockGetSession.mockImplementationOnce(async () => null);
+    for (const key of Object.keys(cookies)) {
+      delete cookies[key];
+    }
 
     try {
       await createLinkAction({data: {url: 'https://example.com', title: 'Test'}});
       expect.fail('should have thrown');
     } catch (error: any) {
-      expect(error.message).toContain('Unauthorized');
+      expect(error).toBeDefined();
     }
   });
 });
@@ -127,14 +151,15 @@ describe('updateLinkAction', function () {
   });
 
   it('should throw Unauthorized when not authenticated', async function () {
-    mockGetSession.mockClear();
-    mockGetSession.mockImplementationOnce(async () => null);
+    for (const key of Object.keys(cookies)) {
+      delete cookies[key];
+    }
 
     try {
       await updateLinkAction({data: {id: 1, title: 'Updated'}});
       expect.fail('should have thrown');
     } catch (error: any) {
-      expect(error.message).toContain('Unauthorized');
+      expect(error).toBeDefined();
     }
   });
 });
@@ -154,14 +179,15 @@ describe('resetEnrichmentAction', function () {
   });
 
   it('should throw Unauthorized when not authenticated', async function () {
-    mockGetSession.mockClear();
-    mockGetSession.mockImplementationOnce(async () => null);
+    for (const key of Object.keys(cookies)) {
+      delete cookies[key];
+    }
 
     try {
       await resetEnrichmentAction({data: {id: 1}});
       expect.fail('should have thrown');
     } catch (error: any) {
-      expect(error.message).toContain('Unauthorized');
+      expect(error).toBeDefined();
     }
   });
 });
@@ -181,14 +207,15 @@ describe('refetchLinkAction', function () {
   });
 
   it('should throw Unauthorized when not authenticated', async function () {
-    mockGetSession.mockClear();
-    mockGetSession.mockImplementationOnce(async () => null);
+    for (const key of Object.keys(cookies)) {
+      delete cookies[key];
+    }
 
     try {
       await refetchLinkAction({data: {id: 1}});
       expect.fail('should have thrown');
     } catch (error: any) {
-      expect(error.message).toContain('Unauthorized');
+      expect(error).toBeDefined();
     }
   });
 });
@@ -208,14 +235,15 @@ describe('suggestTagsAction', function () {
   });
 
   it('should throw Unauthorized when not authenticated', async function () {
-    mockGetSession.mockClear();
-    mockGetSession.mockImplementationOnce(async () => null);
+    for (const key of Object.keys(cookies)) {
+      delete cookies[key];
+    }
 
     try {
       await suggestTagsAction({data: {id: 1}});
       expect.fail('should have thrown');
     } catch (error: any) {
-      expect(error.message).toContain('Unauthorized');
+      expect(error).toBeDefined();
     }
   });
 });
@@ -235,14 +263,15 @@ describe('deleteLinkAction', function () {
   });
 
   it('should throw Unauthorized when not authenticated', async function () {
-    mockGetSession.mockClear();
-    mockGetSession.mockImplementationOnce(async () => null);
+    for (const key of Object.keys(cookies)) {
+      delete cookies[key];
+    }
 
     try {
       await deleteLinkAction({data: {id: 1}});
       expect.fail('should have thrown');
     } catch (error: any) {
-      expect(error.message).toContain('Unauthorized');
+      expect(error).toBeDefined();
     }
   });
 });

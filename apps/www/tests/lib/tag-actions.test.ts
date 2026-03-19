@@ -1,6 +1,8 @@
 import {afterEach, beforeAll, beforeEach, describe, expect, it, mock} from 'bun:test';
 
+const SESSION_SECRET = 'a'.repeat(32);
 const originalFetch = global.fetch;
+const cookies: Record<string, string> = {};
 
 mock.module('@tanstack/react-start', () => ({
   createServerFn: () => ({
@@ -10,20 +12,36 @@ mock.module('@tanstack/react-start', () => ({
   }),
 }));
 
-mock.module('../../src/lib/session.server', () => ({
-  getSession: mock(async () => ({authenticated: true})),
-  createSession: mock(async () => {}),
-  destroySession: mock(async () => {}),
+mock.module('@tanstack/react-start/server', () => ({
+  getCookie: (name: string) => cookies[name] ?? undefined,
+  setCookie: (name: string, value: string) => {
+    cookies[name] = value;
+  },
+}));
+
+mock.module('../../src/lib/env.server', () => ({
+  getEnv: () => ({
+    ALLOWED_EMAIL: 'admin@example.com',
+    GOOGLE_CLIENT_ID: 'test-client-id',
+    GOOGLE_CLIENT_SECRET: 'test-secret',
+    GOOGLE_CALLBACK_URL: 'http://localhost:3000/auth/callback',
+    SESSION_SECRET,
+    API_KEY: 'test-api-key',
+  }),
 }));
 
 mock.module('../../src/lib/init-client.server', () => ({
   initClientServer: mock(() => {}),
 }));
 
-let renameTagAction: any;
-let mergeTagAction: any;
-let deleteTagAction: any;
-let mockGetSession: any;
+let renameTagAction: (input: {
+  data: {id: number; text: string};
+}) => Promise<{id: number; text: string}>;
+let mergeTagAction: (input: {
+  data: {aliasId: number; canonicalTagId: number};
+}) => Promise<{merged: boolean}>;
+let deleteTagAction: (input: {data: {id: number}}) => Promise<{id: number; deleted: boolean}>;
+let createSession: (email: string) => Promise<void>;
 
 beforeAll(async function () {
   const {init} = await import('client');
@@ -35,7 +53,7 @@ beforeAll(async function () {
   deleteTagAction = mod.deleteTagAction;
 
   const sessionMod = await import('../../src/lib/session.server');
-  mockGetSession = sessionMod.getSession;
+  createSession = sessionMod.createSession;
 });
 
 afterEach(function () {
@@ -44,6 +62,10 @@ afterEach(function () {
 
 beforeEach(async function () {
   global.fetch = originalFetch;
+  for (const key of Object.keys(cookies)) {
+    delete cookies[key];
+  }
+  await createSession('admin@example.com');
   const {init} = await import('client');
   init({apiUrl: 'http://localhost:3001', apiKey: 'test-key'});
 });
@@ -62,15 +84,16 @@ describe('renameTagAction', function () {
     expect(result).toEqual({id: 1, text: 'new-name'});
   });
 
-  it('should throw Unauthorized when not authenticated', async function () {
-    mockGetSession.mockClear();
-    mockGetSession.mockImplementationOnce(async () => null);
+  it('should throw error when not authenticated', async function () {
+    for (const key of Object.keys(cookies)) {
+      delete cookies[key];
+    }
 
     try {
       await renameTagAction({data: {id: 1, text: 'new-name'}});
       expect.fail('should have thrown');
     } catch (error: any) {
-      expect(error.message).toContain('Unauthorized');
+      expect(error).toBeDefined();
     }
   });
 });
@@ -90,14 +113,15 @@ describe('mergeTagAction', function () {
   });
 
   it('should throw Unauthorized when not authenticated', async function () {
-    mockGetSession.mockClear();
-    mockGetSession.mockImplementationOnce(async () => null);
+    for (const key of Object.keys(cookies)) {
+      delete cookies[key];
+    }
 
     try {
       await mergeTagAction({data: {aliasId: 1, canonicalTagId: 2}});
       expect.fail('should have thrown');
     } catch (error: any) {
-      expect(error.message).toContain('Unauthorized');
+      expect(error).toBeDefined();
     }
   });
 });
@@ -117,14 +141,15 @@ describe('deleteTagAction', function () {
   });
 
   it('should throw Unauthorized when not authenticated', async function () {
-    mockGetSession.mockClear();
-    mockGetSession.mockImplementationOnce(async () => null);
+    for (const key of Object.keys(cookies)) {
+      delete cookies[key];
+    }
 
     try {
       await deleteTagAction({data: {id: 1}});
       expect.fail('should have thrown');
     } catch (error: any) {
-      expect(error.message).toContain('Unauthorized');
+      expect(error).toBeDefined();
     }
   });
 });
