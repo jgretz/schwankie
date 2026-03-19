@@ -24,6 +24,12 @@ function formatDate(iso: string): string {
   );
 }
 
+function scoreStyle(score: number): React.CSSProperties {
+  if (score >= 70) return {backgroundColor: 'var(--score-high-bg)', color: 'var(--score-high-text)'};
+  if (score >= 40) return {backgroundColor: 'var(--score-mid-bg)', color: 'var(--score-mid-text)'};
+  return {backgroundColor: 'var(--score-low-bg)', color: 'var(--score-low-text)'};
+}
+
 export function LinkItem({
   id,
   url,
@@ -62,7 +68,13 @@ export function LinkItem({
         </span>
 
         {showScore && score != null && (
-          <span className="font-sans text-[0.68rem] tabular-nums text-text-faint">{score}</span>
+          <span
+            className="inline-flex h-[40px] w-[40px] items-center justify-center rounded-full font-sans text-[0.75rem] font-semibold tabular-nums leading-none"
+            style={scoreStyle(score)}
+            title={`Score: ${score}/100`}
+          >
+            {score}
+          </span>
         )}
 
         {tags.map((tag) => {

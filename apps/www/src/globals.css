@@ -17,6 +17,12 @@
     --tag-active-bg: #5b6f8a;
     --tag-active-bg-secondary: #7b8fa6;
     --tag-active-text: #ffffff;
+    --score-high-bg: #d4e8d4;
+    --score-high-text: #2d5a2d;
+    --score-mid-bg: #f0e0b0;
+    --score-mid-text: #6b4e00;
+    --score-low-bg: #edd5d0;
+    --score-low-text: #7a2e1e;
     --modal-bg: #ffffff;
     --search-bg: #ffffff;
     --background: #f7f3ed;
@@ -51,6 +57,12 @@
     --tag-bg: #222a35;
     --tag-text: #8aa0be;
     --tag-active-bg-secondary: #6e89a8;
+    --score-high-bg: #1e3a1e;
+    --score-high-text: #7db87d;
+    --score-mid-bg: #3a2e10;
+    --score-mid-text: #c8a84a;
+    --score-low-bg: #3a1e18;
+    --score-low-text: #c87060;
     --modal-bg: #21252a;
     --search-bg: #21252a;
 

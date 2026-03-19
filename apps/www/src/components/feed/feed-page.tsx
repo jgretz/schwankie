@@ -193,7 +193,7 @@ export function FeedPage({
               showEditButton={isAuthenticated}
               onEditClick={() => openEdit(item as LinkData)}
               score={item.score}
-              showScore={sort === 'score'}
+              showScore={status === 'queued'}
             />
           ))}
         </div>
