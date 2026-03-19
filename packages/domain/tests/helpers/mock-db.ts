@@ -10,6 +10,9 @@ type LinkRow = {
   imageUrl: string | null;
   status: string;
   content: string | null;
+  enrichmentFailCount: number;
+  enrichmentLastError: string | null;
+  score: number | null;
   createDate: Date;
   updateDate: Date;
 };
@@ -104,6 +107,9 @@ const COLUMN_MAP: Record<string, Record<string, string>> = {
     image_url: 'imageUrl',
     status: 'status',
     content: 'content',
+    enrichment_fail_count: 'enrichmentFailCount',
+    enrichment_last_error: 'enrichmentLastError',
+    score: 'score',
     create_date: 'createDate',
     update_date: 'updateDate',
   },
@@ -186,6 +192,14 @@ function evaluateCondition(row: any, condition: any, _rowTable: any): boolean {
       return row[field] === val;
     case '!=':
       return row[field] !== val;
+    case '>=':
+      return row[field] >= val;
+    case '>':
+      return row[field] > val;
+    case '<=':
+      return row[field] <= val;
+    case '<':
+      return row[field] < val;
     case 'in':
       return Array.isArray(val) && val.includes(row[field]);
     case 'ilike': {
@@ -254,6 +268,10 @@ function getOperator(chunks: any[]): string {
         if (typeof v === 'string') {
           if (v.includes(' = ')) return '=';
           if (v.includes(' != ') || v.includes(' <> ')) return '!=';
+          if (v.includes(' >= ')) return '>=';
+          if (v.includes(' <= ')) return '<=';
+          if (v.includes(' > ')) return '>';
+          if (v.includes(' < ')) return '<';
           if (v.toLowerCase().includes(' in ')) return 'in';
           if (v.includes(' ilike ')) return 'ilike';
           if (v.includes(' is not null')) return 'is not null';
@@ -299,6 +317,9 @@ function defaultsForTable(table: any, values: any, id: number): any {
         imageUrl: values.imageUrl ?? values.image_url ?? null,
         status: values.status ?? 'saved',
         content: values.content ?? null,
+        enrichmentFailCount: values.enrichmentFailCount ?? values.enrichment_fail_count ?? 0,
+        enrichmentLastError: values.enrichmentLastError ?? values.enrichment_last_error ?? null,
+        score: values.score ?? null,
         createDate: values.createDate ?? now,
         updateDate: values.updateDate ?? now,
       };

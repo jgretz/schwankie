@@ -2,6 +2,7 @@ import {describe, expect, it} from 'bun:test';
 import {setupDb} from '../helpers/setup';
 import {makeLink} from '../helpers/factory';
 import {listLinks} from '../../src/queries/list-links';
+import {store} from '../helpers/mock-db';
 
 describe('listLinks', function () {
   setupDb();
@@ -96,5 +97,60 @@ describe('listLinks', function () {
       expect(item.status).toBe('saved');
       expect([savedLink.id, anotherSavedLink.id]).toContain(item.id);
     }
+  });
+
+  it('should return links needing enrichment (no content, not trashed, fail count < 3)', async function () {
+    const eligible = await makeLink({title: 'Eligible', status: 'queued'});
+
+    const hasContent = await makeLink({title: 'Has Content', status: 'queued'});
+    const row1 = store.links.find((l) => l.id === hasContent.id)!;
+    row1.content = 'some content';
+
+    const trashed = await makeLink({title: 'Trashed', status: 'queued'});
+    const row2 = store.links.find((l) => l.id === trashed.id)!;
+    row2.status = 'trashed';
+
+    const tooManyFails = await makeLink({title: 'Too Many Fails', status: 'queued'});
+    const row3 = store.links.find((l) => l.id === tooManyFails.id)!;
+    row3.enrichmentFailCount = 3;
+
+    const result = await listLinks({limit: 100, offset: 0, needs_enrichment: true});
+
+    const ids = result.items.map((i) => i.id);
+    expect(ids).toContain(eligible.id);
+    expect(ids).not.toContain(hasContent.id);
+    expect(ids).not.toContain(trashed.id);
+    expect(ids).not.toContain(tooManyFails.id);
+  });
+
+  it('should return links with dead enrichment (fail count >= 3)', async function () {
+    const dead = await makeLink({title: 'Dead Enrichment'});
+    const row1 = store.links.find((l) => l.id === dead.id)!;
+    row1.enrichmentFailCount = 5;
+
+    const alive = await makeLink({title: 'Alive Enrichment'});
+
+    const result = await listLinks({limit: 100, offset: 0, dead_enrichment: true});
+
+    const ids = result.items.map((i) => i.id);
+    expect(ids).toContain(dead.id);
+    expect(ids).not.toContain(alive.id);
+  });
+
+  it('should return links needing scoring (no score, status queued)', async function () {
+    const needsScore = await makeLink({title: 'Needs Score', status: 'queued'});
+
+    const hasScore = await makeLink({title: 'Has Score', status: 'queued'});
+    const row1 = store.links.find((l) => l.id === hasScore.id)!;
+    row1.score = 75;
+
+    const wrongStatus = await makeLink({title: 'Wrong Status', status: 'saved'});
+
+    const result = await listLinks({limit: 100, offset: 0, needs_scoring: true});
+
+    const ids = result.items.map((i) => i.id);
+    expect(ids).toContain(needsScore.id);
+    expect(ids).not.toContain(hasScore.id);
+    expect(ids).not.toContain(wrongStatus.id);
   });
 });
