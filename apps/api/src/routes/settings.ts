@@ -1,7 +1,6 @@
 import {Hono} from 'hono';
 import {authMiddleware} from '../middleware/auth';
-import {getSetting, setSetting} from '@domain';
-import type {SettingResponse} from '@domain';
+import {getSetting, setSetting, type SettingResponse} from '@domain';
 import {updateSettingSchema} from '../validators/settings';
 
 export const settingsRouter = new Hono();
