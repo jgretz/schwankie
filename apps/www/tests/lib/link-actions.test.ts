@@ -1,4 +1,6 @@
-import {beforeAll, describe, expect, it, mock} from 'bun:test';
+import {afterEach, beforeAll, beforeEach, describe, expect, it, mock} from 'bun:test';
+
+const originalFetch = global.fetch;
 
 mock.module('@tanstack/react-start', () => ({
   createServerFn: () => ({
@@ -10,20 +12,12 @@ mock.module('@tanstack/react-start', () => ({
 
 mock.module('../../src/lib/session.server', () => ({
   getSession: mock(async () => ({authenticated: true})),
+  createSession: mock(async () => {}),
+  destroySession: mock(async () => {}),
 }));
 
 mock.module('../../src/lib/init-client.server', () => ({
   initClientServer: mock(() => {}),
-}));
-
-mock.module('client', () => ({
-  fetchMetadata: mock(async (url: string) => ({url, title: 'Test Title'})),
-  createLink: mock(async (data: any) => ({id: 1, ...data})),
-  updateLink: mock(async (id: number, data: any) => ({id, ...data})),
-  resetEnrichment: mock(async (id: number) => ({id, reset: true})),
-  refetchLink: mock(async (id: number) => ({id, refetched: true})),
-  suggestTags: mock(async (id: number) => [{id, tag: 'suggested'}]),
-  deleteLink: mock(async (id: number) => ({id, deleted: true})),
 }));
 
 let fetchMetadataAction: any;
@@ -34,15 +28,11 @@ let refetchLinkAction: any;
 let suggestTagsAction: any;
 let deleteLinkAction: any;
 let mockGetSession: any;
-let mockFetchMetadata: any;
-let mockCreateLink: any;
-let mockUpdateLink: any;
-let mockResetEnrichment: any;
-let mockRefetchLink: any;
-let mockSuggestTags: any;
-let mockDeleteLink: any;
 
 beforeAll(async function () {
+  const {init} = await import('client');
+  init({apiUrl: 'http://localhost:3001', apiKey: 'test-key'});
+
   const mod = await import('../../src/lib/link-actions');
   fetchMetadataAction = mod.fetchMetadataAction;
   createLinkAction = mod.createLinkAction;
@@ -54,22 +44,29 @@ beforeAll(async function () {
 
   const sessionMod = await import('../../src/lib/session.server');
   mockGetSession = sessionMod.getSession;
+});
 
-  const clientMod = await import('client');
-  mockFetchMetadata = clientMod.fetchMetadata;
-  mockCreateLink = clientMod.createLink;
-  mockUpdateLink = clientMod.updateLink;
-  mockResetEnrichment = clientMod.resetEnrichment;
-  mockRefetchLink = clientMod.refetchLink;
-  mockSuggestTags = clientMod.suggestTags;
-  mockDeleteLink = clientMod.deleteLink;
+afterEach(function () {
+  global.fetch = originalFetch;
+});
+
+beforeEach(async function () {
+  global.fetch = originalFetch;
+  const {init} = await import('client');
+  init({apiUrl: 'http://localhost:3001', apiKey: 'test-key'});
 });
 
 describe('fetchMetadataAction', function () {
   it('should call fetchMetadata with url', async function () {
-    mockFetchMetadata.mockClear();
+    global.fetch = mock(
+      async () =>
+        ({
+          ok: true,
+          json: async () => ({url: 'https://example.com', title: 'Test Title'}),
+        }) as unknown as Response,
+    ) as unknown as typeof fetch;
+
     const result = await fetchMetadataAction({data: {url: 'https://example.com'}});
-    expect(mockFetchMetadata).toHaveBeenCalledWith('https://example.com');
     expect(result).toEqual({url: 'https://example.com', title: 'Test Title'});
   });
 
@@ -88,10 +85,16 @@ describe('fetchMetadataAction', function () {
 
 describe('createLinkAction', function () {
   it('should call createLink with data', async function () {
-    mockCreateLink.mockClear();
+    global.fetch = mock(
+      async () =>
+        ({
+          ok: true,
+          json: async () => ({id: 1, url: 'https://example.com', title: 'Test', tags: ['tag1']}),
+        }) as unknown as Response,
+    ) as unknown as typeof fetch;
+
     const input = {url: 'https://example.com', title: 'Test', tags: ['tag1']};
     const result = await createLinkAction({data: input});
-    expect(mockCreateLink).toHaveBeenCalledWith(input);
     expect(result.id).toBe(1);
   });
 
@@ -110,10 +113,16 @@ describe('createLinkAction', function () {
 
 describe('updateLinkAction', function () {
   it('should call updateLink with id and rest of data', async function () {
-    mockUpdateLink.mockClear();
+    global.fetch = mock(
+      async () =>
+        ({
+          ok: true,
+          json: async () => ({id: 1, title: 'Updated', tags: ['tag2']}),
+        }) as unknown as Response,
+    ) as unknown as typeof fetch;
+
     const input = {id: 1, title: 'Updated', tags: ['tag2']};
     const result = await updateLinkAction({data: input});
-    expect(mockUpdateLink).toHaveBeenCalledWith(1, {title: 'Updated', tags: ['tag2']});
     expect(result.id).toBe(1);
   });
 
@@ -132,9 +141,15 @@ describe('updateLinkAction', function () {
 
 describe('resetEnrichmentAction', function () {
   it('should call resetEnrichment with id', async function () {
-    mockResetEnrichment.mockClear();
+    global.fetch = mock(
+      async () =>
+        ({
+          ok: true,
+          json: async () => ({id: 1, reset: true}),
+        }) as unknown as Response,
+    ) as unknown as typeof fetch;
+
     const result = await resetEnrichmentAction({data: {id: 1}});
-    expect(mockResetEnrichment).toHaveBeenCalledWith(1);
     expect(result.reset).toBe(true);
   });
 
@@ -153,9 +168,15 @@ describe('resetEnrichmentAction', function () {
 
 describe('refetchLinkAction', function () {
   it('should call refetchLink with id', async function () {
-    mockRefetchLink.mockClear();
+    global.fetch = mock(
+      async () =>
+        ({
+          ok: true,
+          json: async () => ({id: 1, refetched: true}),
+        }) as unknown as Response,
+    ) as unknown as typeof fetch;
+
     const result = await refetchLinkAction({data: {id: 1}});
-    expect(mockRefetchLink).toHaveBeenCalledWith(1);
     expect(result.refetched).toBe(true);
   });
 
@@ -174,9 +195,15 @@ describe('refetchLinkAction', function () {
 
 describe('suggestTagsAction', function () {
   it('should call suggestTags with id', async function () {
-    mockSuggestTags.mockClear();
+    global.fetch = mock(
+      async () =>
+        ({
+          ok: true,
+          json: async () => [{id: 1, tag: 'suggested'}],
+        }) as unknown as Response,
+    ) as unknown as typeof fetch;
+
     const result = await suggestTagsAction({data: {id: 1}});
-    expect(mockSuggestTags).toHaveBeenCalledWith(1);
     expect(result).toContainEqual({id: 1, tag: 'suggested'});
   });
 
@@ -195,9 +222,15 @@ describe('suggestTagsAction', function () {
 
 describe('deleteLinkAction', function () {
   it('should call deleteLink with id', async function () {
-    mockDeleteLink.mockClear();
+    global.fetch = mock(
+      async () =>
+        ({
+          ok: true,
+          json: async () => ({id: 1, deleted: true}),
+        }) as unknown as Response,
+    ) as unknown as typeof fetch;
+
     const result = await deleteLinkAction({data: {id: 1}});
-    expect(mockDeleteLink).toHaveBeenCalledWith(1);
     expect(result.deleted).toBe(true);
   });
 

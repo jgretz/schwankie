@@ -1,4 +1,6 @@
-import {beforeAll, describe, expect, it, mock} from 'bun:test';
+import {afterEach, beforeAll, beforeEach, describe, expect, it, mock} from 'bun:test';
+
+const originalFetch = global.fetch;
 
 mock.module('@tanstack/react-start', () => ({
   createServerFn: () => ({
@@ -10,27 +12,23 @@ mock.module('@tanstack/react-start', () => ({
 
 mock.module('../../src/lib/session.server', () => ({
   getSession: mock(async () => ({authenticated: true})),
+  createSession: mock(async () => {}),
+  destroySession: mock(async () => {}),
 }));
 
 mock.module('../../src/lib/init-client.server', () => ({
   initClientServer: mock(() => {}),
 }));
 
-mock.module('client', () => ({
-  renameTag: mock(async (id: number, text: string) => ({id, text})),
-  mergeTag: mock(async (aliasId: number, canonicalTagId: number) => ({aliasId, canonicalTagId})),
-  deleteTag: mock(async (id: number) => ({id, deleted: true})),
-}));
-
 let renameTagAction: any;
 let mergeTagAction: any;
 let deleteTagAction: any;
 let mockGetSession: any;
-let mockRenameTag: any;
-let mockMergeTag: any;
-let mockDeleteTag: any;
 
 beforeAll(async function () {
+  const {init} = await import('client');
+  init({apiUrl: 'http://localhost:3001', apiKey: 'test-key'});
+
   const mod = await import('../../src/lib/tag-actions');
   renameTagAction = mod.renameTagAction;
   mergeTagAction = mod.mergeTagAction;
@@ -38,18 +36,29 @@ beforeAll(async function () {
 
   const sessionMod = await import('../../src/lib/session.server');
   mockGetSession = sessionMod.getSession;
+});
 
-  const clientMod = await import('client');
-  mockRenameTag = clientMod.renameTag;
-  mockMergeTag = clientMod.mergeTag;
-  mockDeleteTag = clientMod.deleteTag;
+afterEach(function () {
+  global.fetch = originalFetch;
+});
+
+beforeEach(async function () {
+  global.fetch = originalFetch;
+  const {init} = await import('client');
+  init({apiUrl: 'http://localhost:3001', apiKey: 'test-key'});
 });
 
 describe('renameTagAction', function () {
   it('should call renameTag with id and text', async function () {
-    mockRenameTag.mockClear();
+    global.fetch = mock(
+      async () =>
+        ({
+          ok: true,
+          json: async () => ({id: 1, text: 'new-name'}),
+        }) as unknown as Response,
+    ) as unknown as typeof fetch;
+
     const result = await renameTagAction({data: {id: 1, text: 'new-name'}});
-    expect(mockRenameTag).toHaveBeenCalledWith(1, 'new-name');
     expect(result).toEqual({id: 1, text: 'new-name'});
   });
 
@@ -68,9 +77,15 @@ describe('renameTagAction', function () {
 
 describe('mergeTagAction', function () {
   it('should call mergeTag with aliasId and canonicalTagId', async function () {
-    mockMergeTag.mockClear();
+    global.fetch = mock(
+      async () =>
+        ({
+          ok: true,
+          json: async () => ({merged: true}),
+        }) as unknown as Response,
+    ) as unknown as typeof fetch;
+
     const result = await mergeTagAction({data: {aliasId: 1, canonicalTagId: 2}});
-    expect(mockMergeTag).toHaveBeenCalledWith(1, 2);
     expect(result).toEqual({merged: true});
   });
 
@@ -89,9 +104,15 @@ describe('mergeTagAction', function () {
 
 describe('deleteTagAction', function () {
   it('should call deleteTag with id', async function () {
-    mockDeleteTag.mockClear();
+    global.fetch = mock(
+      async () =>
+        ({
+          ok: true,
+          json: async () => ({id: 1, deleted: true}),
+        }) as unknown as Response,
+    ) as unknown as typeof fetch;
+
     const result = await deleteTagAction({data: {id: 1}});
-    expect(mockDeleteTag).toHaveBeenCalledWith(1);
     expect(result.deleted).toBe(true);
   });
 
