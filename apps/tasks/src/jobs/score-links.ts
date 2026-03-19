@@ -1,4 +1,5 @@
 import {getLinksNeedingScoring, updateLinkScore} from 'client';
+import {generate} from '../lib/ollama';
 
 type OllamaQualityResponse = {quality: number};
 
@@ -65,20 +66,14 @@ async function getOllamaQuality(
       .filter(Boolean)
       .join('\n');
 
-    const response = await fetch(`${ollamaUrl}/api/generate`, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({model: ollamaModel, prompt, stream: false, format: 'json', options: {num_predict: 50}}),
-      signal: AbortSignal.timeout(120_000),
+    const parsed = await generate<OllamaQualityResponse>({
+      url: ollamaUrl,
+      model: ollamaModel,
+      prompt,
+      timeout: 120_000,
+      format: 'json',
+      options: {num_predict: 50},
     });
-
-    if (!response.ok) {
-      console.warn(`[score] Ollama HTTP ${response.status}`);
-      return null;
-    }
-
-    const body = (await response.json()) as {response: string};
-    const parsed = JSON.parse(body.response) as OllamaQualityResponse;
     const quality = Math.min(Math.max(parsed.quality, 0), 40);
     return quality;
   } catch (error) {
