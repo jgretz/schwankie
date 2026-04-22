@@ -12,6 +12,7 @@ export {listRssItems} from './queries/list-rss-items';
 export {listEmailItems} from './queries/list-email-items';
 export {getEmailItem} from './queries/get-email-item';
 export {getGmailTokens} from './queries/get-gmail-tokens';
+export {listPendingWorkRequests} from './queries/list-pending-work-requests';
 
 // commands
 export {createLink} from './commands/create-link';
@@ -37,6 +38,11 @@ export {promoteEmailItem} from './commands/promote-email-item';
 export {setGmailTokens} from './commands/set-gmail-tokens';
 export {setGmailFilter} from './commands/set-gmail-filter';
 export {clearGmailAuthTokens, clearGmailTokens} from './commands/clear-gmail-tokens';
+export {createWorkRequest} from './commands/create-work-request';
+export {markWorkRequestProcessing} from './commands/mark-work-request-processing';
+export {markWorkRequestCompleted} from './commands/mark-work-request-completed';
+export {markWorkRequestFailed} from './commands/mark-work-request-failed';
+export {cleanupOldWorkRequests} from './commands/cleanup-old-work-requests';
 
 // lib
 export {normalizeTag} from './lib/normalize-tag';
@@ -69,5 +75,8 @@ export type {
   ListEmailItemsParams,
   ListEmailItemsResult,
   GmailTokens,
+  WorkRequest,
+  WorkRequestType,
+  CreateWorkRequestInput,
 } from './types';
 export type {LinkStatus} from './queries/get-tags-with-count';
