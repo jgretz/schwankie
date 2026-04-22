@@ -1,5 +1,5 @@
 import {rssItem} from 'database';
-import {and, count, desc, eq, ilike, or} from 'drizzle-orm';
+import {and, count, desc, eq, ilike, or, sql} from 'drizzle-orm';
 import {getDb} from '../db';
 import type {ListRssItemsParams, ListRssItemsResult} from '../types';
 
@@ -29,7 +29,7 @@ export async function listRssItems(params: ListRssItemsParams): Promise<ListRssI
       .from(rssItem)
       .where(where)
       .orderBy(
-        desc(rssItem.publishedAt),
+        sql`${rssItem.publishedAt} DESC NULLS LAST`,
         desc(rssItem.createdAt),
       )
       .limit(limit)

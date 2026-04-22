@@ -17,7 +17,7 @@ describe('markRssItemRead', function () {
     expect(updated?.read).toBe(true);
   });
 
-  it('should mark clicked without changing read', async function () {
+  it('should mark both read and clicked when clicked is true', async function () {
     const feed = await makeFeed();
     const item = await makeRssItem(feed.id);
 

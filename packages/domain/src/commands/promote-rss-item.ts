@@ -1,7 +1,6 @@
 import {link, rssItem} from 'database';
 import {eq} from 'drizzle-orm';
 import {getDb} from '../db';
-import {upsertTags} from '../lib/upsert-tags';
 
 export async function promoteRssItem(id: string): Promise<number | null> {
   const db = getDb();
@@ -10,8 +9,6 @@ export async function promoteRssItem(id: string): Promise<number | null> {
     const [item] = await tx.select().from(rssItem).where(eq(rssItem.id, id));
 
     if (!item) return null;
-
-    const tagRecords = await upsertTags(tx, []);
 
     const [created] = await tx
       .insert(link)
@@ -26,11 +23,6 @@ export async function promoteRssItem(id: string): Promise<number | null> {
       .returning();
 
     if (!created) return null;
-
-    if (tagRecords.length > 0) {
-      const {linkTag} = await import('database');
-      await tx.insert(linkTag).values(tagRecords.map((t) => ({linkId: created.id, tagId: t.id})));
-    }
 
     await tx.update(rssItem).set({clicked: true}).where(eq(rssItem.id, id));
 
