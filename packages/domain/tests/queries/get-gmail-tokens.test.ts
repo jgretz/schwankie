@@ -32,7 +32,6 @@ describe('getGmailTokens', function () {
   });
 
   it('should return null if any token is missing', async function () {
-    const {getSetting} = await import('../../src/queries/get-setting');
     const {setSetting} = await import('../../src/commands/set-setting');
 
     await setSetting('gmail_access_token', 'partial-token');

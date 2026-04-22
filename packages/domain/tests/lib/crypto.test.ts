@@ -73,7 +73,7 @@ describe('crypto', function () {
     it('should throw on tampered ciphertext (wrong auth tag)', function () {
       const plaintext = 'secret';
       const encrypted = encryptToken(plaintext, key);
-      const [iv, ct, tag] = encrypted.split(':');
+      const [iv, ct] = encrypted.split(':');
 
       const badTag = Buffer.from('AAAAAAAAAAAAAAAA', 'utf8').toString('base64');
       const tampered = `${iv}:${ct}:${badTag}`;
@@ -85,8 +85,8 @@ describe('crypto', function () {
 
     it('should throw on invalid base64', function () {
       expect(() => {
-        decryptToken('!!!:!!!:!!!', key);
-      }).toThrow('Invalid base64 in ciphertext');
+        decryptToken('YQ:YQ:YQ', key);
+      }).toThrow('Invalid IV length');
     });
 
     it('should throw on wrong IV length', function () {
