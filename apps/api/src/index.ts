@@ -10,6 +10,7 @@ import {metadataRoutes} from './routes/metadata';
 import {settingsRouter} from './routes/settings';
 import {gmailRouter} from './routes/gmail';
 import {feedsRoutes} from './routes/feeds';
+import {emailsRouter} from './routes/emails';
 
 const envSchema = z.object({
   PORT: z.string().default('3001'),
@@ -33,6 +34,7 @@ app.route('/', linksRoutes);
 app.route('/', settingsRouter);
 app.route('/', gmailRouter);
 app.route('/', feedsRoutes);
+app.route('/', emailsRouter);
 app.route('/api/metadata', metadataRoutes);
 
 app.onError((err, c) => {
