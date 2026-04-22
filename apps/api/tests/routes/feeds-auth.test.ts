@@ -1,13 +1,80 @@
-import {describe, it, expect, beforeAll} from 'bun:test';
+import {mock, describe, it, expect, beforeAll} from 'bun:test';
 import {Hono} from 'hono';
-import {feedsRoutes} from '../../src/routes/feeds';
+
+// Mock env module first
+mock.module('env', () => ({parseEnv: () => ({API_KEY: 'test-key'})}));
+
+// Mock @domain exports - comprehensive set including all routes
+const mockGetLink = mock(async () => null as any);
+const mockListLinks = mock(async () => ({links: [], total: 0}));
+const mockCreateLink = mock(async () => null as any);
+const mockUpdateLink = mock(async () => null as any);
+const mockDeleteLink = mock(async () => false);
+const mockResetEnrichment = mock(async () => false);
+const mockListTags = mock(async () => ({tags: [], total: 0}));
+const mockMergeTag = mock(async () => false);
+const mockMarkTagNormalized = mock(async () => false);
+const mockRenameTag = mock(async () => false);
+const mockDeleteTag = mock(async () => false);
+const mockNormalizeTag = mock(async () => '');
+const mockGetSetting = mock(async () => null as any);
+const mockSetSetting = mock(async () => undefined);
+const mockValidateSettingValue = mock(() => ({success: true}));
+const mockResolveTagMinCount = mock(async () => {
+  const value = await mockGetSetting('tagCountFloor');
+  const floor = value ? Number(value) : 1;
+  return Number.isNaN(floor) ? 1 : floor;
+});
+const mockListFeeds = mock(async () => ({feeds: [], total: 0}));
+const mockGetFeed = mock(async () => null as any);
+const mockCreateFeed = mock(async () => null as any);
+const mockUpdateFeed = mock(async () => null as any);
+const mockDeleteFeed = mock(async () => false);
+const mockListRssItems = mock(async () => ({items: [], total: 0}));
+const mockMarkRssItemRead = mock(async () => ({read: true}));
+const mockPromoteRssItem = mock(async () => null as any);
+const mockBulkUpsertRssItems = mock(async () => undefined);
+
+mock.module('@domain', () => ({
+  getLink: mockGetLink,
+  listLinks: mockListLinks,
+  createLink: mockCreateLink,
+  updateLink: mockUpdateLink,
+  deleteLink: mockDeleteLink,
+  resetEnrichment: mockResetEnrichment,
+  listTags: mockListTags,
+  mergeTag: mockMergeTag,
+  markTagNormalized: mockMarkTagNormalized,
+  renameTag: mockRenameTag,
+  deleteTag: mockDeleteTag,
+  normalizeTag: mockNormalizeTag,
+  getSetting: mockGetSetting,
+  setSetting: mockSetSetting,
+  resolveTagMinCount: mockResolveTagMinCount,
+  validateSettingValue: mockValidateSettingValue,
+  listFeeds: mockListFeeds,
+  getFeed: mockGetFeed,
+  createFeed: mockCreateFeed,
+  updateFeed: mockUpdateFeed,
+  deleteFeed: mockDeleteFeed,
+  listRssItems: mockListRssItems,
+  markRssItemRead: mockMarkRssItemRead,
+  promoteRssItem: mockPromoteRssItem,
+  bulkUpsertRssItems: mockBulkUpsertRssItems,
+}));
+
+// Dynamic import after mocks are set up
+type FeedsModule = typeof import('../../src/routes/feeds');
+let feedsRoutes: FeedsModule['feedsRoutes'];
 
 describe('Feeds Routes - Auth Enforcement', () => {
   let app: Hono;
 
-  beforeAll(() => {
+  beforeAll(async () => {
+    const mod = await import('../../src/routes/feeds');
+    feedsRoutes = mod.feedsRoutes;
     app = new Hono();
-    app.route('/api', feedsRoutes);
+    app.route('/', feedsRoutes);
   });
 
   describe('Public endpoints', () => {

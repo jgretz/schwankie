@@ -5,7 +5,7 @@ import {Hono} from 'hono';
 mock.module('env', () => ({parseEnv: () => ({API_KEY: 'test-key'})}));
 
 // Mock @domain exports
-// Includes all symbols needed by links, tags, and settings routes
+// Includes all symbols needed by links, tags, settings, and feeds routes
 const mockGetLink = mock(async () => null as any);
 const mockListLinks = mock(async () => ({links: [], total: 0}));
 const mockCreateLink = mock(async () => null as any);
@@ -29,6 +29,15 @@ const mockValidateSettingValue = mock(() => ({success: true}));
 const mockClearGmailTokens = mock(async () => undefined);
 const mockSetGmailTokens = mock(async () => undefined);
 const mockGetGmailTokens = mock(async () => null as any);
+const mockListFeeds = mock(async () => ({feeds: [], total: 0}));
+const mockGetFeed = mock(async () => null as any);
+const mockCreateFeed = mock(async () => null as any);
+const mockUpdateFeed = mock(async () => null as any);
+const mockDeleteFeed = mock(async () => false);
+const mockListRssItems = mock(async () => ({items: [], total: 0}));
+const mockMarkRssItemRead = mock(async () => ({read: true}));
+const mockPromoteRssItem = mock(async () => null as any);
+const mockBulkUpsertRssItems = mock(async () => undefined);
 
 mock.module('@domain', () => ({
   getLink: mockGetLink,
@@ -50,19 +59,20 @@ mock.module('@domain', () => ({
   clearGmailTokens: mockClearGmailTokens,
   setGmailTokens: mockSetGmailTokens,
   getGmailTokens: mockGetGmailTokens,
+  listFeeds: mockListFeeds,
+  getFeed: mockGetFeed,
+  createFeed: mockCreateFeed,
+  updateFeed: mockUpdateFeed,
+  deleteFeed: mockDeleteFeed,
+  listRssItems: mockListRssItems,
+  markRssItemRead: mockMarkRssItemRead,
+  promoteRssItem: mockPromoteRssItem,
+  bulkUpsertRssItems: mockBulkUpsertRssItems,
   // Add other exports to prevent import errors
   init: () => {},
-  listFeeds: mockGetSetting,
-  getFeed: mockGetSetting,
-  listRssItems: mockGetSetting,
   listEmailItems: mockGetSetting,
   getEmailItem: mockGetSetting,
-  createFeed: mockSetSetting,
-  updateFeed: mockSetSetting,
-  deleteFeed: mockSetSetting,
   createRssItem: mockSetSetting,
-  markRssItemRead: mockSetSetting,
-  promoteRssItem: mockSetSetting,
   createEmailItem: mockSetSetting,
   markEmailItemRead: mockSetSetting,
   promoteEmailItem: mockSetSetting,
