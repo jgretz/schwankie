@@ -7,9 +7,10 @@ export async function promoteEmailItem(id: string): Promise<number> {
   const db = getDb();
 
   return db.transaction(async (tx) => {
-    const item = await tx.query.emailItem.findFirst({
-      where: eq(emailItem.id, id),
-    });
+    const [item] = await tx
+      .select()
+      .from(emailItem)
+      .where(eq(emailItem.id, id));
 
     if (!item) {
       throw new Error(`Email item ${id} not found`);
