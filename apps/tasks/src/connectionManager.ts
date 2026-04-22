@@ -114,10 +114,19 @@ let currentSigIntHandler: (() => void) | null = null;
 
 export async function runWithAutoRecovery(setupCallback: SetupCallback): Promise<void> {
   const config = getConfig();
+  let activeCleanup: (() => Promise<void>) | null = null;
 
   while (true) {
     try {
       const {boss, shutdown} = await createTaskRunner(setupCallback);
+
+      activeCleanup = async () => {
+        try {
+          await boss.stop();
+        } catch (error) {
+          console.error('pg-boss stop error during reconnect:', error);
+        }
+      };
 
       if (currentSigTermHandler) process.off('SIGTERM', currentSigTermHandler);
       if (currentSigIntHandler) process.off('SIGINT', currentSigIntHandler);
@@ -145,6 +154,12 @@ export async function runWithAutoRecovery(setupCallback: SetupCallback): Promise
       });
     } catch (error) {
       if (isShuttingDown) return;
+
+      if (activeCleanup) {
+        await activeCleanup();
+        activeCleanup = null;
+      }
+
       console.error('Task runner crashed:', error);
       console.log(`Waiting ${config.retryIntervalMs / 1000}s before full restart...`);
 
