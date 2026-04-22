@@ -8,6 +8,7 @@ export type CreateEmailItemInput = {
   link: string;
   title?: string;
   description?: string;
+  importedAt?: Date;
 };
 
 export type ListEmailItemsParams = {

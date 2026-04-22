@@ -13,6 +13,7 @@ export async function createEmailItem(input: CreateEmailItemInput): Promise<Emai
       link: input.link,
       title: input.title,
       description: input.description,
+      importedAt: input.importedAt,
     })
     .onConflictDoNothing({
       target: [emailItem.emailMessageId, emailItem.link],
