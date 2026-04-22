@@ -1,5 +1,5 @@
 import postgres from 'postgres';
-import {createFeed} from 'client';
+import {createFeed, fetchAllFeeds} from 'client';
 
 export interface PhaseResult {
   read: number;
@@ -53,6 +53,15 @@ export async function migrateFeeds(
         } else {
           result.errors.push(error instanceof Error ? error : new Error(String(error)));
         }
+      }
+    }
+
+    // Back-fill feedMap for skipped feeds by matching sourceUrl
+    const allFeeds = await fetchAllFeeds();
+    const feedsBySourceUrl = new Map(allFeeds.map((f) => [f.sourceUrl, f.id]));
+    for (const feed of feeds) {
+      if (!feedMap.has(feed.id) && feedsBySourceUrl.has(feed.feed_url)) {
+        feedMap.set(feed.id, feedsBySourceUrl.get(feed.feed_url)!);
       }
     }
   } catch (error) {
