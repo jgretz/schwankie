@@ -1,5 +1,16 @@
 Curate the ideas backlog — consolidate duplicates, score unscored ideas, prune stale entries.
 
+## Worksite CLI
+
+Every worksite tool below (`list_ideas`, `update_idea`, `delete_idea`, `promote_idea`) is invoked as a `worksite` CLI subcommand via Bash:
+
+```
+worksite call <tool_name> --json '<json body>'
+```
+
+Example: "call `list_ideas`" → `worksite call list_ideas --json '{}'`.
+Example: "call `delete_idea`" → `worksite call delete_idea --json '{"id":"<idea-id>"}'`.
+
 ## Arguments
 
 `$ARGUMENTS` controls the mode:

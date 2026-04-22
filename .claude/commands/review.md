@@ -94,7 +94,7 @@ After Phase 4, scan findings for recurring patterns that lack a corresponding ru
    - **Update to existing rule**: name the file and describe the specific addition
 6. Output the "Rule Gaps" section (see output format below)
 7. If the `rules` flag is present:
-   - Call `create_idea` for each rule gap: `create_idea({ prompt: "Add rule: <theme> — <key points summary>" })`
+   - For each rule gap, run `worksite call create_idea --json '{"prompt":"Add rule: <theme> — <key points summary>"}'`
    - Report how many ideas were created at the end of the Rule Gaps section
 
 ## Output Format — diff / path scope

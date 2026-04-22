@@ -61,3 +61,4 @@ CLAUDE-WORKING.md
 .claude/skills/planner-default.md
 .claude/skills/worker-default.md
 .claude/skills/reviewer-default.md
+.claude/commands/worker-commit.md
