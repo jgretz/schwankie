@@ -88,7 +88,7 @@ export async function applyUpdate(config: UpdateConfig): Promise<void> {
     await Bun.$`bun run typecheck`.cwd(repoDir).quiet().nothrow(),
   );
   if (typecheck.exitCode !== 0) {
-    throw new Error(`type-check failed: ${typecheck.stderr}`);
+    throw new Error(`type-check failed: ${typecheck.stdout || typecheck.stderr}`);
   }
 
   info('Update applied successfully');
@@ -113,5 +113,9 @@ export async function rollback(config: UpdateConfig, sha: string): Promise<void>
     error('Rollback bun install failed', {stderr: install.stderr});
   }
 
-  info('Rollback complete');
+  if (checkout.exitCode === 0 && install.exitCode === 0) {
+    info('Rollback complete');
+  } else {
+    error('Rollback failed');
+  }
 }
