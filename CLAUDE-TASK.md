@@ -1,166 +1,154 @@
-# Task: add www tests for parse-tag-slugs and server actions
-ID: f2cbf3f5 | Branch: test/add-www-tests-for-parse-tag-slugs-and-server-actions | Type: test
+# Task: Add RSS feed + rss_item domain foundation
+ID: caf901ad | Branch: feat/add-rss-feed-rss-item-domain-foundation | Type: feat
 
 ## Restart Context
-**Reason**: Reviewer requested changes
+**Reason**: Manual restart
 
 ⚡ **DIRECTIVE: Skip exploration. Go straight to the fix. Do not re-read files you don't need to edit.**
 
-**Last milestone**: pr_created (2026-03-19T19:38:33.197Z)
-Resume from this point — do not redo completed phases.
-**Branch**: test/add-www-tests-for-parse-tag-slugs-and-server-actions
+**Branch**: feat/add-rss-feed-rss-item-domain-foundation
 
 ### Last Checkpoint
-Review requested changes — transitioning back to executing.
-
-### Recent Progress
-- [15:38] All test files created and committed. Tests passing (46 www tests, full suite passing). PR #71 created and ready for review.
+Restarted in worktree: /Users/joshgretz/.worksite/worktrees/schwankie/feat/add-rss-feed-rss-item-domain-foundation
 
 ### Git State
-Last commit: "test(www): add tests for parse-tag-slugs and server actions"
-Uncommitted changes: 0 files
-
-### PR
-https://github.com/jgretz/schwankie/pull/71
-
-### ⚠ Reviewer Findings — YOU MUST ADDRESS THESE
-The automated reviewer blocked your PR. Read each finding below and fix it.
-Do NOT re-implement from scratch.
-After fixing ALL findings, commit and push. The reviewer will re-review automatically.
-
-### Findings to fix
-
-**[T4]** mock.module('client') declared in three separate test files (link-actions, settings-actions, tag-actions) with different export subsets. In bun, mock.module registry is global — tag-actions.test.ts (alphabetically last) wins, overwriting the other files' registrations. When link-actions.test.ts and settings-actions.test.ts run beforeAll and await import('client'), they get the tag-actions mock which lacks fetchMetadata, createLink, setSetting, etc. All mock refs are undefined, crashing 8 tests with 'TypeError: undefined is not an object'. Fix: use global.fetch mocking for HTTP client layers, or consolidate all client mocks into a shared setup file, per .claude/rules/bun.md guidance.
-
-**[T4]** mock.module('../../src/lib/session.server', () => ({getSession: mock(...)})) in all three new action test files replaces the real session.server module with a stub that only exports getSession. When session.test.ts (alphabetically after link-actions) imports session.server, it gets the stub — createSession and destroySession are undefined. 5 pre-existing session.test.ts tests regress. Fix: either mock a lower layer (e.g. the cookie/request context) instead of session.server directly, or include all necessary exports in the mock.
-
-
-### Fix Verification Protocol
-For EACH FIX above:
-1. Open the file and make the edit using the exact Find/Replace strings
-2. Grep to confirm the old pattern is gone: `grep -n "pattern" file`
-3. Move to the next finding
-
-Do NOT run typecheck or tests until ALL findings are addressed.
-Do NOT commit until ALL findings are fixed. Partial fixes cause re-review cycles.
-
-### Changed Files
-Summary of files changed in this PR:
-```
- apps/www/tests/lib/link-actions.test.ts     | 215 ++++++++++++++++++++++++++++
- apps/www/tests/lib/parse-tag-slugs.test.ts  |  36 +++++
- apps/www/tests/lib/settings-actions.test.ts |  57 ++++++++
- apps/www/tests/lib/tag-actions.test.ts      | 109 ++++++++++++++
- 4 files changed, 417 insertions(+)
-
-```
+Last commit: "chore(claude): refresh worksite-managed commands"
+Uncommitted changes: 29 files
 
 
 ## Plan
 ## Context
+Schwankie is single-user; this adds RSS as a parallel entity type. Existing link/tag tables use `serial` integer PK + snake_case + `dates` helper. Spec calls for uuid IDs + created_at/updated_at/last_fetched_at — treat as new convention for RSS-originated tables. Domain convention: commands call `getDb()` internally (match existing code even though api-architecture.md documents the ideal). Tests use `packages/domain/tests/helpers/mock-db.ts` with hard-coded table switches — new tables require extending it.
 
-The www app has limited test coverage. Several pure functions and server action files lack tests. This task adds tests for the low-hanging fruit: `parseTagSlugs` (pure function) and the three server action files (`link-actions.ts`, `tag-actions.ts`, `settings-actions.ts`).
-
-`useFormValidation` is excluded — it's a React hook using `useState`/`useCallback` and the project has no React testing infrastructure (`@testing-library/react`, `renderHook`). Adding that dependency and setup is out of scope for a coverage task. Could be a follow-up idea.
+`promote-rss-item` creates a `link` row with `content: null`, `status: 'queued'` so the existing enrich-content cron picks it up (no new cron needed).
 
 ## Flow
-
-1. Write `parseTagSlugs` tests — trivial pure function, direct import, no mocks
-2. Write server action tests — mock `@tanstack/react-start`, `session.server`, `init-client.server`, and `client` module; test validation, auth guard, and delegation for each action file
-
-The action tests follow the existing pattern in `tests/lib/session.test.ts`: `mock.module` at top level, dynamic `import` in `beforeAll`, assertions on behavior.
+1. (Future WS-3b) Task worker calls `createRssItem` for each parsed item — dedup by (feed_id, guid).
+2. (Future WS-3c) UI shows rss_items; user clicks promote → `promoteRssItem(id)` runs in a transaction: insert link (queued, content=null), mark rss_item clicked, return new link.
+3. (Future WS-3c) enrich-content cron picks up the queued link with null content and fetches via Jina within ~60s.
 
 ## Steps
-
-### 1. Create `apps/www/tests/lib/parse-tag-slugs.test.ts`
-
-Direct import of `parseTagSlugs` from `../../src/lib/parse-tag-slugs`. No mocks needed.
-
-Test cases:
-- returns empty array for `undefined`
-- returns empty array for empty string `''`
-- splits comma-separated slugs: `'a,b,c'` → `['a', 'b', 'c']`
-- filters empty segments from trailing/leading/double commas: `',a,,b,'` → `['a', 'b']`
-- single slug without commas: `'foo'` → `['foo']`
-
-### 2. Create `apps/www/tests/lib/link-actions.test.ts`
-
-Mock setup (top-level, before any imports):
-- `mock.module('@tanstack/react-start', ...)` — stub `createServerFn` to return a builder that captures the handler (same pattern as session.test.ts: `{handler: (fn) => fn}` but extended to include `inputValidator` in the chain)
-- `mock.module('../../src/lib/session.server', ...)` — export `getSession` as a `mock()` function, default returns `{authenticated: true}`
-- `mock.module('../../src/lib/init-client.server', ...)` — export `initClientServer` as a no-op mock
-- `mock.module('client', ...)` — export mocked functions: `fetchMetadata`, `createLink`, `updateLink`, `resetEnrichment`, `refetchLink`, `suggestTags`, `deleteLink`
-
-The `createServerFn` mock must handle the chained builder pattern: `createServerFn({method}) → {inputValidator: (schema) => {handler: (fn) => fn}}`. The `inputValidator` step should run the zod schema's `safeParse` on the input (or just pass through, since the real validation is done by TanStack). Simplest approach: make `handler` return the raw handler function so tests call it directly with `{data: {...}}`.
-
-Dynamic import in `beforeAll`:
-```ts
-const mod = await import('../../src/lib/link-actions');
-```
-
-Test groups:
-- **fetchMetadataAction**: calls `fetchMetadata` with url; rejects invalid url (zod validation via the schema, tested separately or inline)
-- **createLinkAction**: calls `createLink` with full input; verifies delegation
-- **updateLinkAction**: calls `updateLink(id, rest)` — verifies destructuring
-- **resetEnrichmentAction**: calls `resetEnrichment(id)`
-- **refetchLinkAction**: calls `refetchLink(id)`
-- **suggestTagsAction**: calls `suggestTags(id)`
-- **deleteLinkAction**: calls `deleteLink(id)`
-- **auth guard**: when `getSession` returns `null`, all actions throw 'Unauthorized'
-
-### 3. Create `apps/www/tests/lib/tag-actions.test.ts`
-
-Same mock setup pattern as link-actions.
-
-Mock `client` exports: `renameTag`, `mergeTag`, `deleteTag`.
-
-Test groups:
-- **renameTagAction**: calls `renameTag(id, text)`
-- **mergeTagAction**: calls `mergeTag(aliasId, canonicalTagId)`, returns `{merged: true}`
-- **deleteTagAction**: calls `deleteTag(id)`
-- **auth guard**: when `getSession` returns null, throws 'Unauthorized'
-
-### 4. Create `apps/www/tests/lib/settings-actions.test.ts`
-
-Same mock setup pattern.
-
-Mock `client` exports: `setSetting`.
-
-Test groups:
-- **setSettingAction**: calls `setSetting(key, value)`
-- **auth guard**: when `getSession` returns null, throws 'Unauthorized'
+1. Create `packages/database/schema/feed.schema.ts`: pgTable('feed', {id uuid primaryKey defaultRandom, name text notNull, sourceUrl text notNull unique, lastFetchedAt timestamptz, errorCount integer notNull default 0, lastError text, disabled boolean notNull default false, createdAt + updatedAt timestamptz}). Use `timestamp(..., {withTimezone: true})`.
+2. Create `packages/database/schema/rss-item.schema.ts`: pgTable('rss_item', {id uuid PK defaultRandom, feedId uuid references feed.id onDelete cascade, guid text notNull, title text notNull, link text notNull, summary text, content text, imageUrl text, publishedAt timestamptz, read bool default false, clicked bool default false, createdAt}). Add uniqueIndex('idx_rss_item_feed_guid').on(feedId, guid). Index on (read, publishedAt).
+3. Export `feed` + `rssItem` from `packages/database/schema/index.ts`.
+4. Run `cd packages/database && bun run generate -- --name add_rss_feeds`. Inspect generated SQL (`packages/database/drizzle/<next>_add_rss_feeds.sql`); do not hand-edit.
+5. Extend `packages/domain/src/types.ts`: `Feed = typeof feed.$inferSelect`, `CreateFeedInput`, `UpdateFeedInput`, `RssItem = typeof rssItem.$inferSelect`, `CreateRssItemInput`, `ListRssItemsParams`, `ListRssItemsResult`.
+6. Create `packages/domain/src/commands/create-feed.ts` — mirror `create-link.ts` pattern.
+7. Create `packages/domain/src/commands/update-feed.ts` — partial update mirroring `update-link.ts` (supports rename, disable, clear error, bump error, touch fetched).
+8. Create `packages/domain/src/commands/delete-feed.ts` — cascade deletes rss_items via FK.
+9. Create `packages/domain/src/commands/create-rss-item.ts` — insert with `.onConflictDoNothing()` on (feed_id, guid) for WS-3b import reuse.
+10. Create `packages/domain/src/commands/mark-rss-item-read.ts` — update read by id; optional `clicked` field.
+11. Create `packages/domain/src/commands/promote-rss-item.ts` — db.transaction: fetch item, `createLink({url: item.link, title: item.title, description: item.summary, imageUrl: item.imageUrl, status: 'queued'})` (createLink defaults content null), mark clicked=true. Return the created link id.
+12. Create `packages/domain/src/queries/list-feeds.ts`, `get-feed.ts`, `list-rss-items.ts` (conditions array pattern; order by publishedAt desc nulls last).
+13. Update `packages/domain/src/index.ts` barrel.
+14. Extend `packages/domain/tests/helpers/mock-db.ts`: add feeds + rssItems store arrays; COLUMN_MAP entries; defaultsForTable; replaceStoreArray cases; use crypto.randomUUID() for their ids.
+15. Add `makeFeed`, `makeRssItem` to `packages/domain/tests/helpers/factory.ts`.
+16. Write one test file per command + query mirroring existing coverage depth.
+17. Run `bun run typecheck` + `bun test`.
 
 ## Acceptance Criteria
 
 ### Truths
-- `parseTagSlugs` tests verify splitting, filtering, and edge cases (undefined, empty string, trailing commas)
-- Server action tests verify each action delegates to the correct client function with correct arguments
-- Server action tests verify the auth guard throws 'Unauthorized' when session is null
-- All tests pass: `bun test --cwd apps/www`
-- Full suite passes: `bun run test` from root
+- bun run typecheck passes; bun test passes with new tests; no existing regression.
+- Migration applies cleanly to Neon scratch branch.
+- feed has unique source_url; rss_item has unique (feed_id, guid) + FK cascade.
+- promote-rss-item creates a link with status=queued and content=null; marks rss_item clicked=true in same transaction.
 
 ### Artifacts
-- `apps/www/tests/lib/parse-tag-slugs.test.ts`
-- `apps/www/tests/lib/link-actions.test.ts`
-- `apps/www/tests/lib/tag-actions.test.ts`
-- `apps/www/tests/lib/settings-actions.test.ts`
+- packages/database/schema/{feed,rss-item}.schema.ts; packages/database/drizzle/<n>_add_rss_feeds.sql.
+- packages/domain/src/{commands/*, queries/*}.ts — 9 new files.
+- packages/domain/src/{index.ts, types.ts} updated; tests/helpers/{mock-db.ts, factory.ts} extended.
+- packages/domain/tests/{commands/*, queries/*}.test.ts covering each new function.
 
 ### Key Links
-- Existing test pattern: `apps/www/tests/lib/session.test.ts` (mock.module + dynamic import)
-- Existing test pattern: `apps/www/tests/lib/auth.test.ts` (mock.module + dynamic import)
-- Source: `apps/www/src/lib/parse-tag-slugs.ts`
-- Source: `apps/www/src/lib/link-actions.ts`
-- Source: `apps/www/src/lib/tag-actions.ts`
-- Source: `apps/www/src/lib/settings-actions.ts`
+- rss_item.feed_id → feed.id (cascade); uniqueness on (feed_id, guid) lets WS-3b import use onConflictDoNothing.
+- promote-rss-item writes a link row consumed by the existing enrich-content cron (WS-1) — no new cron needed.
 
 ### Verification
-```bash
-bun test --cwd apps/www
-bun run test
-```
+- bun run typecheck; bun test; drizzle-kit migrate on scratch DB.
+
+## Open Questions
+- UUID vs serial: all existing tables use serial. Confirm mixed-type conventions acceptable.
+- mark-rss-item-read including clicked toggle — one command with optional field (planned) or split?
+- list-rss-items eager-joining feed.name for UI convenience vs YAGNI (WS-3c fetches separately). Planned: no eager join.
+
+## Task Type Guidance
+
+You are implementing a new feature. Priorities:
+- Align with existing architecture and conventions
+- Verify acceptance criteria are met
+- Create new files following project structure patterns
+- Include comprehensive tests for new functionality
+- Update relevant documentation
+
+
+## Code Graph Context
+
+Files your task will modify and their relationships:
+
+### packages/database/schema/index.ts
+**Used by:** apps/api/src/validators/tags.ts (linkStatusEnum, LinkStatus), packages/domain/src/queries/get-tags-with-count.ts (linkStatusEnum), packages/domain/src/types.ts (link), packages/domain/src/commands/delete-link.ts (link), packages/domain/src/commands/update-link.ts (link, linkTag, tag), packages/domain/src/commands/create-link.ts (linkTag), packages/domain/src/commands/merge-tag.ts (linkTag), packages/domain/src/commands/delete-tag.ts (tag), packages/domain/src/commands/normalize-tag.ts (tag)
+
+### packages/domain/src/index.ts
+
+### packages/domain/src/types.ts
+**Imports:** database
+
 
 
 ## Rules
+
+# Drizzle ORM Patterns
+
+## .$dynamic() for Conditional Query Composition
+
+Drizzle's query builder locks the return type at each chain step. After `.from().innerJoin()...`, TypeScript freezes the type signature — adding `.where()` to a reassigned `let query` causes a type error because the builder types don't match.
+
+`.$dynamic()` is the escape hatch. Call it after building the base query chain to opt into a looser type that permits conditional chaining:
+
+```ts
+let query = db
+  .select({...})
+  .from(table)
+  .innerJoin(...)
+  .innerJoin(...)
+  .$dynamic();  // ← unlocks conditional chaining
+
+if (condition) {
+  query = query.where(eq(col, value));
+}
+
+return query.groupBy(...).orderBy(...);
+```
+
+**When to use**: Multi-join queries where `.where()`, `.orderBy()`, `.having()`, or additional `.innerJoin()` calls are conditional.
+
+Example: `packages/domain/src/queries/get-tags-with-count.ts` — filters by link status only if provided.
+
+## Conditions Array Pattern
+
+When only `.where()` conditions vary (no conditional joins), avoid `.$dynamic()`. Instead, build a `conditions[]` array and pass it to a single `.where(and(...conditions))`:
+
+```ts
+const conditions = [];
+if (needs_enrichment) conditions.push(isNull(link.content));
+if (status) conditions.push(eq(link.status, status));
+if (q) conditions.push(or(ilike(link.title, `%${q}%`), ...));
+
+const where = conditions.length > 0 ? and(...conditions) : undefined;
+return db.select().from(link).where(where)...;
+```
+
+This is simpler, preserves full type safety, and scales better than `.$dynamic()`.
+
+Example: `packages/domain/src/queries/list-links.ts` — many optional filters, one `.where()` call.
+
+## Rule
+
+- Use `.$dynamic()` only when you need to conditionally chain clauses beyond `.where()` (e.g. `.innerJoin()`, `.having()`, `.groupBy()`).
+- For conditional `.where()` only, use the conditions array pattern — it's clearer and type-safe.
+
+---
 
 # API Architecture — CQRS + Separation of Concerns
 
@@ -277,256 +265,6 @@ export async function refetchLink(
 
 ---
 
-# Batch Processing — Error Isolation and Silent Death Prevention
-
-## Error Isolation
-
-Sequential jobs in a batch pipeline must be independent. One job failing must not skip the rest.
-
-**Wrong** — `enrichContent` throwing kills `scoreLinks` and `normalizeTags`:
-
-```ts
-async function poll() {
-  await enrichContent();
-  await scoreLinks();
-  await normalizeTags();
-}
-```
-
-**Correct** — each job is isolated; all jobs run regardless of individual failures:
-
-```ts
-const jobs = [
-  {name: 'enrichContent', fn: () => enrichContent()},
-  {name: 'scoreLinks', fn: () => scoreLinks()},
-  {name: 'normalizeTags', fn: () => normalizeTags()},
-];
-
-async function poll() {
-  for (const job of jobs) {
-    try {
-      await job.fn();
-    } catch (error) {
-      console.error(`[poll] ${job.name} failed:`, error);
-    }
-  }
-}
-```
-
-Log the full error object — never swallow it silently or replace it with a generic message.
-
-## Silent Death Prevention
-
-A `setTimeout`-based polling loop dies silently if the poll body throws after the initial call. No crash, no log, no restart — the process keeps running but does nothing.
-
-**Wrong** — unhandled throw kills the loop with no signal:
-
-```ts
-async function scheduleNext() {
-  await poll();
-  setTimeout(scheduleNext, INTERVAL);
-}
-```
-
-**Correct** — top-level catch ensures the loop always reschedules:
-
-```ts
-async function scheduleNext() {
-  try {
-    await poll();
-  } catch (error) {
-    console.error('[scheduleNext] Unexpected poll failure:', error);
-  } finally {
-    if (running) setTimeout(scheduleNext, INTERVAL);
-  }
-}
-```
-
-## Applies To
-
-- Task runners (`apps/tasks`)
-- Cron-like sequential pipelines
-- Any `for` loop over independent async operations
-- Recursive `setTimeout` / `setInterval` polling loops
-
----
-
-# Design Tokens — CSS Variables, Theming, and shadcn/ui
-
-## CSS Variable Structure
-
-Three layers of tokens in `apps/www/src/globals.css`:
-
-- **App tokens**: `--bg`, `--bg-subtle`, `--border`, `--text`, `--text-muted`, `--text-faint`, `--accent`, `--accent-hover`, `--accent-foreground` — used directly in custom components.
-- **shadcn tokens**: `--background`, `--foreground`, `--card`, `--primary`, `--secondary`, `--muted`, `--destructive`, `--ring`, `--input`, `--radius` — standard shadcn/ui mapping.
-- **Component tokens**: `--tag-bg`, `--tag-text`, `--tag-active-bg`, `--tag-active-text`, `--modal-bg`, `--search-bg`, `--pill-bg`, `--pill-text` — scoped to specific UI elements.
-
-All tokens defined in `:root`; theme-adaptive tokens overridden in `.dark` class (see Dark Mode Inheritance below).
-
-## Dark Mode Inheritance
-
-Not all tokens change between themes. Categorize tokens by their dark-mode behavior:
-
-**Invariant (same value in `.light` and `.dark`):**
-
-- `--pill-bg`, `--pill-text`, `--tag-active-bg`, `--tag-active-text`, `--destructive`, `--destructive-foreground`, `--primary-foreground`, `--radius` — accent-colored UI elements stay consistent across themes; structural tokens (radius) are theme-independent.
-
-**Theme-adaptive (different values in `.dark`):**
-
-- All surface/text/border tokens: `--bg`, `--bg-subtle`, `--border`, `--text`, `--text-muted`, `--text-faint`, `--accent`, `--accent-hover`, `--tag-bg`, `--tag-text`, `--tag-active-bg-secondary`, `--modal-bg`, `--search-bg`, `--background`, `--foreground`, `--card`, `--card-foreground`, `--popover`, `--popover-foreground`, `--primary`, `--secondary`, `--secondary-foreground`, `--muted`, `--muted-foreground`, `--ring`, `--input`, `--accent-foreground`.
-
-**When Adding a New Token:**
-
-- Structural tokens (spacing, radius) → define in `:root` only; no `.dark` override needed
-- Color tokens referencing accent or white-on-accent → can be invariant if the accent itself adapts
-- All surface, text, or border tokens → must have a `.dark` override with contrasting value
-
-**CSS Cleanup:** Remove redundant `.dark` redeclarations for invariant tokens — makes the token system self-documenting (if a token appears in `.dark`, it genuinely changes).
-
-## Theme — Stone & Slate
-
-- **Light**: warm parchment base (#f7f3ed), dark text (#1e1e1e), slate-blue accent (#5b6f8a); tag chips use terracotta warm (#e4d5c4 bg, #4a3728 text)
-- **Dark**: charcoal base (#1a1c1e), cream text (#e2e4e8), light slate-blue (#7b96b5)
-- Dark mode uses `.dark` class toggle on `html` (not `prefers-color-scheme`), with localStorage persistence
-- Neutrals are warm-tinted (no cool grays, no pure black/white)
-
-## Typography
-
-- `font-serif` (Lora) — headings, titles, display text
-- `font-sans` (DM Sans) — body, UI chrome, buttons, labels
-
-## Using Tokens in Components
-
-- Use Tailwind classes mapped in `tailwind.config.ts`: `bg-bg`, `text-text`, `bg-accent`, `text-text-muted`
-- shadcn tokens: `bg-primary`, `text-foreground`, `bg-card`, `bg-muted`
-- Border radius: `rounded-lg` (0.5rem), `rounded-md` (calc), `rounded-sm` (calc) — all derived from `--radius`
-- Use `cn()` from `src/lib/utils.ts` for class merging
-
-## Adding New shadcn/ui Components
-
-1. Install via `npx shadcn@latest add <component>` from `apps/www/`
-2. Components land in `src/components/ui/` — auto-use the token system
-3. Review the generated file after adding:
-   - Replace default gray/slate colors with app's warm palette (`bg-bg`, `text-text`, `bg-muted`)
-   - Replace `font-sans` default with appropriate font (`font-serif` for headings in dialogs/cards)
-   - Ensure focus states use `ring-accent` not default blue
-   - Match border radius to existing components (check `button.tsx`, `dialog.tsx` for patterns)
-
-## Adding New Tokens
-
-- Define in `:root`; add a `.dark` override only for theme-adaptive tokens (see Dark Mode Inheritance above)
-- Add Tailwind mapping in `tailwind.config.ts` `colors` extend
-- Use semantic names (`--sidebar-bg`) not raw values (`--blue-200`)
-- Keep warm palette — no cool grays, no pure blacks/whites
-
----
-
-# Drizzle ORM Patterns
-
-## .$dynamic() for Conditional Query Composition
-
-Drizzle's query builder locks the return type at each chain step. After `.from().innerJoin()...`, TypeScript freezes the type signature — adding `.where()` to a reassigned `let query` causes a type error because the builder types don't match.
-
-`.$dynamic()` is the escape hatch. Call it after building the base query chain to opt into a looser type that permits conditional chaining:
-
-```ts
-let query = db
-  .select({...})
-  .from(table)
-  .innerJoin(...)
-  .innerJoin(...)
-  .$dynamic();  // ← unlocks conditional chaining
-
-if (condition) {
-  query = query.where(eq(col, value));
-}
-
-return query.groupBy(...).orderBy(...);
-```
-
-**When to use**: Multi-join queries where `.where()`, `.orderBy()`, `.having()`, or additional `.innerJoin()` calls are conditional.
-
-Example: `packages/domain/src/queries/get-tags-with-count.ts` — filters by link status only if provided.
-
-## Conditions Array Pattern
-
-When only `.where()` conditions vary (no conditional joins), avoid `.$dynamic()`. Instead, build a `conditions[]` array and pass it to a single `.where(and(...conditions))`:
-
-```ts
-const conditions = [];
-if (needs_enrichment) conditions.push(isNull(link.content));
-if (status) conditions.push(eq(link.status, status));
-if (q) conditions.push(or(ilike(link.title, `%${q}%`), ...));
-
-const where = conditions.length > 0 ? and(...conditions) : undefined;
-return db.select().from(link).where(where)...;
-```
-
-This is simpler, preserves full type safety, and scales better than `.$dynamic()`.
-
-Example: `packages/domain/src/queries/list-links.ts` — many optional filters, one `.where()` call.
-
-## Rule
-
-- Use `.$dynamic()` only when you need to conditionally chain clauses beyond `.where()` (e.g. `.innerJoin()`, `.having()`, `.groupBy()`).
-- For conditional `.where()` only, use the conditions array pattern — it's clearer and type-safe.
-
----
-
-# Singleton Pattern
-
-## Existing Pattern
-
-`packages/domain/src/db.ts` and `packages/client/src/config.ts` use module-level mutable singletons (`let x = null; init(); getX()`).
-
-## Rules
-
-### Export `reset()` for Test Isolation
-
-Any `let x = null; init(); getX()` singleton MUST export a `reset()`:
-
-```ts
-export function reset(): void {
-  instance = null;
-}
-```
-
-Call `reset()` in `afterEach`. Without it, the first test to call `init()` poisons every subsequent test in the process.
-
-### Prefer Dependency Injection
-
-Pass dependencies as parameters rather than reaching for the module singleton:
-
-```ts
-// CORRECT — db passed explicitly, unit-testable
-export async function upsertTags(db: DbLike, tags: string[]): Promise<void>;
-
-// AVOID — coupled to module singleton
-export async function upsertTags(tags: string[]): Promise<void> {
-  const db = getDb(); // ...
-}
-```
-
-The singleton pattern is acceptable at app entry points (server startup). Domain logic should accept dependencies as parameters.
-
-### SSR Safety
-
-Module-level `init()` calls run at import time during SSR — before any request arrives. Never call `init()` at module scope in server-rendered code unless the config is guaranteed available at module evaluation time. Prefer lazy initialization inside request handlers.
-
-### Anti-Pattern: Silent Overwrite
-
-`client/config.ts` has no guard — `init()` silently overwrites any previous config:
-
-```ts
-export function init(clientConfig: ClientConfig): void {
-  config = clientConfig; // no guard — clobbers previous value
-}
-```
-
-Calling `init()` twice with different configs (browser vs. server) silently uses whichever ran last. Add a guard or call `reset()` explicitly between uses.
-
----
-
 # Test Coverage
 
 ## Coverage Tiers
@@ -604,119 +342,58 @@ See global `testing.md` for general patterns (structure, Arrange-Act-Assert, fac
 
 ---
 
-# Systematic Debugging Protocol
+# Worksite Planning
 
-## Four Phases (in order)
+## Plan Field Structure
 
-### 1. Reproduce
-- Get a reliable reproduction before changing anything
-- Capture the exact error message, stack trace, exit code
-- If you can't reproduce, you don't understand the problem yet
+Workers are autonomous — they cannot ask clarifying questions once launched.
+Every plan must be self-contained.
 
-### 2. Pattern Analysis
-- Read the error carefully — what is it actually saying?
-- Check recent changes that could have caused this
-- Look for similar patterns in the codebase (same error, same API, same module)
+### Include
+- **Context**: the problem, the trigger, the intended outcome
+- **File paths**: specific files to create, modify, or delete
+- **Steps**: ordered implementation steps; each step is one clear action
+- **Acceptance criteria**: tests pass, type-checks, specific observable behavior
 
-### 3. Hypothesis + Test
-- Form one specific hypothesis: "X is failing because Y"
-- Design a test that confirms or refutes it before implementing a fix
-- If the hypothesis is wrong, return to phase 2
+### Omit
+- Setup the system handles: worktree creation, bun install, branch checkout
+- Repo-level rules: CLAUDE.md, code style, git conventions — the worker inherits these
+- Over-specified implementation: the worker is a senior engineer, not a typist
 
-### 4. Implementation
-- Fix the root cause, not the symptom
-- Verify the fix resolves the reproduction from phase 1
-- Check for other call sites that might have the same issue
+## Scoping
+- One task = one PR; if it can't be reviewed in one sitting, it's too big
+- Prefer a task that touches one subsystem over one that cuts across many
+- If a change requires coordination across tasks, note the dependency explicitly
 
-## Three-Fix Escalation Rule
+## Context Budget
 
-After 3 failed fix attempts on the same issue:
+Workers have a finite context window (~200k tokens). Plan decomposition must
+account for this — a task that exhausts context crashes the worker and loses
+all progress.
 
-- **Stop fixing**
-- The problem is likely architectural, not local
-- Run `/debug` to check for session-level explanations (tool failures, API errors, context issues) before flagging attention
-- Flag attention with a summary of what you tried, why each attempt failed, and any `/debug` findings
-- Do not continue treating symptoms
+### Estimating Context Pressure
 
----
+Each of these consumes significant context:
+- Reading a file: ~1-5k tokens per file
+- Running typecheck: ~1-2k tokens per run
+- Running test suite: ~2-5k tokens per run
+- Git operations (status, diff, commit): ~1-2k tokens each
+- Creating a PR (gh pr create): ~1-2k tokens
 
-# Deduplication
+A task that touches 5+ files AND requires multiple verification cycles
+(typecheck both apps, full test suite, commit, PR) is high-pressure. Consider
+splitting into two tasks with an explicit dependency.
 
-## Search Before Implementing
+### Split Heuristic
 
-Before writing a utility function, grep the codebase for existing implementations:
+If a plan has ALL of these, split it:
+- 6+ files modified/created
+- Multiple verification targets (e.g. both MCP and HUD typecheck)
+- Full test suite run
+- PR creation with detailed description
 
-```bash
-grep -r "functionName\|similar purpose" packages/ apps/ --include="*.ts" -l
-```
-
-If an equivalent exists, import it — don't rewrite it. Duplicate logic means two places to update when behavior changes.
-
-## Types in packages/shared
-
-Before defining a new type inline, check `packages/shared/src/types.ts`. If a type is used by 2+ packages, it belongs in shared — define it once, import everywhere.
-
-```ts
-// WRONG — same type defined in apps/mcp and apps/hud separately
-type TaskStatus = 'planned' | 'executing' | 'done';
-
-// CORRECT — defined once in packages/shared/src/types.ts, imported everywhere
-import type {TaskStatus} from '@worksite/shared';
-```
-
-## No "Keep in Sync" Comments
-
-If two constants must have the same value, one must import from the other. A comment saying "keep in sync" is a deferred bug — it will drift.
-
-```ts
-// WRONG — comment dependency, guaranteed to diverge
-// Keep in sync with apps/hud/src/constants.ts
-export const MAX_TASKS = 50;
-
-// CORRECT — single source of truth
-export {MAX_TASKS} from '@worksite/shared';
-```
-
-## Extract on Second Use
-
-When you find yourself copying a function or block of code:
-
-- **Cross-package**: extract to `packages/shared/src/`
-- **Within a package**: extract to a local `utils.ts` or sibling module
-
-The test: if you're about to write the same logic twice, extract it first.
-
----
-
-# Documentation Structure
-
-## Three-Tier Model
-
-Organize project knowledge into three layers:
-
-### `/docs/` — Domain & Business Knowledge
-- Architecture, concepts, workflows, subsystem guides
-- One file per topic, small and focused (under ~80 lines)
-- Written for humans and agents who need to understand the system
-- Examples: `docs/architecture.md`, `docs/auth-flow.md`, `docs/api-design.md`
-
-### `CLAUDE.md` — Overview + Table of Contents
-- Project identity and execution rules (under 50 lines)
-- Links to `/docs/` files for domain knowledge
-- Links to `.claude/rules/` for technical rules
-- NOT a dumping ground — if a section grows past 10 lines, extract it
-
-### `.claude/rules/` — Technical Code Rules
-- Coding conventions, tool preferences, testing patterns, gotchas
-- One file per topic (e.g., `testing.md`, `typecheck.md`, `bun.md`)
-- Focused on "how to write code here" not "what the system does"
-
-## Principles
-- Many small files > fewer large files
-- Each file is self-contained with a clear single topic
-- Domain knowledge (what/why) lives in `/docs/`
-- Technical rules (how) live in `.claude/rules/`
-- `CLAUDE.md` is the entry point, not the encyclopedia
+Split along natural seams: store/backend changes in one task, UI/frontend
+in another. The second task depends on the first.
 
 ---
 
@@ -795,58 +472,222 @@ create_idea({ prompt: "[task:{your-task-id}] description of the idea" })
 
 ---
 
-# Worksite Planning
+# Verification Before Completion
 
-## Plan Field Structure
+Evidence before claims, always.
 
-Workers are autonomous — they cannot ask clarifying questions once launched.
-Every plan must be self-contained.
+## Gate
 
-### Include
-- **Context**: the problem, the trigger, the intended outcome
-- **File paths**: specific files to create, modify, or delete
-- **Steps**: ordered implementation steps; each step is one clear action
-- **Acceptance criteria**: tests pass, type-checks, specific observable behavior
+Before claiming a task is complete, run through this sequence:
 
-### Omit
-- Setup the system handles: worktree creation, bun install, branch checkout
-- Repo-level rules: CLAUDE.md, code style, git conventions — the worker inherits these
-- Over-specified implementation: the worker is a senior engineer, not a typist
+1. **Identify** the proof command (typecheck, test suite, build, curl, etc.)
+2. **Execute** it fresh — not from cache, not from memory
+3. **Read** the full output — do not skim or assume
+4. **Verify** the output matches expectations (exit code 0, no failures, expected behavior)
+5. **Only then** claim the task is done
 
-## Scoping
-- One task = one PR; if it can't be reviewed in one sitting, it's too big
-- Prefer a task that touches one subsystem over one that cuts across many
-- If a change requires coordination across tasks, note the dependency explicitly
+## Language
 
-## Context Budget
+Never use hedge words when reporting completion:
+- "should work" — run it and confirm
+- "probably passes" — run it and confirm
+- "seems correct" — run it and confirm
+- "I believe this is done" — prove it
 
-Workers have a finite context window (~200k tokens). Plan decomposition must
-account for this — a task that exhausts context crashes the worker and loses
-all progress.
+## Full Suite is Mandatory
 
-### Estimating Context Pressure
+The proof command for test verification is `bun run test` (the root script that runs
+all 4 suites in separate processes). Not `bun run --cwd <package> test` — the full suite.
 
-Each of these consumes significant context:
-- Reading a file: ~1-5k tokens per file
-- Running typecheck: ~1-2k tokens per run
-- Running test suite: ~2-5k tokens per run
-- Git operations (status, diff, commit): ~1-2k tokens each
-- Creating a PR (gh pr create): ~1-2k tokens
+- You own every test failure on your branch, not just tests for files you touched.
+- Do not attribute failures to "pre-existing", "not my change", or "outside scope."
+- If tests fail that you didn't cause, fix them anyway — or flag attention and pause.
+- Never complete a task, submit for review, or create a PR with failing tests.
 
-A task that touches 5+ files AND requires multiple verification cycles
-(typecheck both apps, full test suite, commit, PR) is high-pressure. Consider
-splitting into two tasks with an explicit dependency.
+## Scope
 
-### Split Heuristic
+This applies to every task type — features, fixes, refactors, tests, docs, chores.
+Even doc-only tasks: verify the file renders, links resolve, code examples are valid.
 
-If a plan has ALL of these, split it:
-- 6+ files modified/created
-- Multiple verification targets (e.g. both MCP and HUD typecheck)
-- Full test suite run
-- PR creation with detailed description
+---
 
-Split along natural seams: store/backend changes in one task, UI/frontend
-in another. The second task depends on the first.
+# Deduplication
+
+## Search Before Implementing
+
+Before writing a utility function, grep the codebase for existing implementations:
+
+```bash
+grep -r "functionName\|similar purpose" packages/ apps/ --include="*.ts" -l
+```
+
+If an equivalent exists, import it — don't rewrite it. Duplicate logic means two places to update when behavior changes.
+
+## Types in packages/shared
+
+Before defining a new type inline, check `packages/shared/src/types.ts`. If a type is used by 2+ packages, it belongs in shared — define it once, import everywhere.
+
+```ts
+// WRONG — same type defined in apps/mcp and apps/hud separately
+type TaskStatus = 'planned' | 'executing' | 'done';
+
+// CORRECT — defined once in packages/shared/src/types.ts, imported everywhere
+import type {TaskStatus} from '@worksite/shared';
+```
+
+## No "Keep in Sync" Comments
+
+If two constants must have the same value, one must import from the other. A comment saying "keep in sync" is a deferred bug — it will drift.
+
+```ts
+// WRONG — comment dependency, guaranteed to diverge
+// Keep in sync with apps/hud/src/constants.ts
+export const MAX_TASKS = 50;
+
+// CORRECT — single source of truth
+export {MAX_TASKS} from '@worksite/shared';
+```
+
+## Extract on Second Use
+
+When you find yourself copying a function or block of code:
+
+- **Cross-package**: extract to `packages/shared/src/`
+- **Within a package**: extract to a local `utils.ts` or sibling module
+
+The test: if you're about to write the same logic twice, extract it first.
+
+---
+
+# Worksite Worker — Autonomous Behavior
+
+## "Ask the user" means "flag attention"
+
+You are an autonomous worker with no interactive user. Whenever instructions
+(including skill prompts like /wrap-up or /review) say "ask the user",
+"confirm with the user", or "get user input":
+
+1. Call `update_task` with `attentionMessage: "concise reason"`
+2. Continue working on any independent steps you can
+3. Never wait silently — the orchestrator only sees `needsAttention`
+
+## Blockers
+
+When you hit a blocker you cannot resolve — test failures after 2 attempts,
+missing dependencies, permission errors, environment issues, or reviewer
+disagreements — immediately flag attention. This applies in ALL phases:
+planning, executing, wrap-up, review, and during any skill execution.
+
+## Never Sit Idle
+
+You have no interactive user. If you ever find yourself waiting — for confirmation,
+for input, for permission, or for any reason — you are stuck. There is nobody coming
+to help unless you signal.
+
+Before stopping or pausing for any reason:
+1. Call `update_task` with `attentionMessage: "reason you stopped"`
+2. Then continue working on anything else you can
+
+This applies universally: bash failures, tool errors, ambiguous instructions,
+uncertainty about next steps, permission denials — anything that would cause you
+to pause. The default action is always to flag and continue, never to wait silently.
+
+## Context Hygiene
+
+Your context window is finite. Running out crashes the session and loses all
+progress. Treat context as a budget.
+
+### Checkpoint Compaction
+
+Run `/compact` after each major phase of work:
+- After implementing a group of related changes
+- After running typecheck
+- After running tests
+- After committing and pushing
+
+Include a brief summary of what was completed and what remains when compacting.
+This preserves progress context while freeing token budget for the next phase.
+
+### Minimize Context Waste
+
+A typical source file is 500–2000 lines (~5–20k tokens); `grep` returns 20–50 matched lines
+(~100–500 tokens)—a 20–100× reduction. Your 200k context window fills faster than you estimate;
+reading 10 files early leaves no budget for diagnostics, commits, or PR creation. Narrow the
+target with `grep` / `glob` before `Read`; use `Read` with `offset`/`limit` for
+relevant spans only; use `run_compressed` for verbose output. Anti-pattern: reading an entire
+file to find one function — use `Grep` with the function name instead.
+
+- Use `grep` / `glob` before reading full files — only read what you need
+- For test, typecheck, and gh output: use `run_compressed` MCP tool for automatic compression
+- `| head -20` is acceptable for git status, simple listings — NOT for diagnostic output
+- Don't re-read files you've already read unless they changed
+- Use `--quiet` flags on git and build commands where available
+
+## Follow-Up Ideas
+
+When you discover something worth doing but outside your current task scope —
+improvements, refactors, bugs, new features — log it as an idea:
+
+```
+create_idea({ prompt: "[task:{your-task-id}] description of the idea" })
+```
+
+Always prepend `[task:{id}]` so the orchestrator knows which task spawned it.
+Do this for reviewers too — if a review surfaces a follow-up, log it.
+
+---
+
+# Singleton Pattern
+
+## Existing Pattern
+
+`packages/domain/src/db.ts` and `packages/client/src/config.ts` use module-level mutable singletons (`let x = null; init(); getX()`).
+
+## Rules
+
+### Export `reset()` for Test Isolation
+
+Any `let x = null; init(); getX()` singleton MUST export a `reset()`:
+
+```ts
+export function reset(): void {
+  instance = null;
+}
+```
+
+Call `reset()` in `afterEach`. Without it, the first test to call `init()` poisons every subsequent test in the process.
+
+### Prefer Dependency Injection
+
+Pass dependencies as parameters rather than reaching for the module singleton:
+
+```ts
+// CORRECT — db passed explicitly, unit-testable
+export async function upsertTags(db: DbLike, tags: string[]): Promise<void>;
+
+// AVOID — coupled to module singleton
+export async function upsertTags(tags: string[]): Promise<void> {
+  const db = getDb(); // ...
+}
+```
+
+The singleton pattern is acceptable at app entry points (server startup). Domain logic should accept dependencies as parameters.
+
+### SSR Safety
+
+Module-level `init()` calls run at import time during SSR — before any request arrives. Never call `init()` at module scope in server-rendered code unless the config is guaranteed available at module evaluation time. Prefer lazy initialization inside request handlers.
+
+### Anti-Pattern: Silent Overwrite
+
+`client/config.ts` has no guard — `init()` silently overwrites any previous config:
+
+```ts
+export function init(clientConfig: ClientConfig): void {
+  config = clientConfig; // no guard — clobbers previous value
+}
+```
+
+Calling `init()` twice with different configs (browser vs. server) silently uses whichever ran last. Add a guard or call `reset()` explicitly between uses.
 
 ---
 
@@ -904,116 +745,6 @@ complete but is actually a stub:
 These patterns pass typecheck and may pass tests, but do not deliver the plan's
 stated outcome. Verify that implementation matches the plan's acceptance criteria
 truths, not just that code exists.
-
----
-
-# Verification Before Completion
-
-Evidence before claims, always.
-
-## Gate
-
-Before claiming a task is complete, run through this sequence:
-
-1. **Identify** the proof command (typecheck, test suite, build, curl, etc.)
-2. **Execute** it fresh — not from cache, not from memory
-3. **Read** the full output — do not skim or assume
-4. **Verify** the output matches expectations (exit code 0, no failures, expected behavior)
-5. **Only then** claim the task is done
-
-## Language
-
-Never use hedge words when reporting completion:
-- "should work" — run it and confirm
-- "probably passes" — run it and confirm
-- "seems correct" — run it and confirm
-- "I believe this is done" — prove it
-
-## Full Suite is Mandatory
-
-The proof command for test verification is `bun run test` (the root script that runs
-all 4 suites in separate processes). Not `bun run --cwd <package> test` — the full suite.
-
-- You own every test failure on your branch, not just tests for files you touched.
-- Do not attribute failures to "pre-existing", "not my change", or "outside scope."
-- If tests fail that you didn't cause, fix them anyway — or flag attention and pause.
-- Never complete a task, submit for review, or create a PR with failing tests.
-
-## Scope
-
-This applies to every task type — features, fixes, refactors, tests, docs, chores.
-Even doc-only tasks: verify the file renders, links resolve, code examples are valid.
-
----
-
-# Worksite Worker — Autonomous Behavior
-
-## "Ask the user" means "flag attention"
-
-You are an autonomous worker with no interactive user. Whenever instructions
-(including skill prompts like /wrap-up or /review) say "ask the user",
-"confirm with the user", or "get user input":
-
-1. Call `update_task` with `attentionMessage: "concise reason"`
-2. Continue working on any independent steps you can
-3. Never wait silently — the orchestrator only sees `needsAttention`
-
-## Blockers
-
-When you hit a blocker you cannot resolve — test failures after 2 attempts,
-missing dependencies, permission errors, environment issues, or reviewer
-disagreements — immediately flag attention. This applies in ALL phases:
-planning, executing, wrap-up, review, and during any skill execution.
-
-## Never Sit Idle
-
-You have no interactive user. If you ever find yourself waiting — for confirmation,
-for input, for permission, or for any reason — you are stuck. There is nobody coming
-to help unless you signal.
-
-Before stopping or pausing for any reason:
-1. Call `update_task` with `attentionMessage: "reason you stopped"`
-2. Then continue working on anything else you can
-
-This applies universally: bash failures, tool errors, ambiguous instructions,
-uncertainty about next steps, permission denials — anything that would cause you
-to pause. The default action is always to flag and continue, never to wait silently.
-
-## Context Hygiene
-
-Your context window is finite. Running out crashes the session and loses all
-progress. Treat context as a budget.
-
-### Checkpoint Compaction
-
-Run `/compact` after each major phase of work:
-- After implementing a group of related changes
-- After running typecheck
-- After running tests
-- After committing and pushing
-
-Include a brief summary of what was completed and what remains when compacting.
-This preserves progress context while freeing token budget for the next phase.
-
-### Minimize Context Waste
-
-- Use `grep` / `glob` before reading full files — only read what you need
-- For test, typecheck, and gh output: use `run_compressed` MCP tool for automatic compression
-- `| head -20` is acceptable for git status, simple listings — NOT for diagnostic output
-- Don't re-read files you've already read unless they changed
-- Use `--quiet` flags on git and build commands where available
-
-## Follow-Up Ideas
-
-When you discover something worth doing but outside your current task scope —
-improvements, refactors, bugs, new features — log it as an idea:
-
-```
-create_idea({ prompt: "[task:{your-task-id}] description of the idea" })
-```
-
-Always prepend `[task:{id}]` so the orchestrator knows which task spawned it.
-Do this for reviewers too — if a review surfaces a follow-up, log it.
 
 ---
 
@@ -1081,79 +812,300 @@ Then call from hooks/components: `myAction({data: {id: 123}})`.
 2. Is it a write operation? → Server function required
 3. Is it a public GET? → Direct client call with `initClient()` is fine
 
+---
 
-# Worksite Worker — Task f2cbf3f5
+# Documentation Structure
 
-Branch: test/add-www-tests-for-parse-tag-slugs-and-server-actions
+## Three-Tier Model
+
+Organize project knowledge into three layers:
+
+### `/docs/` — Domain & Business Knowledge
+- Architecture, concepts, workflows, subsystem guides
+- One file per topic, small and focused (under ~80 lines)
+- Written for humans and agents who need to understand the system
+- Examples: `docs/architecture.md`, `docs/auth-flow.md`, `docs/api-design.md`
+
+### `CLAUDE.md` — Overview + Table of Contents
+- Project identity and execution rules (under 50 lines)
+- Links to `/docs/` files for domain knowledge
+- Links to `.claude/rules/` for technical rules
+- NOT a dumping ground — if a section grows past 10 lines, extract it
+
+### `.claude/rules/` — Technical Code Rules
+- Coding conventions, tool preferences, testing patterns, gotchas
+- One file per topic (e.g., `testing.md`, `typecheck.md`, `bun.md`)
+- Focused on "how to write code here" not "what the system does"
+
+## Principles
+- Many small files > fewer large files
+- Each file is self-contained with a clear single topic
+- Domain knowledge (what/why) lives in `/docs/`
+- Technical rules (how) live in `.claude/rules/`
+- `CLAUDE.md` is the entry point, not the encyclopedia
+
+---
+
+# Monorepo Dependencies — Verify on Import
+
+## Rule
+
+When adding or encountering an import from an external package (npm, not `workspace:*`) in any `packages/*` or `apps/*` module, verify the dependency is declared in that package's `package.json`.
+
+## Trigger
+
+Any time you:
+- Add an `import` from a non-relative, non-workspace module
+- Move code that imports external packages into a different workspace package
+
+## Check
+
+```bash
+grep '"<package-name>"' <workspace-package>/package.json
+```
+
+If missing: add it to `dependencies` and run `bun install`.
+
+## Why
+
+Bun resolves undeclared dependencies via monorepo hoisting locally. Production deployments only install declared dependencies — undeclared imports crash at runtime with no local signal (no type error, no build failure, no test failure).
+
+---
+
+# API Auth — Per-Route Bearer Token Pattern
+
+## How It Works
+
+- `apps/api/src/middleware/auth.ts` exports `authMiddleware()` factory
+- Each route file (`links.ts`, `tags.ts`, `settings.ts`, `metadata.ts`) calls `const auth = authMiddleware()` at module level
+- Auth is passed as a route-level middleware argument only to endpoints that need it: `router.post('/path', auth, handler)`
+- GET endpoints (reads) are public; POST/PATCH/DELETE (mutations) require auth
+
+## Why Per-Route, Not Global
+
+Hono's `app.use()` middleware applies only to routes registered _after_ the `.use()` call. If a router is mounted before the auth middleware, its routes are unprotected — silently. This ordering dependency is fragile and hard to audit.
+
+Per-route auth is explicit: every protected endpoint visibly declares `auth` in its handler chain. No implicit ordering. No silent gaps. A code review can verify protection by reading the route definition alone.
+
+## Pattern
+
+```ts
+import {authMiddleware} from '../middleware/auth';
+
+const auth = authMiddleware();
+const routes = new Hono();
+
+// Public — no auth middleware
+routes.get('/api/things', async (c) => { ... });
+
+// Protected — auth middleware explicit
+routes.post('/api/things', auth, async (c) => { ... });
+routes.delete('/api/things/:id', auth, async (c) => { ... });
+```
+
+## Rules
+
+- Never add global auth via `app.use('/api/*', authMiddleware())` — use per-route
+- All mutation endpoints (POST, PATCH, PUT, DELETE) must include `auth` in the handler chain
+- GET endpoints are public unless they return sensitive data (none currently do)
+- When adding a new route file, instantiate `authMiddleware()` locally and apply per-route
+
+## Existing Route Files
+
+- `apps/api/src/routes/links.ts` — CRUD + refetch, suggest-tags, reset-enrichment
+- `apps/api/src/routes/tags.ts` — rename, merge, normalize, delete
+- `apps/api/src/routes/settings.ts` — get (public), put (protected)
+- `apps/api/src/routes/metadata.ts` — fetch (protected)
+
+---
+
+# Batch Processing — Error Isolation and Silent Death Prevention
+
+## Error Isolation
+
+Sequential jobs in a batch pipeline must be independent. One job failing must not skip the rest.
+
+**Wrong** — `enrichContent` throwing kills `scoreLinks` and `normalizeTags`:
+
+```ts
+async function poll() {
+  await enrichContent();
+  await scoreLinks();
+  await normalizeTags();
+}
+```
+
+**Correct** — each job is isolated; all jobs run regardless of individual failures:
+
+```ts
+const jobs = [
+  {name: 'enrichContent', fn: () => enrichContent()},
+  {name: 'scoreLinks', fn: () => scoreLinks()},
+  {name: 'normalizeTags', fn: () => normalizeTags()},
+];
+
+async function poll() {
+  for (const job of jobs) {
+    try {
+      await job.fn();
+    } catch (error) {
+      console.error(`[poll] ${job.name} failed:`, error);
+    }
+  }
+}
+```
+
+Log the full error object — never swallow it silently or replace it with a generic message.
+
+## Silent Death Prevention
+
+A `setTimeout`-based polling loop dies silently if the poll body throws after the initial call. No crash, no log, no restart — the process keeps running but does nothing.
+
+**Wrong** — unhandled throw kills the loop with no signal:
+
+```ts
+async function scheduleNext() {
+  await poll();
+  setTimeout(scheduleNext, INTERVAL);
+}
+```
+
+**Correct** — top-level catch ensures the loop always reschedules:
+
+```ts
+async function scheduleNext() {
+  try {
+    await poll();
+  } catch (error) {
+    console.error('[scheduleNext] Unexpected poll failure:', error);
+  } finally {
+    if (running) setTimeout(scheduleNext, INTERVAL);
+  }
+}
+```
+
+## Applies To
+
+- Task runners (`apps/tasks`)
+- Cron-like sequential pipelines
+- Any `for` loop over independent async operations
+- Recursive `setTimeout` / `setInterval` polling loops
+
+
+# Worksite Worker — Task caf901ad
+
+Branch: feat/add-rss-feed-rss-item-domain-foundation
+
+## Worksite CLI
+
+You interact with worksite through the `worksite` CLI (invoked via Bash). Every tool is a subcommand:
+
+```
+worksite call <tool_name> --json '<json body>'
+worksite call <tool_name> --stdin <<'JSON'        # heredoc for long bodies
+{...}
+JSON
+worksite list-tools            # list every tool and its summary
+worksite help <tool_name>      # show a tool's schema
+```
 
 ## Inbox
 
-- At the start of execution, call `check_inbox` to read any messages from the orchestrator.
-- Periodically (every 10-15 minutes of active work), call `check_inbox` to check for new directives.
-- Call `send_progress` with your task ID and a brief status update after completing each major step.
+- At the start of execution, run `worksite call check_inbox --json '{"task_id":"caf901ad"}'` to read any messages from the orchestrator.
+- Periodically (every 10-15 minutes of active work), re-run the same command to check for new directives.
+- Run `worksite call send_progress --json '{"task_id":"caf901ad","content":"<brief status>"}'` after completing each major step.
 
 ## Flagging Attention
 
 See `.claude/rules/worksite-worker.md` for full guidance. In short:
 
-- **Any time you would stop or wait** → `update_task` with `attentionMessage: "reason"`
+- **Any time you would stop or wait** → `worksite call update_task --json '{"id":"caf901ad","attentionMessage":"<reason>"}'`
 - There is no interactive user. If you are not making progress, flag immediately.
 - After flagging, continue working on anything you can.
 
 ## File Intent Declaration
 
-Early in execution, call `update_task` with `fileIntents` listing the repo-relative paths of files you plan to modify (derived from the plan). Update as your understanding evolves. This lets the orchestrator detect conflicts with parallel tasks.
+Early in execution, run `worksite call update_task --json '{"id":"caf901ad","fileIntents":["path/to/file.ts",...]}'` listing the repo-relative paths of files you plan to modify (derived from the plan). Update as your understanding evolves. This lets the orchestrator detect conflicts with parallel tasks.
+
+## Read-Once & Diff Mode
+
+Workers run with the read-once hook enabled, which prevents redundant reads of unchanged files to preserve context. When you re-read a file in the same session:
+
+- **File unchanged** (mtime match) → Read is blocked: "File unchanged since last read. Content is already in context."
+- **File changed, small diff** (≤40 lines) → Read is blocked, but the diff is returned as the reason, showing only the delta
+- **File changed, large diff** (>40 lines) → Read is allowed in full
+
+This is normal behavior during edit→typecheck→verify cycles. When the diff shows the changes you made, that's the system working as intended — you already have the unchanged content in context, and only the delta is new.
+
+The cache resets on `/compact`, so post-compaction reads always return full content. If you need full content despite a block, use the Bash workaround: `cat -n <file> | sed -n '<start>,<end>p'`.
 
 ## Execution Workflow
 
 ### 1. Execute the plan
 
-**Tip**: For test and typecheck commands, prefer the `run_compressed` MCP tool over direct Bash. It compresses high-volume output to save context tokens. Pass `cwd` if running from a worktree path.
+**Tip**: For test and typecheck commands, prefer `worksite call run_compressed --json '{"command":"bun run test"}'` over direct Bash. It compresses high-volume output to save context tokens. Pass `cwd` in the JSON body if running from a worktree path.
 
 **IMPORTANT — Testing**:
 
 - NEVER use bare `bun test` from the repo root. It loads all 145+ test files into one process and crashes the session.
-- Test only the packages you changed: `bun run --cwd apps/mcp test`, `bun run --cwd packages/store test`, etc.
+- Test only the packages you changed: `bun run --cwd apps/cli test`, `bun run --cwd packages/store test`, etc.
 - The reviewer runs the full suite — you don't need to.
 
-### 2. Self-review quality gate
+**Intermediate Commits**:
+
+- Commit incrementally during execution at plan checkpoints and after each logical phase.
+- Use `wip(scope): description` format (e.g., `wip(store): add new query functions`).
+- Push after each commit to avoid local-only risk.
+- See `commit-cadence` in `.claude/rules/worksite-worker.md` for full guidance.
+- Do not worry about the commit log — `/worker-commit` at wrap-up will rewrite into clean atomic commits.
+
+### 2. MANDATORY — Self-review quality gate
+
+**DO NOT SKIP THIS STEP.** The stop hook will reject your PR and restart you if you skip it.
 
 Run `/review` (no arguments — it reviews your diff).
 
-a. Read the grade table output. If overall grade is A: proceed to step 3.
+a. Read the grade table output. If overall grade is A: proceed to step 2b.
 b. If grade is B or below: fix each finding, re-run typecheck and tests, then run `/review` again.
-c. Repeat until you get an A. If stuck after 3 `/review` cycles without reaching A, note the remaining issues and proceed — the reviewer will catch them.
+c. Repeat until you get an A. If stuck after 3 `/review` cycles without reaching A, note the remaining issues and proceed.
 d. Verify acceptance criteria: for each criterion in the plan, run its proof command fresh and confirm output.
+
+**After completing self-review**, signal the grade so the system knows you ran it:
+
+```
+worksite call send_progress --json '{"task_id":"caf901ad","content":"Self-review complete: Grade [X]"}'
+```
+
+Replace `[X]` with the overall grade from the review (A, B, C, etc.). This signal is **required** — the stop hook checks for it before allowing PR submission to the reviewer.
 
 ### 3. Commit task work
 
-Do NOT use /commit (it prompts interactively):
+Run `/worker-commit` — it analyzes and groups your changes into atomic commits without interactive approval.
 
-```
-git add <specific files changed by the task>
-git commit -m "type(scope): subject"
-   Follow conventional commits format. One logical commit per task.
-```
+Do NOT use `/commit` — that is the interactive version and will deadlock your session.
 
 ### 4. Push
 
 ```
-git push -u origin test/add-www-tests-for-parse-tag-slugs-and-server-actions
+git push -u origin feat/add-rss-feed-rss-item-domain-foundation
 ```
 
 ### 5. Create the label and PR
 
+First, generate the PR description:
+
+```bash
+PR_BODY=$(worksite call generate_pr_description --json '{"task_id":"caf901ad"}' | jq -r .body)
+```
+
+Then create the PR using the returned body:
+
 ```bash
 gh label create "Working" --description "Task in progress" --color "1d76db" --force 2>/dev/null || true
-gh pr create --title "add www tests for parse-tag-slugs and server actions" --label "Working" --body "$(cat <<'EOF'
-## Summary
-<1-3 bullet points summarizing the change>
-
-## Test plan
-<checklist of verification steps>
-EOF
-)"
+gh pr create --title "Add RSS feed + rss_item domain foundation" --label "Working" --body "$PR_BODY"
 ```
+
+You may lightly edit the generated summary bullets for accuracy, but preserve the structure and all sections.
 
 ### 6. Self-Reflection
 
@@ -1168,15 +1120,20 @@ EOF
 
 **How to capture:**
 
-- Debugging insights, patterns, project quirks → `update_task({ learning: "..." })` (max 3-4)
-- Permanent project conventions discovered → `create_idea({ prompt: "[task:f2cbf3f5] Add rule: ..." })` (max 2)
+- Debugging insights, patterns, project quirks → `worksite call update_task --json '{"id":"caf901ad","learning":"..."}'` (max 3-4)
+- Permanent project conventions discovered → `worksite call create_idea --json '{"prompt":"[task:caf901ad] Add rule: ..."}'` (max 2)
 - If a `.claude/rules/` change is small and clearly in scope: apply it directly, commit, push
   **Exception**: NEVER modify `worksite-worker.md`, `worksite-reviewer.md`, or `worksite-planner.md` — these are agent direction files. Log an idea instead.
+  **Exception**: NEVER modify rules files to resolve reviewer findings. If the reviewer flags your code for violating a rule, fix the code — do not weaken or change the rule. Log an idea if you believe the rule itself is wrong.
 - Session-specific context (one-off details) → skip, don't persist
 
 ### 7. Submit for review
 
-Call worksite `submit_for_review` with the PR URL — this transitions the task and signals the system. Your job is done after this call.
+Run `worksite call submit_for_review --json '{"task_id":"caf901ad","pr_url":"https://github.com/..."}'` — this transitions the task and signals the system. Your job is done after this call.
+
+**Scope drift gate**: If the call rejects with "Scope drift", the PR modifies files outside the planned `fileIntents`. For each listed file, either:
+1. **(Default)** Revert: `git checkout origin/main -- <file-path>`, then re-submit
+2. **(Exception)** Justify: re-run the call with a `scopeJustifications` field, e.g. `worksite call submit_for_review --stdin <<'JSON' … JSON` with `{"task_id":"caf901ad","pr_url":"https://github.com/...","scopeJustifications":{"<file>":"<reason>"}}`. The reason must explain why this change is required by THIS task's acceptance criteria, not why it's convenient. The reviewer evaluates justifications and can still flag them as T3 scope findings.
 
 ## Reflection Re-engagement
 
@@ -1185,12 +1142,12 @@ If the task notes include "re-engaged worker for reflection phase", you were re-
 Steps (15 minutes max):
 
 1. Scan your task notes and PR diff for insights worth preserving
-2. Call `update_task({ learning: "..." })` for each meaningful learning (max 3-4)
+2. Run `worksite call update_task --json '{"id":"caf901ad","learning":"..."}'` for each meaningful learning (max 3-4)
    - Capture: initial wrong approaches, non-obvious patterns, project-specific gotchas
    - Skip: things that went smoothly, obvious language features
-3. Call `create_idea({ prompt: "[task:f2cbf3f5] ..." })` for out-of-scope improvements (max 2)
-4. Call `update_task({ note: "Retrospective: <2-3 sentences on what went well and what to improve>" })`
-5. Call `update_task({ status: 'user_review', note: 'Reflection complete — ready for user review' })`
+3. Run `worksite call create_idea --json '{"prompt":"[task:caf901ad] ..."}'` for out-of-scope improvements (max 2)
+4. Run `worksite call update_task --json '{"id":"caf901ad","note":"Retrospective: <2-3 sentences on what went well and what to improve>"}'`
+5. Run `worksite call update_task --json '{"id":"caf901ad","status":"user_review","note":"Reflection complete — ready for user review"}'`
 6. Your job is done after the `update_task` call above.
 
 ## Re-engagement After User Feedback
@@ -1204,9 +1161,9 @@ If the task notes include "PR has merge conflicts — re-engaged worker to rebas
 1. `git fetch origin main && git rebase origin/main`
 2. Resolve any conflicts, run typecheck and tests to verify
 3. `git push --force-with-lease`
-   3b. **Verify clean state**: run `git status` (must show "nothing to commit, working tree clean") and `git log origin/test/add-www-tests-for-parse-tag-slugs-and-server-actions..HEAD` (must show 0 commits). If not clean or unpushed commits remain, push again.
-4. If rebase fails after 2 attempts, flag attention: `attentionMessage: "Merge conflicts I cannot resolve: <summary>"`
-5. Call worksite `update_task` with `status: 'user_review'` and `note: 'Resolved merge conflicts — returning to user review'` — do NOT call `submit_for_review`; the reviewer already approved the core implementation
+   3b. **Verify clean state**: run `git status` (must show "nothing to commit, working tree clean") and `git log origin/feat/add-rss-feed-rss-item-domain-foundation..HEAD` (must show 0 commits). If not clean or unpushed commits remain, push again.
+4. If rebase fails after 2 attempts, run `worksite call update_task --json '{"id":"caf901ad","attentionMessage":"Merge conflicts I cannot resolve: <summary>"}'`
+5. Run `worksite call update_task --json '{"id":"caf901ad","status":"user_review","note":"Resolved merge conflicts — returning to user review"}'` — do NOT call `submit_for_review`; the reviewer already approved the core implementation
 
 ## ROLE: You are a WORKER, not a reviewer
 
@@ -1215,20 +1172,34 @@ You write and fix code. Running `/review` on your own diff as a self-review qual
 - Posting PR review comments (`gh pr review`, `gh api .../reviews`)
 - Grading other people's code (A/B/C/D/F scores, tiered findings on PRs you didn't author)
 - Writing review summaries or assessments of others' PRs
-- Calling `update_task` with `reviewSummary` or `reviewScore`
+- Calling `worksite call update_task` with `reviewSummary` or `reviewScore` fields
 
 If you see a file named `.worksite-review.md` in the worktree, **ignore it** — it is for the automated reviewer, not you.
+
+## Self-Review Gate Re-engagement
+
+If the task notes include "Self-review gate:" or your inbox contains a directive about skipping self-review, the stop hook rejected your PR because you didn't run `/review`. Do the following:
+
+1. Check your inbox: `worksite call check_inbox --json '{"task_id":"caf901ad"}'`
+2. Run `/review` (no arguments — reviews your diff against main)
+3. Fix any findings below grade A, re-run typecheck and tests
+4. Run `worksite call send_progress --json '{"task_id":"caf901ad","content":"Self-review complete: Grade [X]"}'`
+5. If you made fixes, commit and push them
+6. Your job is done — exit cleanly. The stop hook will now promote your PR to review.
+
+Do NOT create a new PR. Do NOT skip to step 7 (submit for review). The stop hook handles promotion.
 
 ## Reviewer Feedback Re-engagement
 
 If the task notes include "re-engaged worker to address reviewer feedback", you were restarted by the system because the automated reviewer requested changes on your PR. Skip the Execution Workflow section and do the following:
 
-1. Check your inbox: call worksite `check_inbox` with your task ID — the directive contains the reviewer's specific findings
-   1.5. Capture what the reviewer caught: call `update_task` with `learning:` describing the pattern.
-   Format: "Reviewer flagged [what] because [why] — [takeaway for future tasks]"
+1. Check your inbox: `worksite call check_inbox --json '{"task_id":"caf901ad"}'` — the directive contains the reviewer's specific findings
+   1.5. Capture what the reviewer caught: `worksite call update_task --json '{"id":"caf901ad","learning":"Reviewer flagged [what] because [why] — [takeaway for future tasks]"}'`.
    This happens before fixing so you capture the insight while context is fresh.
 2. Read the Restart Context above — it contains the PR diff showing your current code vs main. Use this to locate the exact code that needs fixing.
 3. For EACH finding (T4/T3 first, then T2):
+
+   **Fix the code, not the rules.** Do NOT modify `.claude/rules/`, `docs/`, or `CLAUDE.md` files to make your code "compliant." The reviewer flagged your implementation — fix the implementation. If you believe a rule is wrong, log an idea; do not change it to pass review.
 
    **If the finding is `[SCOPE DRIFT]` (out-of-scope file modification):**
    - Revert the file to main's version: `git checkout origin/main -- <file-path>`
@@ -1237,27 +1208,28 @@ If the task notes include "re-engaged worker to address reviewer feedback", you 
 
    **For all other findings:**
    a. `grep` the file for the problematic pattern to confirm it exists
-   b. Read the relevant lines — **if the Read tool is blocked** (read-once hook): use `cat -n <file> | sed -n '<start>,<end>p'` via Bash instead
+   b. Read the relevant lines — **if the Read tool is blocked** (see Read-Once & Diff Mode section above): use `cat -n <file> | sed -n '<start>,<end>p'` via Bash instead
    c. Edit the file using the EXACT `old_string` from what you just read (not from memory)
    d. After editing, `grep` again to confirm the pattern is GONE. If it persists, your edit failed — re-read and retry.
+
 4. Run typecheck and tests AFTER all findings are addressed
 5. Commit and push the fixes
 6. **Verify clean state** before considering your work done:
    - `git status` — must show "nothing to commit, working tree clean"
-   - `git log origin/test/add-www-tests-for-parse-tag-slugs-and-server-actions..HEAD` — must show 0 commits (all pushed)
+   - `git log origin/feat/add-rss-feed-rss-item-domain-foundation..HEAD` — must show 0 commits (all pushed)
      If either check fails, stage/commit/push the remaining changes before proceeding.
-7. The reviewer will automatically re-review after detecting new commits — do NOT call `submit_for_review` again
-8. If you disagree with a finding after one attempt: call `update_task` with `attentionMessage: "Reviewer disagreement: <summary>"` — do NOT keep trying
-9. Once fixes are pushed, your job is done. The daemon detects new commits and re-launches the reviewer automatically.
+7. When all fixes are pushed, run `worksite call submit_for_review --json '{"task_id":"caf901ad","pr_url":"https://github.com/..."}'` — this re-triggers the reviewer immediately.
+8. If you disagree with a finding after one attempt: `worksite call update_task --json '{"id":"caf901ad","attentionMessage":"Reviewer disagreement: <summary>"}'` — do NOT keep trying
+9. Your job is done after the `submit_for_review` call.
 
 ## User Feedback Re-engagement
 
 If the task notes include "User left PR feedback — re-engaged worker to address comments", skip the Execution Workflow section and do the following:
 
-1. Read the PR comments: `gh pr view https://github.com/jgretz/schwankie/pull/71 --json comments,reviews`
+1. Read the PR comments: `gh pr view https://github.com/... --json comments,reviews`
 2. Fix the code for each piece of feedback, commit, and push
-   2b. **Verify clean state**: run `git status` (must show "nothing to commit, working tree clean") and `git log origin/test/add-www-tests-for-parse-tag-slugs-and-server-actions..HEAD` (must show 0 commits). If not, stage/commit/push remaining changes.
-3. When all feedback is addressed, call worksite `submit_for_review` with the PR URL — this sends your fixes through automated review before returning to the user.
+   2b. **Verify clean state**: run `git status` (must show "nothing to commit, working tree clean") and `git log origin/feat/add-rss-feed-rss-item-domain-foundation..HEAD` (must show 0 commits). If not, stage/commit/push remaining changes.
+3. When all feedback is addressed, run `worksite call submit_for_review --json '{"task_id":"caf901ad","pr_url":"https://github.com/..."}'` — this sends your fixes through automated review before returning to the user.
 4. Your job is done after the `submit_for_review` call above.
 
 
@@ -1269,7 +1241,12 @@ Accumulated knowledge from previous tasks in this repository:
 ### Environment Quirks
 - Singleton patterns are common in JavaScript/TypeScript module initialization (databases, config clients, service clients). Key failure modes: (1) test pollution — module-level singletons without reset() contaminate test suites since modules load once per process; (2) silent overwrites — init() with no guards silently replaces previous config, causing hard-to-debug state bugs; (3) SSR timing — module-level init() calls execute during import (SSR context), not during request handling — async config loading must be lazy, not top-level. Documentation effectiveness: concrete codebase examples (db.ts, client/config.ts) make rules actionable. Code patterns showing CORRECT vs AVOID are more effective than abstract guidance."
 - Reviewer feedback was specific and actionable. Finding T4 (unused import) was caught by strict typecheck rules; finding T1 (consolidated imports) improved code organization. Both were trivial fixes requiring careful line-level edits to avoid syntax errors.
-- Generic <T> pattern for centralizing external API clients reduces duplication across job runners. Key decision: let errors propagate to caller (caller decides catch-and-null vs rethrow), rather than baking error handling into the utility. Both score-links and normalize-tags maintain their original error semantics with identical HTTP behavior."
+- Scope drift: Reviewer approved the core implementation (score 9) but flagged 13 unplanned file modifications in the commit. The core validation logic was correct; the issue was inadvertent changes to .claude/commands, CLAUDE-TASK.md, app routes, and task jobs. Fix: reverted out-of-scope files to main via `git checkout origin/main -- <file>` and re-pushed. Takeaway: commit only the specific files declared in fileIntents, use `git diff --name-only` to verify before push."
+
+### Testing Patterns
+- Reviewer flagged mock.module registry contamination because bun's mock.module registry is global across test files in a single run. When multiple files mock the same module (@domain), the alphabetically last file's mock overwrites earlier mocks, contaminating those tests. Fix: ensure the last-registered mock includes ALL symbols that any test file imports from that module — this requires auditing all test files to collect their imports before finalizing the mock in the alphabetically-last file."
+- Zod schema validation: when all fields are optional in an update schema (PATCH), an empty body {} is valid. Tests must use genuinely invalid data (e.g., malformed URLs) to test validation rules. The distinction between "semantically valid" (no changes requested) and "schema valid" (passes Zod parsing) matters for test design.
+- Zod schema validation gotcha: when all fields in an update schema are optional, an empty body {} is valid per Zod. Tests must use genuinely invalid data (e.g., malformed URLs) to properly test validation rules.
 
 ### Architecture Conventions
 - Tag count floor feature: Settings table uses key-value pattern with upsert (insert ... onConflictDoUpdate). Drizzle's .$dynamic() is needed for conditional HAVING clauses. Default value handling in API: read setting, fallback to default, handle NaN parsing — three layers of safety. React Query invalidation on mutation success updates dependent queries automatically (tags list). Admin UI input validation before mutation (Number.isInteger check). Sidebar filtering only applies to default tag list (not needs_normalization/canonical queries).
