@@ -40,7 +40,7 @@ export async function listLinks(params: ListLinksParams): Promise<ListLinksResul
   }
 
   if (q) {
-    conditions.push(or(ilike(link.title, `%${q}%`), ilike(link.description, `%${q}%`), ilike(link.url, `%${q}%`)));
+    conditions.push(or(ilike(link.title, `%${q}%`), ilike(link.description, `%${q}%`)));
   }
 
   if (tagsParam) {
