@@ -105,7 +105,7 @@ export const store = {
   emailItems: [] as EmailItemRow[],
   settings: [] as SettingRow[],
   workRequests: [] as WorkRequestRow[],
-  nextId: {link: 1, tag: 1, linkTag: 1, tagAlias: 1, emailItem: 1, setting: 1},
+  nextId: {link: 1, tag: 1, linkTag: 1, tagAlias: 1, emailItem: 1, setting: 1, workRequest: 1},
   insertionCounter: 0,
 };
 
@@ -119,7 +119,7 @@ export function resetStore() {
   store.emailItems = [];
   store.settings = [];
   store.workRequests = [];
-  store.nextId = {link: 1, tag: 1, linkTag: 1, tagAlias: 1, emailItem: 1, setting: 1};
+  store.nextId = {link: 1, tag: 1, linkTag: 1, tagAlias: 1, emailItem: 1, setting: 1, workRequest: 1};
   store.insertionCounter = 0;
 }
 
@@ -177,7 +177,7 @@ function getNextIdKey(table: any): keyof typeof store.nextId {
     case 'setting':
       return 'setting';
     case 'work_request':
-      return 'link';
+      return 'workRequest';
     default:
       throw new Error(`Unknown table: ${name}`);
   }

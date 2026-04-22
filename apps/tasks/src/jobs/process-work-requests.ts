@@ -35,6 +35,8 @@ export function createProcessWorkRequestsHandler(boss: PgBoss): PgBoss.WorkHandl
         } else if (wr.type === 'refresh-emails') {
           await boss.send('import-emails', {});
           console.log(`[process-work-requests] ${wr.id}: dispatched import-emails`);
+        } else {
+          throw new Error(`Unknown work request type: ${wr.type}`);
         }
 
         await completeWorkRequest(wr.id);
