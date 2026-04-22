@@ -6,6 +6,9 @@ export {listTags} from './queries/list-tags';
 export {getLink} from './queries/get-link';
 export {getSetting} from './queries/get-setting';
 export {resolveTagMinCount} from './queries/resolve-tag-min-count';
+export {listEmailItems} from './queries/list-email-items';
+export {getEmailItem} from './queries/get-email-item';
+export {getGmailTokens} from './queries/get-gmail-tokens';
 
 // commands
 export {createLink} from './commands/create-link';
@@ -17,10 +20,16 @@ export {deleteTag} from './commands/delete-tag';
 export {markTagNormalized} from './commands/normalize-tag';
 export {resetEnrichment} from './commands/reset-enrichment';
 export {setSetting} from './commands/set-setting';
+export {createEmailItem} from './commands/create-email-item';
+export {markEmailItemRead} from './commands/mark-email-item-read';
+export {promoteEmailItem} from './commands/promote-email-item';
+export {setGmailTokens} from './commands/set-gmail-tokens';
+export {setGmailFilter} from './commands/set-gmail-filter';
 
 // lib
 export {normalizeTag} from './lib/normalize-tag';
 export {validateSettingValue} from './lib/setting-schemas';
+export {loadKey, encryptToken, decryptToken} from './lib/crypto';
 
 // types
 export type {
@@ -36,5 +45,10 @@ export type {
   MergeTagInput,
   RenameTagInput,
   SettingResponse,
+  EmailItem,
+  CreateEmailItemInput,
+  ListEmailItemsParams,
+  ListEmailItemsResult,
+  GmailTokens,
 } from './types';
 export type {LinkStatus} from './queries/get-tags-with-count';

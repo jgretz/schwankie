@@ -4,3 +4,4 @@ export {linkTag} from './link-tag.schema';
 export {tag} from './tag.schema';
 export {tagAlias} from './tag-alias.schema';
 export {setting} from './setting.schema';
+export {emailItem} from './email-item.schema';
