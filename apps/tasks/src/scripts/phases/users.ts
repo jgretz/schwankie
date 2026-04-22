@@ -11,9 +11,6 @@ export interface PhaseResult {
 interface StashlUser {
   id: number;
   email_filter: string | null;
-  gmail_access_token: string | null;
-  gmail_refresh_token: string | null;
-  gmail_token_expiry: string | null;
 }
 
 export async function migrateUsers(
@@ -27,10 +24,7 @@ export async function migrateUsers(
     const users = await sql<StashlUser[]>`
       SELECT
         id,
-        email_filter,
-        gmail_access_token,
-        gmail_refresh_token,
-        gmail_token_expiry
+        email_filter
       FROM users
       WHERE email = ${userEmail}
     `;

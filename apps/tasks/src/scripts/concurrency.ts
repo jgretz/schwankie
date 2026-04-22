@@ -7,18 +7,19 @@ export async function mapLimit<T, R>(
   const executing: Promise<void>[] = [];
 
   for (const item of items) {
-    const promise = Promise.resolve().then(async () => {
-      results.push(await fn(item));
-    });
+    const promise = Promise.resolve()
+      .then(async () => {
+        results.push(await fn(item));
+      })
+      .finally(() => {
+        const idx = executing.indexOf(promise);
+        if (idx >= 0) executing.splice(idx, 1);
+      });
 
     executing.push(promise);
 
     if (executing.length >= limit) {
       await Promise.race(executing);
-      executing.splice(
-        executing.findIndex((p) => p === promise),
-        1,
-      );
     }
   }
 
@@ -35,23 +36,24 @@ export async function mapLimitSettled<T, R>(
   const executing: Promise<void>[] = [];
 
   for (const item of items) {
-    const promise = Promise.resolve().then(async () => {
-      try {
-        const result = await fn(item);
-        results.push({status: 'fulfilled', value: result});
-      } catch (reason) {
-        results.push({status: 'rejected', reason});
-      }
-    });
+    const promise = Promise.resolve()
+      .then(async () => {
+        try {
+          const result = await fn(item);
+          results.push({status: 'fulfilled', value: result});
+        } catch (reason) {
+          results.push({status: 'rejected', reason});
+        }
+      })
+      .finally(() => {
+        const idx = executing.indexOf(promise);
+        if (idx >= 0) executing.splice(idx, 1);
+      });
 
     executing.push(promise);
 
     if (executing.length >= limit) {
       await Promise.race(executing);
-      executing.splice(
-        executing.findIndex((p) => p === promise),
-        1,
-      );
     }
   }
 

@@ -27,10 +27,10 @@ export async function migrateEmailItems(
   const result: PhaseResult = {read: 0, wrote: 0, skipped: 0, errors: []};
 
   try {
-    const countResult = await sql<Array<{count: number}>>`
-      SELECT COUNT(*) as count FROM email_items WHERE user_id = ${userId}
+    const countResult = await sql<Array<{count: string | number}>>`
+      SELECT COUNT(*)::int as count FROM email_items WHERE user_id = ${userId}
     `;
-    result.read = countResult[0]?.count || 0;
+    result.read = parseInt(String(countResult[0]?.count ?? '0'), 10);
 
     if (dryRun) {
       result.skipped = result.read;

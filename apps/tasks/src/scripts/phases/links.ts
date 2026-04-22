@@ -29,10 +29,10 @@ export async function migrateLinks(
   const result: PhaseResult = {read: 0, wrote: 0, skipped: 0, errors: []};
 
   try {
-    const countResult = await sql<Array<{count: number}>>`
-      SELECT COUNT(*) as count FROM links WHERE user_id = ${userId}
+    const countResult = await sql<Array<{count: string | number}>>`
+      SELECT COUNT(*)::int as count FROM links WHERE user_id = ${userId}
     `;
-    result.read = countResult[0]?.count || 0;
+    result.read = parseInt(String(countResult[0]?.count ?? '0'), 10);
 
     if (dryRun) {
       result.skipped = result.read;
@@ -56,27 +56,23 @@ export async function migrateLinks(
         links,
         CONCURRENCY,
         async (link) => {
-          try {
-            const existing = await fetchLinks({q: link.url, limit: 1});
-            const linkExists = existing.items.some((item) => item.url === link.url);
+          const existing = await fetchLinks({q: link.url, limit: 1});
+          const linkExists = existing.items.some((item) => item.url === link.url);
 
-            if (linkExists) {
-              return {skipped: true};
-            }
-
-            await createLink({
-              url: link.url,
-              title: link.title,
-              description: link.description || undefined,
-              imageUrl: link.image_url || undefined,
-              status: 'queued',
-              tags: [],
-            });
-
-            return {skipped: false};
-          } catch (error) {
-            throw error;
+          if (linkExists) {
+            return {skipped: true};
           }
+
+          await createLink({
+            url: link.url,
+            title: link.title,
+            description: link.description || undefined,
+            imageUrl: link.image_url || undefined,
+            status: 'queued',
+            tags: [],
+          });
+
+          return {skipped: false};
         },
       );
 

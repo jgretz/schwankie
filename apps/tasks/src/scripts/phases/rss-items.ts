@@ -32,10 +32,10 @@ export async function migrateRssItems(
   try {
     for (const [stashlFeedId, schwankieFeedId] of feedMap.entries()) {
       try {
-        const countResult = await sql<Array<{count: number}>>`
-          SELECT COUNT(*) as count FROM rss_feed_items WHERE feed_id = ${stashlFeedId}
+        const countResult = await sql<Array<{count: string | number}>>`
+          SELECT COUNT(*)::int as count FROM rss_feed_items WHERE feed_id = ${stashlFeedId}
         `;
-        const feedItemCount = countResult[0]?.count || 0;
+        const feedItemCount = parseInt(String(countResult[0]?.count ?? '0'), 10);
         result.read += feedItemCount;
 
         if (dryRun) {

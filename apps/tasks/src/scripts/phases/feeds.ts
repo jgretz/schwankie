@@ -46,7 +46,13 @@ export async function migrateFeeds(
         feedMap.set(feed.id, created.id);
         result.wrote++;
       } catch (error) {
-        result.errors.push(error instanceof Error ? error : new Error(String(error)));
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        // Unique constraint violation on source_url = feed already exists; skip
+        if (errorMsg.includes('unique') || errorMsg.includes('Unique constraint')) {
+          result.skipped++;
+        } else {
+          result.errors.push(error instanceof Error ? error : new Error(String(error)));
+        }
       }
     }
   } catch (error) {
