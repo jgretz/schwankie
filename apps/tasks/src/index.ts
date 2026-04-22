@@ -6,6 +6,8 @@ import {init} from 'client';
 import {enrichContentHandler} from './jobs/enrich-content';
 import {scoreLinksHandler} from './jobs/score-links';
 import {normalizeTagsHandler} from './jobs/normalize-tags';
+import {importFeedHandler} from './jobs/import-feed';
+import {createScheduleFeedImportsHandler} from './jobs/schedule-feed-imports';
 import {startHealthServer} from './healthCheck';
 import {runWithAutoRecovery} from './connectionManager';
 
@@ -25,21 +27,33 @@ init({apiUrl: env.API_URL, apiKey: env.API_KEY});
 interface JobDefinition {
   queue: string;
   schedule: string;
-  handler: PgBoss.WorkHandler<unknown>;
 }
 
 const jobDefinitions: JobDefinition[] = [
-  {queue: 'enrich-content', schedule: '*/1 * * * *', handler: enrichContentHandler},
-  {queue: 'score-links', schedule: '*/2 * * * *', handler: scoreLinksHandler},
-  {queue: 'normalize-tags', schedule: '*/5 * * * *', handler: normalizeTagsHandler},
+  {queue: 'enrich-content', schedule: '*/1 * * * *'},
+  {queue: 'score-links', schedule: '*/2 * * * *'},
+  {queue: 'normalize-tags', schedule: '*/5 * * * *'},
+  {queue: 'import-feed', schedule: ''},
+  {queue: 'schedule-feed-imports', schedule: '*/30 * * * *'},
 ];
 
 async function setupWorkers(boss: PgBoss): Promise<void> {
-  for (const {queue, schedule, handler} of jobDefinitions) {
+  const handlers: Record<string, PgBoss.WorkHandler<unknown>> = {
+    'enrich-content': enrichContentHandler,
+    'score-links': scoreLinksHandler,
+    'normalize-tags': normalizeTagsHandler,
+    'import-feed': importFeedHandler as PgBoss.WorkHandler<unknown>,
+    'schedule-feed-imports': createScheduleFeedImportsHandler(boss),
+  };
+
+  for (const {queue, schedule} of jobDefinitions) {
     await boss.createQueue(queue);
-    await boss.schedule(queue, schedule);
+    if (schedule) {
+      await boss.schedule(queue, schedule);
+    }
+    const handler = handlers[queue];
     await boss.work(queue, handler);
-    console.log(`Registered: ${queue} (${schedule})`);
+    console.log(`Registered: ${queue}${schedule ? ` (${schedule})` : ''}`);
   }
   console.log('Task runner started successfully');
 }

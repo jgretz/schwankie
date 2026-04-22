@@ -29,6 +29,7 @@ export {deleteFeed} from './commands/delete-feed';
 export {createRssItem} from './commands/create-rss-item';
 export {markRssItemRead} from './commands/mark-rss-item-read';
 export {promoteRssItem} from './commands/promote-rss-item';
+export {bulkUpsertRssItems} from './commands/bulk-upsert-rss-items';
 export {createEmailItem} from './commands/create-email-item';
 export {markEmailItemRead} from './commands/mark-email-item-read';
 export {promoteEmailItem} from './commands/promote-email-item';
