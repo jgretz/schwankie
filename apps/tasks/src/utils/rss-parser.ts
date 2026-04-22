@@ -17,7 +17,7 @@ function sanitizeXml(xml: string): string {
     .replace(/&(?![a-zA-Z0-9#]+;)/g, '&amp;');
 }
 
-async function fetchFeed(url: string, retries = 1) {
+async function fetchFeed(url: string, retries = 1): Promise<Parser.Output<Record<string, unknown>>> {
   const parser = new Parser({
     customFields: {
       item: [
@@ -33,7 +33,7 @@ async function fetchFeed(url: string, retries = 1) {
   } catch (error) {
     if (retries > 0) {
       try {
-        const response = await fetch(url);
+        const response = await fetch(url, {signal: AbortSignal.timeout(20_000)});
         const xml = await response.text();
         const sanitized = sanitizeXml(xml);
         return (await parser.parseString(sanitized)) as unknown as Parser.Output<Record<string, unknown>>;
@@ -84,12 +84,13 @@ export async function parseFeed(sourceUrl: string): Promise<ParsedRssItem[]> {
 }
 
 function extractImageUrl(item: Record<string, unknown>): string | undefined {
-  const mediaThumbnail = item.mediaThumbnail as {url?: string} | undefined;
-  if (mediaThumbnail?.url) return mediaThumbnail.url;
+  const mediaThumbnail = item.mediaThumbnail as {'$'?: {url?: string}} | undefined;
+  if (mediaThumbnail?.['$']?.url) return mediaThumbnail['$'].url;
 
-  const mediaContent = item.mediaContent as Array<{url?: string; medium?: string}> | undefined;
+  const mediaContent = item.mediaContent as Array<{'$'?: {url?: string; medium?: string}; url?: string; medium?: string}> | undefined;
   if (mediaContent && mediaContent.length > 0) {
-    const imageMedia = mediaContent.find((m) => m.medium === 'image');
+    const imageMedia = mediaContent.find((m) => m['$']?.medium === 'image' || m.medium === 'image');
+    if (imageMedia?.['$']?.url) return imageMedia['$'].url;
     if (imageMedia?.url) return imageMedia.url;
   }
 
