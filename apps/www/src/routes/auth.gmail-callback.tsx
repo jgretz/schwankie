@@ -24,11 +24,11 @@ export const Route = createFileRoute('/auth/gmail-callback')({
 
     try {
       await exchangeGmailCodeAction({data: {code: s.code}});
-      throw redirect({to: '/admin/gmail'});
     } catch (error) {
       console.error('Failed to exchange code:', error);
       throw redirect({to: '/admin/gmail', search: {error: 'Failed to connect Gmail'}});
     }
+    throw redirect({to: '/admin/gmail'});
   },
   component: () => <div>Redirecting...</div>,
 });

@@ -30,7 +30,7 @@ export const Route = createFileRoute('/email/')({
 
 function EmailPage() {
   const search = Route.useSearch() as EmailSearch;
-  const navigate = useNavigate();
+  const navigate = useNavigate({from: '/email/'});
   const [hiddenItems, setHiddenItems] = useState<Set<string>>(new Set());
 
   const {data: emailData, isLoading} = useEmailItems({unread: search.unread, from: search.from});
@@ -38,7 +38,7 @@ function EmailPage() {
   const promoteMutation = usePromoteEmailItem();
 
   const handleToggleUnread = useCallback(() => {
-    navigate({search: {unread: (!search.unread).toString(), from: search.from} as never});
+    navigate({search: {unread: search.unread ? 'false' : 'true', from: search.from}});
   }, [navigate, search.unread, search.from]);
 
   const handleMarkRead = useCallback(

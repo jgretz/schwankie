@@ -1,5 +1,7 @@
 import {createFileRoute} from '@tanstack/react-router';
 import {useState, useCallback, useEffect} from 'react';
+import {useQueryClient} from '@tanstack/react-query';
+import {z} from 'zod';
 import {toast} from 'sonner';
 import {Button} from '@www/components/ui/button';
 import {useGmailStatus} from '@www/hooks/use-gmail-status';
@@ -7,10 +9,15 @@ import {disconnectGmailAction, setGmailFilterAction} from '@www/lib/gmail-action
 import {getGmailAuthUrl} from 'client';
 
 export const Route = createFileRoute('/admin/gmail')({
+  validateSearch: z.object({
+    error: z.string().optional(),
+  }),
   component: AdminGmailPage,
 });
 
 function AdminGmailPage() {
+  const queryClient = useQueryClient();
+  const search = Route.useSearch();
   const {data: status, isLoading, error} = useGmailStatus();
   const [filter, setFilter] = useState('');
   const [filterLoading, setFilterLoading] = useState(false);
@@ -20,6 +27,12 @@ function AdminGmailPage() {
       setFilter(status.filter);
     }
   }, [status?.filter]);
+
+  useEffect(() => {
+    if (search.error) {
+      toast.error(search.error);
+    }
+  }, [search.error]);
 
   const handleConnect = useCallback(async () => {
     try {
@@ -36,12 +49,13 @@ function AdminGmailPage() {
 
     try {
       await disconnectGmailAction();
+      await queryClient.invalidateQueries({queryKey: ['gmail-status']});
       toast.success('Gmail disconnected');
     } catch (error) {
       console.error('Failed to disconnect:', error);
       toast.error('Failed to disconnect Gmail');
     }
-  }, []);
+  }, [queryClient]);
 
   const handleFilterSave = useCallback(
     async (newFilter: string) => {
