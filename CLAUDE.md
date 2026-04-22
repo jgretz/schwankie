@@ -13,9 +13,11 @@ bun install                 # Install deps (from root)
 bun run dev                 # www (3000) + api (3001)
 bun run dev:api             # API only (port 3001)
 bun run dev:www             # WWW only (port 3000)
+bun run dev:mobile          # Expo CLI (iOS sim)
 bun run dev:tasks           # Task runner
 
 bun run typecheck           # Typecheck all
+bun run typecheck:mobile    # Typecheck mobile only
 cd apps/www && bun run lint # Biome lint
 
 cd packages/database
@@ -27,6 +29,7 @@ bun run migrate                             # drizzle-kit migrate
 
 - **api** — Hono REST API (port 3001). Bearer auth middleware. Routes in `src/routes/`. Exports `fetch: app.fetch` for Bun server.
 - **www** — TanStack Start + Vite + Tailwind. File-based routing in `src/routes/`. Do NOT edit `routeTree.gen.ts`.
+- **mobile** — Expo Router (SDK 55, React 19, RN 0.83). Tabs: Queue, Feeds, Emails, Settings. Init client with `EXPO_PUBLIC_API_URL` and `EXPO_PUBLIC_API_KEY` env vars.
 - **tasks** — Bun polling task runner.
 
 ## Packages
