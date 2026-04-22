@@ -1,0 +1,48 @@
+{
+  "expo": {
+    "name": "Schwankie",
+    "slug": "schwankie-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "scheme": "schwankie",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#f7f3ed",
+      "dark": {
+        "image": "./assets/splash-icon.png",
+        "backgroundColor": "#1a1c1e"
+      }
+    },
+    "plugins": [
+      [
+        "expo-router",
+        {
+          "root": "./src/app"
+        }
+      ]
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.schwankie.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#f7f3ed"
+      },
+      "package": "com.schwankie.app"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "placeholder-eas-project-id"
+      }
+    }
+  }
+}

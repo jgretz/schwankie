@@ -1,0 +1,30 @@
+import { Stack } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { init } from 'client';
+
+const queryClient = new QueryClient();
+
+const apiUrl = process.env.EXPO_PUBLIC_API_URL;
+const apiKey = process.env.EXPO_PUBLIC_API_KEY;
+
+if (!apiUrl) {
+  throw new Error('EXPO_PUBLIC_API_URL not set');
+}
+
+init({
+  apiUrl,
+  apiKey,
+});
+
+export default function RootLayout() {
+  return (
+    <SafeAreaProvider>
+      <QueryClientProvider client={queryClient}>
+        <Stack screenOptions={{ headerShown: false }} />
+        <StatusBar style="auto" />
+      </QueryClientProvider>
+    </SafeAreaProvider>
+  );
+}
