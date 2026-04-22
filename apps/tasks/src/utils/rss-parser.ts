@@ -17,7 +17,7 @@ function sanitizeXml(xml: string): string {
     .replace(/&(?![a-zA-Z0-9#]+;)/g, '&amp;');
 }
 
-async function fetchFeed(url: string, retries = 1): Promise<any> {
+async function fetchFeed(url: string, retries = 1) {
   const parser = new Parser({
     customFields: {
       item: [
@@ -29,14 +29,14 @@ async function fetchFeed(url: string, retries = 1): Promise<any> {
   });
 
   try {
-    return await parser.parseURL(url);
+    return (await parser.parseURL(url)) as unknown as Parser.Output<Record<string, unknown>>;
   } catch (error) {
     if (retries > 0) {
       try {
         const response = await fetch(url);
         const xml = await response.text();
         const sanitized = sanitizeXml(xml);
-        return parser.parseString(sanitized);
+        return (await parser.parseString(sanitized)) as unknown as Parser.Output<Record<string, unknown>>;
       } catch (fallbackError) {
         throw error;
       }
@@ -105,7 +105,7 @@ function extractContent(item: Record<string, unknown>): string | undefined {
   return undefined;
 }
 
-export function classifyError(error: unknown): string {
+export function getErrorMessage(error: unknown): string {
   if (error instanceof Error) {
     return error.message;
   }

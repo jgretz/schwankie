@@ -1,14 +1,17 @@
 import type PgBoss from 'pg-boss';
 import {bulkUpsertRssItems, updateFeed, getFeed} from '@domain';
-import {parseFeed, classifyError} from '../utils/rss-parser';
+import {parseFeed, getErrorMessage} from '../utils/rss-parser';
 
 interface ImportFeedData {
   feedId: string;
   sourceUrl: string;
 }
 
-export const importFeedHandler: PgBoss.WorkHandler<ImportFeedData> = async (job) => {
-  const {feedId, sourceUrl} = (job as unknown as {data: ImportFeedData}).data;
+export const importFeedHandler: PgBoss.WorkHandler<ImportFeedData> = async (jobs) => {
+  const job = jobs[0];
+  if (!job) return;
+
+  const {feedId, sourceUrl} = job.data;
 
   try {
     const items = await parseFeed(sourceUrl);
@@ -30,7 +33,7 @@ export const importFeedHandler: PgBoss.WorkHandler<ImportFeedData> = async (job)
 
     await updateFeed(feedId, {errorCount: 0, lastError: null});
   } catch (error) {
-    const errorMessage = classifyError(error);
+    const errorMessage = getErrorMessage(error);
     const currentFeed = await getFeed(feedId);
     const errorCount = (currentFeed?.errorCount || 0) + 1;
     await updateFeed(feedId, {
