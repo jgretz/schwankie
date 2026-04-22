@@ -100,10 +100,11 @@ describe('Feeds Client Calls', () => {
 
   describe('deleteFeed', () => {
     it('should delete feed on success', async () => {
-      global.fetch = (async () => new Response(null, {status: 204})) as any;
+      global.fetch = (async () =>
+        new Response(JSON.stringify({deleted: true}), {status: 200, headers: {'Content-Type': 'application/json'}})) as any;
 
       const result = await deleteFeed('feed-1');
-      expect(result).toBeDefined();
+      expect(result.deleted).toBe(true);
     });
 
     it('should throw on feed not found', async () => {
@@ -117,23 +118,26 @@ describe('Feeds Client Calls', () => {
   });
 
   describe('fetchFeedItems', () => {
-    it('should fetch items with unread filter on success', async () => {
-      const mockItems = [
-        {
-          id: 'item-1',
-          feedId: 'feed-1',
-          guid: 'article-1',
-          title: 'Article',
-          link: 'https://example.com/article',
-          read: false,
-        },
-      ];
+    it('should fetch items with read filter on success', async () => {
+      const mockResult = {
+        items: [
+          {
+            id: 'item-1',
+            feedId: 'feed-1',
+            guid: 'article-1',
+            title: 'Article',
+            link: 'https://example.com/article',
+            read: false,
+          },
+        ],
+        total: 1,
+      };
       global.fetch = (async () =>
-        new Response(JSON.stringify(mockItems), {status: 200, headers: {'Content-Type': 'application/json'}})) as any;
+        new Response(JSON.stringify(mockResult), {status: 200, headers: {'Content-Type': 'application/json'}})) as any;
 
-      const result = await fetchFeedItems('feed-1', {unread: true});
-      expect(result.length).toBe(1);
-      expect(result[0].read).toBe(false);
+      const result = await fetchFeedItems({feedId: 'feed-1', read: false});
+      expect(result.items.length).toBe(1);
+      expect(result.items[0].read).toBe(false);
     });
 
     it('should throw on HTTP error', async () => {
@@ -141,17 +145,18 @@ describe('Feeds Client Calls', () => {
         new Response(JSON.stringify({error: 'Not found'}), {status: 404, headers: {'Content-Type': 'application/json'}})) as any;
 
       expect(async () => {
-        await fetchFeedItems('nonexistent');
+        await fetchFeedItems({feedId: 'nonexistent'});
       }).toThrow();
     });
   });
 
   describe('markRssItemRead', () => {
     it('should mark item as read on success', async () => {
-      global.fetch = (async () => new Response(null, {status: 204})) as any;
+      global.fetch = (async () =>
+        new Response(JSON.stringify({marked: true}), {status: 200, headers: {'Content-Type': 'application/json'}})) as any;
 
       const result = await markRssItemRead('feed-1', 'item-1');
-      expect(result).toBeDefined();
+      expect(result.marked).toBe(true);
     });
 
     it('should throw on item not found', async () => {
@@ -166,12 +171,12 @@ describe('Feeds Client Calls', () => {
 
   describe('promoteRssItem', () => {
     it('should promote item to link on success', async () => {
-      const mockLink = {id: 'link-1', title: 'Article', url: 'https://example.com/article', tags: []};
+      const mockLink = {id: 1, title: 'Article', url: 'https://example.com/article', description: null, imageUrl: null, status: 'unread' as const, content: null, enrichmentFailCount: 0, enrichmentLastError: null, score: null, tags: []};
       global.fetch = (async () =>
         new Response(JSON.stringify(mockLink), {status: 201, headers: {'Content-Type': 'application/json'}})) as any;
 
       const result = await promoteRssItem('feed-1', 'item-1');
-      expect(result.id).toBe('link-1');
+      expect(result.id).toBe(1);
       expect(result.title).toBe('Article');
     });
 
@@ -212,17 +217,16 @@ describe('Feeds Client Calls', () => {
 
   describe('bulkUpsertRssItems', () => {
     it('should bulk upsert items on success', async () => {
-      const mockItems = [
-        {id: 'item-1', feedId: 'feed-1', guid: 'article-1', title: 'Article', read: false},
-      ];
+      const mockResult = {inserted: 1};
       global.fetch = (async () =>
-        new Response(JSON.stringify(mockItems), {status: 200, headers: {'Content-Type': 'application/json'}})) as any;
+        new Response(JSON.stringify(mockResult), {status: 200, headers: {'Content-Type': 'application/json'}})) as any;
 
-      const result = await bulkUpsertRssItems([
-        {feedId: 'feed-1', guid: 'article-1', title: 'Article', link: 'https://example.com/article'},
-      ]);
-      expect(result.length).toBe(1);
-      expect(result[0].feedId).toBe('feed-1');
+      const result = await bulkUpsertRssItems('feed-1', {
+        items: [
+          {guid: 'article-1', title: 'Article', link: 'https://example.com/article'},
+        ],
+      });
+      expect(result.inserted).toBe(1);
     });
 
     it('should throw on validation error', async () => {
@@ -230,7 +234,7 @@ describe('Feeds Client Calls', () => {
         new Response(JSON.stringify({error: 'Invalid request'}), {status: 400, headers: {'Content-Type': 'application/json'}})) as any;
 
       expect(async () => {
-        await bulkUpsertRssItems([]);
+        await bulkUpsertRssItems('feed-1', {items: []});
       }).toThrow();
     });
 
@@ -239,9 +243,11 @@ describe('Feeds Client Calls', () => {
         new Response(JSON.stringify({error: 'Feed not found'}), {status: 404, headers: {'Content-Type': 'application/json'}})) as any;
 
       expect(async () => {
-        await bulkUpsertRssItems([
-          {feedId: 'nonexistent', guid: 'article-1', title: 'Article', link: 'https://example.com/article'},
-        ]);
+        await bulkUpsertRssItems('nonexistent', {
+          items: [
+            {guid: 'article-1', title: 'Article', link: 'https://example.com/article'},
+          ],
+        });
       }).toThrow();
     });
   });
