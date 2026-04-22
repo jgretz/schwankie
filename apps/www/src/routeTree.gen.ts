@@ -15,11 +15,14 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as FeedsIndexRouteImport } from './routes/feeds.index'
+import { Route as EmailIndexRouteImport } from './routes/email.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as FeedsFeedIdRouteImport } from './routes/feeds.$feedId'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
+import { Route as AuthGmailCallbackRouteImport } from './routes/auth.gmail-callback'
 import { Route as AuthCallbackRouteImport } from './routes/auth/callback'
 import { Route as AdminTagsRouteImport } from './routes/admin.tags'
+import { Route as AdminGmailRouteImport } from './routes/admin.gmail'
 import { Route as AdminDeadLinksRouteImport } from './routes/admin.dead-links'
 
 const QueueRoute = QueueRouteImport.update({
@@ -52,6 +55,11 @@ const FeedsIndexRoute = FeedsIndexRouteImport.update({
   path: '/',
   getParentRoute: () => FeedsRoute,
 } as any)
+const EmailIndexRoute = EmailIndexRouteImport.update({
+  id: '/email/',
+  path: '/email/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -67,6 +75,11 @@ const AuthLoginRoute = AuthLoginRouteImport.update({
   path: '/auth/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthGmailCallbackRoute = AuthGmailCallbackRouteImport.update({
+  id: '/auth/gmail-callback',
+  path: '/auth/gmail-callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthCallbackRoute = AuthCallbackRouteImport.update({
   id: '/auth/callback',
   path: '/auth/callback',
@@ -75,6 +88,11 @@ const AuthCallbackRoute = AuthCallbackRouteImport.update({
 const AdminTagsRoute = AdminTagsRouteImport.update({
   id: '/tags',
   path: '/tags',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminGmailRoute = AdminGmailRouteImport.update({
+  id: '/gmail',
+  path: '/gmail',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminDeadLinksRoute = AdminDeadLinksRouteImport.update({
@@ -90,11 +108,14 @@ export interface FileRoutesByFullPath {
   '/feeds': typeof FeedsRouteWithChildren
   '/queue': typeof QueueRoute
   '/admin/dead-links': typeof AdminDeadLinksRoute
+  '/admin/gmail': typeof AdminGmailRoute
   '/admin/tags': typeof AdminTagsRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/auth/gmail-callback': typeof AuthGmailCallbackRoute
   '/auth/login': typeof AuthLoginRoute
   '/feeds/$feedId': typeof FeedsFeedIdRoute
   '/admin/': typeof AdminIndexRoute
+  '/email/': typeof EmailIndexRoute
   '/feeds/': typeof FeedsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -102,11 +123,14 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/queue': typeof QueueRoute
   '/admin/dead-links': typeof AdminDeadLinksRoute
+  '/admin/gmail': typeof AdminGmailRoute
   '/admin/tags': typeof AdminTagsRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/auth/gmail-callback': typeof AuthGmailCallbackRoute
   '/auth/login': typeof AuthLoginRoute
   '/feeds/$feedId': typeof FeedsFeedIdRoute
   '/admin': typeof AdminIndexRoute
+  '/email': typeof EmailIndexRoute
   '/feeds': typeof FeedsIndexRoute
 }
 export interface FileRoutesById {
@@ -117,11 +141,14 @@ export interface FileRoutesById {
   '/feeds': typeof FeedsRouteWithChildren
   '/queue': typeof QueueRoute
   '/admin/dead-links': typeof AdminDeadLinksRoute
+  '/admin/gmail': typeof AdminGmailRoute
   '/admin/tags': typeof AdminTagsRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/auth/gmail-callback': typeof AuthGmailCallbackRoute
   '/auth/login': typeof AuthLoginRoute
   '/feeds/$feedId': typeof FeedsFeedIdRoute
   '/admin/': typeof AdminIndexRoute
+  '/email/': typeof EmailIndexRoute
   '/feeds/': typeof FeedsIndexRoute
 }
 export interface FileRouteTypes {
@@ -133,11 +160,14 @@ export interface FileRouteTypes {
     | '/feeds'
     | '/queue'
     | '/admin/dead-links'
+    | '/admin/gmail'
     | '/admin/tags'
     | '/auth/callback'
+    | '/auth/gmail-callback'
     | '/auth/login'
     | '/feeds/$feedId'
     | '/admin/'
+    | '/email/'
     | '/feeds/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -145,11 +175,14 @@ export interface FileRouteTypes {
     | '/about'
     | '/queue'
     | '/admin/dead-links'
+    | '/admin/gmail'
     | '/admin/tags'
     | '/auth/callback'
+    | '/auth/gmail-callback'
     | '/auth/login'
     | '/feeds/$feedId'
     | '/admin'
+    | '/email'
     | '/feeds'
   id:
     | '__root__'
@@ -159,11 +192,14 @@ export interface FileRouteTypes {
     | '/feeds'
     | '/queue'
     | '/admin/dead-links'
+    | '/admin/gmail'
     | '/admin/tags'
     | '/auth/callback'
+    | '/auth/gmail-callback'
     | '/auth/login'
     | '/feeds/$feedId'
     | '/admin/'
+    | '/email/'
     | '/feeds/'
   fileRoutesById: FileRoutesById
 }
@@ -174,7 +210,9 @@ export interface RootRouteChildren {
   FeedsRoute: typeof FeedsRouteWithChildren
   QueueRoute: typeof QueueRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
+  AuthGmailCallbackRoute: typeof AuthGmailCallbackRoute
   AuthLoginRoute: typeof AuthLoginRoute
+  EmailIndexRoute: typeof EmailIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -221,6 +259,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FeedsIndexRouteImport
       parentRoute: typeof FeedsRoute
     }
+    '/email/': {
+      id: '/email/'
+      path: '/email'
+      fullPath: '/email/'
+      preLoaderRoute: typeof EmailIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/': {
       id: '/admin/'
       path: '/'
@@ -242,6 +287,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/gmail-callback': {
+      id: '/auth/gmail-callback'
+      path: '/auth/gmail-callback'
+      fullPath: '/auth/gmail-callback'
+      preLoaderRoute: typeof AuthGmailCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth/callback': {
       id: '/auth/callback'
       path: '/auth/callback'
@@ -256,6 +308,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminTagsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/gmail': {
+      id: '/admin/gmail'
+      path: '/gmail'
+      fullPath: '/admin/gmail'
+      preLoaderRoute: typeof AdminGmailRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/dead-links': {
       id: '/admin/dead-links'
       path: '/dead-links'
@@ -268,12 +327,14 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminDeadLinksRoute: typeof AdminDeadLinksRoute
+  AdminGmailRoute: typeof AdminGmailRoute
   AdminTagsRoute: typeof AdminTagsRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminDeadLinksRoute: AdminDeadLinksRoute,
+  AdminGmailRoute: AdminGmailRoute,
   AdminTagsRoute: AdminTagsRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
@@ -299,7 +360,9 @@ const rootRouteChildren: RootRouteChildren = {
   FeedsRoute: FeedsRouteWithChildren,
   QueueRoute: QueueRoute,
   AuthCallbackRoute: AuthCallbackRoute,
+  AuthGmailCallbackRoute: AuthGmailCallbackRoute,
   AuthLoginRoute: AuthLoginRoute,
+  EmailIndexRoute: EmailIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

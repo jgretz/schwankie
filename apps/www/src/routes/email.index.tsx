@@ -38,7 +38,7 @@ function EmailPage() {
   const promoteMutation = usePromoteEmailItem();
 
   const handleToggleUnread = useCallback(() => {
-    navigate({search: (prev: any) => ({...prev, unread: (!search.unread).toString(), from: search.from})});
+    navigate({search: {unread: (!search.unread).toString(), from: search.from}});
   }, [navigate, search.unread, search.from]);
 
   const handleMarkRead = useCallback(
