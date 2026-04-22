@@ -127,3 +127,18 @@ export type BulkUpsertRssItemsInput = {
     pubDate?: string;
   }>;
 };
+
+export type WorkRequestData = {
+  id: string;
+  type: string;
+  payload: Record<string, unknown>;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  errorMessage: string | null;
+  createdAt: string;
+  startedAt: string | null;
+  completedAt: string | null;
+};
+
+export type WorkRequestResponse = {
+  id: string;
+};
