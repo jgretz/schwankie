@@ -10,6 +10,7 @@
   "dependencies": {
     "client": "workspace:*",
     "env": "workspace:*",
+    "pg-boss": "^10.1.5",
     "zod": "^3.23.8"
   },
   "devDependencies": {

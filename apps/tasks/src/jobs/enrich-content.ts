@@ -1,7 +1,12 @@
+import type PgBoss from 'pg-boss';
 import {getLinksNeedingEnrichment, updateLinkContent, reportEnrichmentFailure} from 'client';
 
 const DEAD_STATUS_CODES = new Set([400, 401, 403, 404, 405, 406, 410, 421, 422, 429]);
 const SKIP_STATUS_CODES = new Set([451]);
+
+export const enrichContentHandler: PgBoss.WorkHandler<unknown> = async () => {
+  await enrichContent();
+};
 
 export async function enrichContent(): Promise<void> {
   const {items: links} = await getLinksNeedingEnrichment(5);

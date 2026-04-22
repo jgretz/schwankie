@@ -1,14 +1,20 @@
+import {hostname} from 'os';
 import z from 'zod';
+import PgBoss from 'pg-boss';
 import {parseEnv} from 'env';
 import {init} from 'client';
-import {enrichContent} from './jobs/enrich-content';
-import {scoreLinks} from './jobs/score-links';
-import {normalizeTags} from './jobs/normalize-tags';
+import {enrichContentHandler} from './jobs/enrich-content';
+import {scoreLinksHandler} from './jobs/score-links';
+import {normalizeTagsHandler} from './jobs/normalize-tags';
+import {startHealthServer} from './healthCheck';
+import {runWithAutoRecovery} from './connectionManager';
 
 const envSchema = z.object({
   API_URL: z.string().url(),
   API_KEY: z.string(),
-  POLL_INTERVAL_MS: z.coerce.number().default(60_000),
+  PGBOSS_DATABASE_URL: z.string().url(),
+  PG_POOL_SIZE: z.coerce.number().default(10),
+  WORKER_ID: z.string().optional(),
   OLLAMA_URL: z.string().url().optional(),
   OLLAMA_MODEL: z.string().default('llama3.2:3b'),
 });
@@ -16,54 +22,39 @@ const env = parseEnv(envSchema);
 
 init({apiUrl: env.API_URL, apiKey: env.API_KEY});
 
-async function runJob(name: string, job: () => Promise<void>): Promise<void> {
-  try {
-    await job();
-  } catch (error) {
-    console.error(`[poll] job "${name}" failed:`, error);
+interface JobDefinition {
+  queue: string;
+  schedule: string;
+  handler: PgBoss.WorkHandler<unknown>;
+}
+
+const jobDefinitions: JobDefinition[] = [
+  {queue: 'enrich-content', schedule: '*/1 * * * *', handler: enrichContentHandler},
+  {queue: 'score-links', schedule: '*/2 * * * *', handler: scoreLinksHandler},
+  {queue: 'normalize-tags', schedule: '*/5 * * * *', handler: normalizeTagsHandler},
+];
+
+async function setupWorkers(boss: PgBoss): Promise<void> {
+  for (const {queue, schedule, handler} of jobDefinitions) {
+    await boss.createQueue(queue);
+    await boss.schedule(queue, schedule);
+    await boss.work(queue, handler);
+    console.log(`Registered: ${queue} (${schedule})`);
   }
+  console.log('Task runner started successfully');
 }
 
-async function poll() {
-  await runJob('enrich-content', enrichContent);
-  await runJob('score-links', () => scoreLinks(env.OLLAMA_URL, env.OLLAMA_MODEL));
+async function main(): Promise<void> {
+  const workerId = env.WORKER_ID || hostname();
+  process.env.WORKER_ID = workerId;
+  console.log(`Starting schwankie task runner (worker: ${workerId})...`);
 
-  if (env.OLLAMA_URL) {
-    await runJob('normalize-tags', () => normalizeTags(env.OLLAMA_URL!, env.OLLAMA_MODEL));
-  } else {
-    console.log('[poll] OLLAMA_URL not set, skipping tag normalization');
-  }
+  startHealthServer();
+
+  await runWithAutoRecovery(setupWorkers);
 }
 
-let timeoutId: ReturnType<typeof setTimeout>;
-let running = true;
-
-function shutdown() {
-  console.log('schwankie-tasks shutting down...');
-  running = false;
-  clearTimeout(timeoutId);
-  process.exit(0);
-}
-
-async function scheduleNext() {
-  if (!running) return;
-  try {
-    await poll();
-  } catch (error) {
-    console.error('[poll] unexpected error:', error);
-  }
-  if (running) {
-    timeoutId = setTimeout(scheduleNext, env.POLL_INTERVAL_MS);
-  }
-}
-
-async function start() {
-  console.log('schwankie-tasks starting...');
-
-  process.on('SIGINT', shutdown);
-  process.on('SIGTERM', shutdown);
-
-  await scheduleNext();
-}
-
-start().catch(console.error);
+main().catch((error) => {
+  console.error('Fatal error:', error);
+  process.exit(1);
+});

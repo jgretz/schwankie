@@ -1,3 +1,4 @@
+import type PgBoss from 'pg-boss';
 import {getCanonicalTags, getTagsNeedingNormalization, markTagNormalized, mergeTag} from 'client';
 import {generate} from '../lib/ollama';
 
@@ -68,6 +69,14 @@ async function callOllama(
     prompt,
   });
 }
+
+export const normalizeTagsHandler: PgBoss.WorkHandler<unknown> = async () => {
+  if (!process.env.OLLAMA_URL) {
+    console.log('[normalize] OLLAMA_URL not set, skipping tag normalization');
+    return;
+  }
+  await normalizeTags(process.env.OLLAMA_URL, process.env.OLLAMA_MODEL || 'llama3.2:3b');
+};
 
 export async function normalizeTags(ollamaUrl: string, ollamaModel: string): Promise<void> {
   const {tags: unprocessed} = await getTagsNeedingNormalization();
