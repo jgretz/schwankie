@@ -58,7 +58,6 @@ describe('Feed Validators', () => {
       const valid = {
         items: [
           {
-            feedId: 'feed-1',
             guid: 'item-1',
             title: 'Article',
             link: 'https://example.com/article',
@@ -67,34 +66,19 @@ describe('Feed Validators', () => {
       };
       const result = bulkUpsertItemsSchema.safeParse(valid);
       expect(result.success).toBe(true);
-    });
-
-    it('should require feedId', () => {
-      const invalid = {
-        items: [
-          {
-            guid: 'item-1',
-            title: 'Article',
-            link: 'https://example.com/article',
-          },
-        ],
-      };
-      const result = bulkUpsertItemsSchema.safeParse(invalid);
-      expect(result.success).toBe(false);
     });
 
     it('should accept optional fields', () => {
       const valid = {
         items: [
           {
-            feedId: 'feed-1',
             guid: 'item-1',
             title: 'Article',
             link: 'https://example.com/article',
             summary: 'A summary',
             content: 'Raw content',
             imageUrl: 'https://example.com/image.jpg',
-            publishedAt: '2026-04-22T00:00:00Z',
+            pubDate: '2026-04-22T00:00:00Z',
           },
         ],
       };
@@ -102,30 +86,50 @@ describe('Feed Validators', () => {
       expect(result.success).toBe(true);
     });
 
-    it('should reject empty items array', () => {
-      const invalid = {items: []};
+    it('should accept empty items array', () => {
+      const valid = {items: []};
+      const result = bulkUpsertItemsSchema.safeParse(valid);
+      expect(result.success).toBe(true);
+    });
+
+    it('should reject invalid link URL', () => {
+      const invalid = {
+        items: [
+          {
+            guid: 'item-1',
+            title: 'Article',
+            link: 'not-a-url',
+          },
+        ],
+      };
       const result = bulkUpsertItemsSchema.safeParse(invalid);
       expect(result.success).toBe(false);
     });
   });
 
   describe('listFeedItemsSchema', () => {
-    it('should validate with unread filter', () => {
-      const valid = {unread: true};
+    it('should validate with read filter', () => {
+      const valid = {feedId: 'feed-1', read: true};
       const result = listFeedItemsSchema.safeParse(valid);
       expect(result.success).toBe(true);
     });
 
-    it('should validate empty query', () => {
-      const valid = {};
+    it('should validate with required feedId only', () => {
+      const valid = {feedId: 'feed-1'};
       const result = listFeedItemsSchema.safeParse(valid);
       expect(result.success).toBe(true);
     });
 
-    it('should reject invalid unread value', () => {
-      const invalid = {unread: 'true'};
+    it('should reject missing feedId', () => {
+      const invalid = {read: true};
       const result = listFeedItemsSchema.safeParse(invalid);
       expect(result.success).toBe(false);
+    });
+
+    it('should validate with clicked filter', () => {
+      const valid = {feedId: 'feed-1', clicked: true};
+      const result = listFeedItemsSchema.safeParse(valid);
+      expect(result.success).toBe(true);
     });
   });
 });
