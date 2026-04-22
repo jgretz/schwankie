@@ -13,7 +13,7 @@ export function reset(): void {
   config = null;
 }
 
-function getConfig(): ClientConfig {
+export function getConfig(): ClientConfig {
   if (!config) throw new Error('client not initialized — call init() first');
   return config;
 }

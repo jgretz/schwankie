@@ -56,3 +56,25 @@ export type UpdateLinkInput = {
 };
 
 export type {SettingResponse} from '@domain';
+
+export type GmailAuthUrlResponse = {
+  url: string;
+};
+
+export type GmailConnectResponse = {
+  connected: boolean;
+  email: string;
+};
+
+export type GmailStatusResponse = {
+  connected: boolean;
+  filter: string | null;
+  lastImportedAt: string | null;
+  email?: string;
+};
+
+export type GmailTokensResponse = {
+  accessToken: string;
+  refreshToken: string;
+  expiry: string;
+};

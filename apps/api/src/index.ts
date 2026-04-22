@@ -8,6 +8,7 @@ import {tagsRouter} from './routes/tags';
 import {linksRoutes} from './routes/links';
 import {metadataRoutes} from './routes/metadata';
 import {settingsRouter} from './routes/settings';
+import {gmailRouter} from './routes/gmail';
 
 const envSchema = z.object({
   PORT: z.string().default('3001'),
@@ -29,6 +30,7 @@ app.route('/', healthRoutes);
 app.route('/', tagsRouter);
 app.route('/', linksRoutes);
 app.route('/', settingsRouter);
+app.route('/', gmailRouter);
 app.route('/api/metadata', metadataRoutes);
 
 app.onError((err, c) => {
