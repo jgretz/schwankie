@@ -9,8 +9,11 @@
   },
   "dependencies": {
     "client": "workspace:*",
+    "database": "workspace:*",
+    "domain": "workspace:*",
     "env": "workspace:*",
     "pg-boss": "^10.1.5",
+    "rss-parser": "^3.13.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {

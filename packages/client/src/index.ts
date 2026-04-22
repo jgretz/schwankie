@@ -31,6 +31,15 @@ export {disconnectGmail} from './calls/disconnect-gmail';
 export {getGmailStatus} from './calls/get-gmail-status';
 export {setGmailFilter} from './calls/set-gmail-filter';
 export {getGmailTokens} from './calls/get-gmail-tokens';
+export {fetchFeeds} from './calls/fetch-feeds';
+export {createFeed} from './calls/create-feed';
+export {updateFeed} from './calls/update-feed';
+export {deleteFeed} from './calls/delete-feed';
+export {fetchFeedItems} from './calls/fetch-feed-items';
+export {markRssItemRead} from './calls/mark-rss-item-read';
+export {promoteRssItem} from './calls/promote-rss-item';
+export {fetchAllFeeds} from './calls/fetch-all-feeds';
+export {bulkUpsertRssItems} from './calls/bulk-upsert-rss-items';
 
 // types
 export type {
@@ -46,4 +55,9 @@ export type {
   GmailConnectResponse,
   GmailStatusResponse,
   GmailTokensResponse,
+  FeedData,
+  RssItemData,
+  CreateFeedInput,
+  UpdateFeedInput,
+  BulkUpsertRssItemsInput,
 } from './types';

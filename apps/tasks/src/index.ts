@@ -6,6 +6,8 @@ import {init} from 'client';
 import {enrichContentHandler} from './jobs/enrich-content';
 import {scoreLinksHandler} from './jobs/score-links';
 import {normalizeTagsHandler} from './jobs/normalize-tags';
+import {importFeedHandler} from './jobs/import-feed';
+import {scheduleFeedImportsHandler} from './jobs/schedule-feed-imports';
 import {startHealthServer} from './healthCheck';
 import {runWithAutoRecovery} from './connectionManager';
 
@@ -32,14 +34,18 @@ const jobDefinitions: JobDefinition[] = [
   {queue: 'enrich-content', schedule: '*/1 * * * *', handler: enrichContentHandler},
   {queue: 'score-links', schedule: '*/2 * * * *', handler: scoreLinksHandler},
   {queue: 'normalize-tags', schedule: '*/5 * * * *', handler: normalizeTagsHandler},
+  {queue: 'import-feed', schedule: '', handler: importFeedHandler as PgBoss.WorkHandler<unknown>},
+  {queue: 'schedule-feed-imports', schedule: '*/30 * * * *', handler: scheduleFeedImportsHandler as PgBoss.WorkHandler<unknown>},
 ];
 
 async function setupWorkers(boss: PgBoss): Promise<void> {
   for (const {queue, schedule, handler} of jobDefinitions) {
     await boss.createQueue(queue);
-    await boss.schedule(queue, schedule);
-    await boss.work(queue, handler);
-    console.log(`Registered: ${queue} (${schedule})`);
+    if (schedule) {
+      await boss.schedule(queue, schedule);
+    }
+    await boss.work(queue, handler as PgBoss.WorkHandler<unknown>);
+    console.log(`Registered: ${queue}${schedule ? ` (${schedule})` : ''}`);
   }
   console.log('Task runner started successfully');
 }

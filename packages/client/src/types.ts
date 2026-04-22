@@ -78,3 +78,52 @@ export type GmailTokensResponse = {
   refreshToken: string;
   expiry: string;
 };
+
+export type FeedData = {
+  id: string;
+  name: string;
+  sourceUrl: string;
+  disabled: boolean;
+  errorCount: number;
+  lastError: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type RssItemData = {
+  id: string;
+  feedId: string;
+  guid: string;
+  title: string;
+  link: string;
+  summary: string | null;
+  content: string | null;
+  imageUrl: string | null;
+  publishedAt: string | null;
+  read: boolean;
+  clicked: boolean;
+  createdAt: string;
+};
+
+export type CreateFeedInput = {
+  name: string;
+  sourceUrl: string;
+};
+
+export type UpdateFeedInput = {
+  name?: string;
+  sourceUrl?: string;
+  disabled?: boolean;
+};
+
+export type BulkUpsertRssItemsInput = {
+  items: Array<{
+    guid: string;
+    title: string;
+    link: string;
+    summary?: string;
+    content?: string;
+    imageUrl?: string;
+    pubDate?: string;
+  }>;
+};
