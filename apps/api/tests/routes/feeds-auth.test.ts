@@ -61,6 +61,24 @@ mock.module('@domain', () => ({
   markRssItemRead: mockMarkRssItemRead,
   promoteRssItem: mockPromoteRssItem,
   bulkUpsertRssItems: mockBulkUpsertRssItems,
+  // Stubs for exports consumed by sibling route files (e.g. gmail.ts).
+  // The mock.module registry is global across test files; omitting these
+  // causes "Export not found" errors when gmail.test.ts loads after this one.
+  init: () => {},
+  createRssItem: mockSetSetting,
+  listEmailItems: mockGetSetting,
+  getEmailItem: mockGetSetting,
+  createEmailItem: mockSetSetting,
+  markEmailItemRead: mockSetSetting,
+  promoteEmailItem: mockSetSetting,
+  getGmailTokens: mockGetSetting,
+  setGmailTokens: mockSetSetting,
+  clearGmailTokens: mockSetSetting,
+  clearGmailAuthTokens: mockSetSetting,
+  setGmailFilter: mockSetSetting,
+  loadKey: () => Buffer.from(new Uint8Array(32)),
+  encryptToken: (x: string) => x,
+  decryptToken: (x: string) => x,
 }));
 
 // Dynamic import after mocks are set up
