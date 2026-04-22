@@ -44,6 +44,7 @@ async function performUpdate(config: Config): Promise<void> {
     error('Update failed, staying on current code', {
       error: err instanceof Error ? err.message : String(err),
     });
+    await rollback(updateConfig, previousSha);
     return;
   }
 

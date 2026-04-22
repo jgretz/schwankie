@@ -67,7 +67,7 @@ export async function applyUpdate(config: UpdateConfig): Promise<void> {
   const {remote, branch, repoDir} = config;
   const remoteRef = `${remote}/${branch}`;
 
-  info('Checking out latest release');
+  info('Checking out latest commit');
   const checkout = parse(
     await Bun.$`git checkout -B ${branch} ${remoteRef}`.cwd(repoDir).quiet().nothrow(),
   );
