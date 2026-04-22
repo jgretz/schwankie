@@ -58,7 +58,7 @@ export default function QueueScreen() {
       <View style={{ flex: 1, backgroundColor: colors.bg }}>
         <EmptyState
           title="Error loading links"
-          message={(error as Error).message}
+          message={error.message}
           colors={colors}
         />
       </View>

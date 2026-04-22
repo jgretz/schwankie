@@ -40,7 +40,9 @@
       "favicon": "./assets/favicon.png"
     },
     "extra": {
-      "projectId": "placeholder-eas-project-id"
+      "eas": {
+        "projectId": "placeholder-eas-project-id"
+      }
     }
   }
 }
