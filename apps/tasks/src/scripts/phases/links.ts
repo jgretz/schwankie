@@ -39,6 +39,18 @@ export async function migrateLinks(
       return result;
     }
 
+    // Pre-fetch existing links once for idempotency check
+    const existingLinks = new Set<string>();
+    let fetchOffset = 0;
+    while (true) {
+      const batch = await fetchLinks({limit: 100, offset: fetchOffset});
+      if (batch.items.length === 0) break;
+      for (const item of batch.items) {
+        existingLinks.add(item.url);
+      }
+      fetchOffset += 100;
+    }
+
     let offset = 0;
     while (true) {
       const links = await sql<StashlLink[]>`
@@ -56,10 +68,7 @@ export async function migrateLinks(
         links,
         CONCURRENCY,
         async (link) => {
-          const existing = await fetchLinks({q: link.url, limit: 1});
-          const linkExists = existing.items.some((item) => item.url === link.url);
-
-          if (linkExists) {
+          if (existingLinks.has(link.url)) {
             return {skipped: true};
           }
 
