@@ -1,8 +1,18 @@
-import {describe, it, expect} from 'bun:test';
+import {describe, it, expect, beforeEach, afterAll} from 'bun:test';
+import {mock} from 'bun:test';
 import {classifyAmbiguousLinks, type EmailContext, type LinkClassification} from '../../src/utils/llm-link-classifier';
 import type {ScoredLink} from '../../src/utils/email-parser';
 
 describe('LLM Link Classifier', () => {
+  const originalFetch = global.fetch;
+
+  afterAll(function () {
+    global.fetch = originalFetch;
+  });
+
+  beforeEach(function () {
+    global.fetch = originalFetch;
+  });
 
   describe('classifyAmbiguousLinks', () => {
     it('should return empty array for empty input', async () => {
@@ -25,13 +35,19 @@ describe('LLM Link Classifier', () => {
         subject: 'Weekly Newsletter',
       };
 
-      // This test verifies the function accepts the correct parameters
-      // In a real environment with mocked Ollama, it would verify the prompt
-      try {
-        await classifyAmbiguousLinks(links, emailContext, '', 'llama3.2:3b');
-      } catch {
-        // Expected to fail without actual Ollama, but structure is correct
-      }
+      global.fetch = mock(async () =>
+        ({
+          ok: true,
+          json: async () => ({response: '{"results":[{"index":1,"keep":true,"confidence":0.9,"reason":"tech article"}]}'}),
+        }) as unknown as Response,
+      ) as unknown as typeof fetch;
+
+      const result = await classifyAmbiguousLinks(links, emailContext, 'http://localhost:11434', 'llama3.2:3b');
+      expect(result).toHaveLength(1);
+      expect(result[0].url).toBe('https://example.com/article');
+      expect(result[0].keep).toBe(true);
+      expect(result[0].confidence).toBe(0.9);
+      expect(result[0].reason).toBe('tech article');
     });
 
     it('should handle links with and without descriptions', async () => {
@@ -56,11 +72,19 @@ describe('LLM Link Classifier', () => {
         subject: 'Test Newsletter',
       };
 
-      try {
-        await classifyAmbiguousLinks(links, emailContext, '', 'llama3.2:3b');
-      } catch {
-        // Function structure is correct for handling mixed input
-      }
+      global.fetch = mock(async () =>
+        ({
+          ok: true,
+          json: async () => ({response: '{"results":[{"index":1,"keep":true,"confidence":0.8,"reason":"article"},{"index":2,"keep":false,"confidence":0.7,"reason":"ad"}]}'}),
+        }) as unknown as Response,
+      ) as unknown as typeof fetch;
+
+      const result = await classifyAmbiguousLinks(links, emailContext, 'http://localhost:11434', 'llama3.2:3b');
+      expect(result).toHaveLength(2);
+      expect(result[0].url).toBe('https://example.com/article1');
+      expect(result[0].keep).toBe(true);
+      expect(result[1].url).toBe('https://example.com/article2');
+      expect(result[1].keep).toBe(false);
     });
 
     it('should return fallback results on Ollama failure', async () => {
@@ -117,11 +141,17 @@ describe('LLM Link Classifier', () => {
         subject: 'Long Context Test',
       };
 
-      try {
-        await classifyAmbiguousLinks(links, emailContext, '', 'llama3.2:3b');
-      } catch {
-        // Function handles context correctly
-      }
+      global.fetch = mock(async () =>
+        ({
+          ok: true,
+          json: async () => ({response: '{"results":[{"index":1,"keep":true,"confidence":0.85,"reason":"informative"}]}'}),
+        }) as unknown as Response,
+      ) as unknown as typeof fetch;
+
+      const result = await classifyAmbiguousLinks(links, emailContext, 'http://localhost:11434', 'llama3.2:3b');
+      expect(result).toHaveLength(1);
+      expect(result[0].url).toBe('https://example.com/article');
+      expect(result[0].keep).toBe(true);
     });
 
     it('should preserve URL properties in results', async () => {
@@ -164,11 +194,17 @@ describe('LLM Link Classifier', () => {
         subject: 'Test',
       };
 
-      try {
-        await classifyAmbiguousLinks(links, emailContext, '', 'llama3.2:3b');
-      } catch {
-        // Function handles empty titles correctly
-      }
+      global.fetch = mock(async () =>
+        ({
+          ok: true,
+          json: async () => ({response: '{"results":[{"index":1,"keep":true,"confidence":0.75,"reason":"context relevant"}]}'}),
+        }) as unknown as Response,
+      ) as unknown as typeof fetch;
+
+      const result = await classifyAmbiguousLinks(links, emailContext, 'http://localhost:11434', 'llama3.2:3b');
+      expect(result).toHaveLength(1);
+      expect(result[0].url).toBe('https://example.com/article');
+      expect(result[0].keep).toBe(true);
     });
 
     it('should handle special characters in URLs and titles', async () => {
@@ -186,11 +222,17 @@ describe('LLM Link Classifier', () => {
         subject: 'Test with émojis 🚀',
       };
 
-      try {
-        await classifyAmbiguousLinks(links, emailContext, '', 'llama3.2:3b');
-      } catch {
-        // Function handles special characters
-      }
+      global.fetch = mock(async () =>
+        ({
+          ok: true,
+          json: async () => ({response: '{"results":[{"index":1,"keep":true,"confidence":0.88,"reason":"quality article"}]}'}),
+        }) as unknown as Response,
+      ) as unknown as typeof fetch;
+
+      const result = await classifyAmbiguousLinks(links, emailContext, 'http://localhost:11434', 'llama3.2:3b');
+      expect(result).toHaveLength(1);
+      expect(result[0].url).toBe('https://example.com/article?id=123&name=test%20article');
+      expect(result[0].keep).toBe(true);
     });
 
     it('should batch multiple links correctly', async () => {
@@ -239,11 +281,17 @@ describe('LLM Link Classifier', () => {
         subject: 'Test',
       };
 
-      try {
-        await classifyAmbiguousLinks(links, emailContext, '', 'llama3.2:3b');
-      } catch {
-        // Function handles formatted email addresses
-      }
+      global.fetch = mock(async () =>
+        ({
+          ok: true,
+          json: async () => ({response: '{"results":[{"index":1,"keep":true,"confidence":0.82,"reason":"from trusted source"}]}'}),
+        }) as unknown as Response,
+      ) as unknown as typeof fetch;
+
+      const result = await classifyAmbiguousLinks(links, emailContext, 'http://localhost:11434', 'llama3.2:3b');
+      expect(result).toHaveLength(1);
+      expect(result[0].url).toBe('https://example.com/article');
+      expect(result[0].keep).toBe(true);
     });
   });
 
@@ -273,29 +321,36 @@ describe('LLM Link Classifier', () => {
         {url: 'https://example.com/article', title: 'Article', score: 2, context: 'context'},
       ];
 
-      const consoleErrorSpy = () => {
-        let capturedError: any = null;
-        const originalError = console.error;
-        console.error = (msg: string, err: any) => {
-          if (msg.includes('classify')) {
-            capturedError = err;
-          }
-        };
-        return {originalError, getCapturedError: () => capturedError};
-      };
+      const originalError = console.error;
+      let errorLogged = false;
 
-      const spy = consoleErrorSpy();
+      console.error = mock((msg: string) => {
+        if (msg.includes('classify')) {
+          errorLogged = true;
+        }
+      });
 
-      try {
-        await classifyAmbiguousLinks(
-          links,
-          {from: 'test@example.com', subject: 'Test'},
-          'http://invalid:99999',
-          'model',
-        );
-      } finally {
-        console.error = spy.originalError;
-      }
+      global.fetch = mock(async () =>
+        ({
+          ok: false,
+          status: 500,
+          json: async () => ({}),
+        }) as unknown as Response,
+      ) as unknown as typeof fetch;
+
+      const result = await classifyAmbiguousLinks(
+        links,
+        {from: 'test@example.com', subject: 'Test'},
+        'http://localhost:11434',
+        'model',
+      );
+
+      console.error = originalError;
+
+      expect(errorLogged).toBe(true);
+      expect(result).toHaveLength(1);
+      expect(result[0].keep).toBe(true);
+      expect(result[0].reason).toBe('fallback');
     });
   });
 
