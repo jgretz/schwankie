@@ -5,6 +5,8 @@ import {Button} from '@www/components/ui/button';
 import {FeedForm} from '@www/components/feed/feed-form';
 import {useFeeds} from '@www/hooks/use-feeds';
 
+import {triggerRefreshAllFeedsAction} from '@www/lib/work-request-actions';
+
 export const Route = createFileRoute('/feeds/')({
   beforeLoad: ({context}) => {
     if (!context.auth.authenticated) {
@@ -23,7 +25,20 @@ export const Route = createFileRoute('/feeds/')({
 function FeedsPage() {
   const navigate = useNavigate();
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const {query, deleteMutation, updateMutation} = useFeeds();
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await triggerRefreshAllFeedsAction();
+      toast.success('Feeds refresh queued');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to queue refresh');
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   async function handleDelete(feedId: string) {
     if (!confirm('Delete this feed?')) return;
@@ -65,7 +80,12 @@ function FeedsPage() {
           <h1 className="font-serif text-3xl text-text mb-1">Feeds</h1>
           <p className="text-text-muted font-sans text-[0.9rem]">{feeds.length} feed{feeds.length !== 1 ? 's' : ''}</p>
         </div>
-        <Button onClick={() => setIsFormOpen(true)}>Add Feed</Button>
+        <div className="flex gap-2">
+          <Button onClick={handleRefresh} disabled={isRefreshing} variant="outline">
+            {isRefreshing ? 'Refreshing...' : 'Refresh'}
+          </Button>
+          <Button onClick={() => setIsFormOpen(true)}>Add Feed</Button>
+        </div>
       </div>
 
       {feeds.length === 0 ? (
