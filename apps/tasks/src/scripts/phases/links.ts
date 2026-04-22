@@ -1,5 +1,5 @@
 import postgres from 'postgres';
-import {createLink} from 'client';
+import {createLink, fetchLinks} from 'client';
 import {mapLimitSettled} from '../concurrency';
 
 export interface PhaseResult {
@@ -56,20 +56,37 @@ export async function migrateLinks(
         links,
         CONCURRENCY,
         async (link) => {
-          await createLink({
-            url: link.url,
-            title: link.title,
-            description: link.description || undefined,
-            imageUrl: link.image_url || undefined,
-            status: 'queued',
-            tags: [],
-          });
+          try {
+            const existing = await fetchLinks({q: link.url, limit: 1});
+            const linkExists = existing.items.some((item) => item.url === link.url);
+
+            if (linkExists) {
+              return {skipped: true};
+            }
+
+            await createLink({
+              url: link.url,
+              title: link.title,
+              description: link.description || undefined,
+              imageUrl: link.image_url || undefined,
+              status: 'queued',
+              tags: [],
+            });
+
+            return {skipped: false};
+          } catch (error) {
+            throw error;
+          }
         },
       );
 
       for (const s of settled) {
         if (s.status === 'fulfilled') {
-          result.wrote++;
+          if (s.value.skipped) {
+            result.skipped++;
+          } else {
+            result.wrote++;
+          }
         } else {
           result.errors.push(s.reason instanceof Error ? s.reason : new Error(String(s.reason)));
         }
