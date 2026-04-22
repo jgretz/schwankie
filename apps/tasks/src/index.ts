@@ -9,6 +9,8 @@ import {normalizeTagsHandler} from './jobs/normalize-tags';
 import {importFeedHandler} from './jobs/import-feed';
 import {createScheduleFeedImportsHandler} from './jobs/schedule-feed-imports';
 import {importEmailsHandler} from './jobs/import-emails';
+import {createProcessWorkRequestsHandler} from './jobs/process-work-requests';
+import {cleanupWorkRequestsHandler} from './jobs/cleanup-work-requests';
 import {startHealthServer} from './healthCheck';
 import {runWithAutoRecovery} from './connectionManager';
 
@@ -39,6 +41,8 @@ const jobDefinitions: JobDefinition[] = [
   {queue: 'import-feed', schedule: ''},
   {queue: 'schedule-feed-imports', schedule: '*/30 * * * *'},
   {queue: 'import-emails', schedule: '0 * * * *'},
+  {queue: 'process-work-requests', schedule: '*/5 * * * *'},
+  {queue: 'cleanup-work-requests', schedule: '0 4 * * *'},
 ];
 
 async function setupWorkers(boss: PgBoss): Promise<void> {
@@ -49,6 +53,8 @@ async function setupWorkers(boss: PgBoss): Promise<void> {
     'import-feed': importFeedHandler as PgBoss.WorkHandler<unknown>,
     'schedule-feed-imports': createScheduleFeedImportsHandler(boss),
     'import-emails': importEmailsHandler as PgBoss.WorkHandler<unknown>,
+    'process-work-requests': createProcessWorkRequestsHandler(boss),
+    'cleanup-work-requests': cleanupWorkRequestsHandler,
   };
 
   for (const {queue, schedule} of jobDefinitions) {
