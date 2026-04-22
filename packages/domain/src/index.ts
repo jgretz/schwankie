@@ -34,6 +34,7 @@ export {markEmailItemRead} from './commands/mark-email-item-read';
 export {promoteEmailItem} from './commands/promote-email-item';
 export {setGmailTokens} from './commands/set-gmail-tokens';
 export {setGmailFilter} from './commands/set-gmail-filter';
+export {clearGmailAuthTokens, clearGmailTokens} from './commands/clear-gmail-tokens';
 
 // lib
 export {normalizeTag} from './lib/normalize-tag';

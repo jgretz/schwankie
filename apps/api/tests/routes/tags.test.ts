@@ -26,6 +26,9 @@ const mockResolveTagMinCount = mock(async () => {
   return Number.isNaN(floor) ? 1 : floor;
 });
 const mockValidateSettingValue = mock(() => ({success: true}));
+const mockClearGmailTokens = mock(async () => undefined);
+const mockSetGmailTokens = mock(async () => undefined);
+const mockGetGmailTokens = mock(async () => null as any);
 
 mock.module('@domain', () => ({
   getLink: mockGetLink,
@@ -44,6 +47,29 @@ mock.module('@domain', () => ({
   setSetting: mockSetSetting,
   resolveTagMinCount: mockResolveTagMinCount,
   validateSettingValue: mockValidateSettingValue,
+  clearGmailTokens: mockClearGmailTokens,
+  setGmailTokens: mockSetGmailTokens,
+  getGmailTokens: mockGetGmailTokens,
+  // Add other exports to prevent import errors
+  init: () => {},
+  listFeeds: mockGetSetting,
+  getFeed: mockGetSetting,
+  listRssItems: mockGetSetting,
+  listEmailItems: mockGetSetting,
+  getEmailItem: mockGetSetting,
+  createFeed: mockSetSetting,
+  updateFeed: mockSetSetting,
+  deleteFeed: mockSetSetting,
+  createRssItem: mockSetSetting,
+  markRssItemRead: mockSetSetting,
+  promoteRssItem: mockSetSetting,
+  createEmailItem: mockSetSetting,
+  markEmailItemRead: mockSetSetting,
+  promoteEmailItem: mockSetSetting,
+  setGmailFilter: mockSetSetting,
+  loadKey: () => Buffer.from(new Uint8Array(32)),
+  encryptToken: (x: string) => x,
+  decryptToken: (x: string) => x,
 }));
 
 type TagsModule = typeof import('../../src/routes/tags');

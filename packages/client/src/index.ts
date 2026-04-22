@@ -25,6 +25,12 @@ export {refetchLink} from './calls/refetch-link';
 export {suggestTags} from './calls/suggest-tags';
 export {getSetting} from './calls/get-setting';
 export {setSetting} from './calls/set-setting';
+export {getGmailAuthUrl} from './calls/get-gmail-auth-url';
+export {exchangeGmailCode} from './calls/exchange-gmail-code';
+export {disconnectGmail} from './calls/disconnect-gmail';
+export {getGmailStatus} from './calls/get-gmail-status';
+export {setGmailFilter} from './calls/set-gmail-filter';
+export {getGmailTokens} from './calls/get-gmail-tokens';
 
 // types
 export type {
@@ -36,4 +42,8 @@ export type {
   CreateLinkInput,
   UpdateLinkInput,
   SettingResponse,
+  GmailAuthUrlResponse,
+  GmailConnectResponse,
+  GmailStatusResponse,
+  GmailTokensResponse,
 } from './types';
