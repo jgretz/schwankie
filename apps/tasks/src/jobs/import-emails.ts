@@ -38,8 +38,9 @@ async function classifyLinks(
       return c.keep;
     });
     return [...definiteKeep, ...approved];
-  } catch {
+  } catch (error) {
     // Any unexpected error - fall back to heuristic-only
+    console.error('Failed to classify links:', error);
     return scoredLinks.filter((l) => l.score >= SCORE_KEEP_THRESHOLD);
   }
 }
@@ -96,9 +97,11 @@ export async function importEmailsHandler(_jobs: PgBoss.Job[]): Promise<void> {
 
         if (parsedLinks.length > 0) {
           const displayName = extractDisplayName(message.from);
-          const subjectPreview = message.subject?.trim().slice(0, 25) || '';
+          const subjectTrimmed = message.subject?.trim() || '';
+          const subjectPreview = subjectTrimmed.slice(0, 25);
+          const ellipsis = subjectTrimmed.length > 25 ? '...' : '';
           const emailFrom = subjectPreview.length > 0
-            ? `${displayName} (${subjectPreview}...)`
+            ? `${displayName} (${subjectPreview}${ellipsis})`
             : displayName;
 
           const items = parsedLinks.map((parsed: ParsedLink) => ({

@@ -86,7 +86,8 @@ ${userMessage}`;
       }
       return {url: link.url, keep: result.keep, confidence: result.confidence, reason: result.reason};
     });
-  } catch {
+  } catch (error) {
+    console.error('Failed to classify ambiguous links:', error);
     return fallbackKeepAll(links);
   }
 }

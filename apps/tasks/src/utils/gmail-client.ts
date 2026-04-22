@@ -11,12 +11,6 @@ export interface GmailMessage {
   htmlBody: string;
 }
 
-export interface TokenRefreshResult {
-  accessToken: string;
-  refreshToken?: string;
-  expiry: Date;
-}
-
 export class GmailClient {
   private oauth2Client;
   private gmail: gmail_v1.Gmail;
@@ -34,26 +28,6 @@ export class GmailClient {
     });
 
     this.gmail = google.gmail({version: 'v1', auth: this.oauth2Client});
-  }
-
-  async refreshTokenIfNeeded(tokenExpiry: Date | null): Promise<TokenRefreshResult | null> {
-    if (tokenExpiry && new Date() < tokenExpiry) {
-      return null;
-    }
-
-    const {credentials} = await this.oauth2Client.refreshAccessToken();
-
-    if (!credentials.access_token || !credentials.expiry_date) {
-      throw new Error('Failed to refresh access token');
-    }
-
-    this.oauth2Client.setCredentials(credentials);
-
-    return {
-      accessToken: credentials.access_token,
-      refreshToken: credentials.refresh_token || undefined,
-      expiry: new Date(credentials.expiry_date),
-    };
   }
 
   async listMessages(query: string): Promise<string[]> {
