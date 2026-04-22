@@ -66,7 +66,7 @@ export async function migrateRssItems(
           if (items.length === 0) break;
 
           try {
-            await bulkUpsertRssItems(schwankieFeedId, {
+            const {inserted} = await bulkUpsertRssItems(schwankieFeedId, {
               items: items.map((item) => ({
                 guid: item.guid,
                 title: item.title,
@@ -77,7 +77,8 @@ export async function migrateRssItems(
                 pubDate: item.pub_date || undefined,
               })),
             });
-            result.wrote += items.length;
+            result.wrote += inserted;
+            result.skipped += items.length - inserted;
           } catch (error) {
             result.errors.push(error instanceof Error ? error : new Error(String(error)));
           }

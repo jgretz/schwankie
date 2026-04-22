@@ -56,7 +56,7 @@ export async function migrateEmailItems(
       if (items.length === 0) break;
 
       try {
-        await bulkUpsertEmailItems({
+        const {inserted} = await bulkUpsertEmailItems({
           items: items.map((item) => ({
             messageId: item.email_message_id,
             emailFrom: item.email_from,
@@ -65,7 +65,8 @@ export async function migrateEmailItems(
             description: item.description || undefined,
           })),
         });
-        result.wrote += items.length;
+        result.wrote += inserted;
+        result.skipped += items.length - inserted;
       } catch (error) {
         result.errors.push(error instanceof Error ? error : new Error(String(error)));
       }
