@@ -5,7 +5,7 @@ import {Button} from '@www/components/ui/button';
 import {FeedForm} from '@www/components/feed/feed-form';
 import {useFeeds} from '@www/hooks/use-feeds';
 
-export const Route = createFileRoute('/feeds')({
+export const Route = createFileRoute('/feeds/')({
   beforeLoad: ({context}) => {
     if (!context.auth.authenticated) {
       throw redirect({to: '/'});
