@@ -40,12 +40,31 @@ type TagAliasRow = {
   createDate: Date;
 };
 
+type EmailItemRow = {
+  id: string;
+  emailMessageId: string;
+  emailFrom: string;
+  link: string;
+  title: string | null;
+  description: string | null;
+  read: boolean;
+  clicked: boolean;
+  importedAt: Date;
+};
+
+type SettingRow = {
+  key: string;
+  value: string;
+};
+
 export const store = {
   links: [] as LinkRow[],
   tags: [] as TagRow[],
   linkTags: [] as LinkTagRow[],
   tagAliases: [] as TagAliasRow[],
-  nextId: {link: 1, tag: 1, linkTag: 1, tagAlias: 1},
+  emailItems: [] as EmailItemRow[],
+  settings: [] as SettingRow[],
+  nextId: {link: 1, tag: 1, linkTag: 1, tagAlias: 1, emailItem: 1},
 };
 
 export function resetStore() {
@@ -53,7 +72,9 @@ export function resetStore() {
   store.tags = [];
   store.linkTags = [];
   store.tagAliases = [];
-  store.nextId = {link: 1, tag: 1, linkTag: 1, tagAlias: 1};
+  store.emailItems = [];
+  store.settings = [];
+  store.nextId = {link: 1, tag: 1, linkTag: 1, tagAlias: 1, emailItem: 1};
 }
 
 // --- Table identity ---
@@ -75,6 +96,10 @@ function getStoreForTable(table: any): any[] {
       return store.linkTags;
     case 'tag_alias':
       return store.tagAliases;
+    case 'email_item':
+      return store.emailItems;
+    case 'setting':
+      return store.settings;
     default:
       throw new Error(`Unknown table: ${name}`);
   }
@@ -91,6 +116,10 @@ function getNextIdKey(table: any): keyof typeof store.nextId {
       return 'linkTag';
     case 'tag_alias':
       return 'tagAlias';
+    case 'email_item':
+      return 'emailItem';
+    case 'setting':
+      return 'link';
     default:
       throw new Error(`Unknown table: ${name}`);
   }
@@ -132,6 +161,21 @@ const COLUMN_MAP: Record<string, Record<string, string>> = {
     canonical_tag_id: 'canonicalTagId',
     source: 'source',
     create_date: 'createDate',
+  },
+  email_item: {
+    id: 'id',
+    email_message_id: 'emailMessageId',
+    email_from: 'emailFrom',
+    link: 'link',
+    title: 'title',
+    description: 'description',
+    read: 'read',
+    clicked: 'clicked',
+    imported_at: 'importedAt',
+  },
+  setting: {
+    key: 'key',
+    value: 'value',
   },
 };
 
@@ -346,6 +390,25 @@ function defaultsForTable(table: any, values: any, id: number): any {
         source: values.source ?? '',
         createDate: values.createDate ?? now,
       };
+    case 'email_item': {
+      const uuid = `550e8400-e29b-41d4-a716-${id.toString().padStart(12, '0')}`;
+      return {
+        id: values.id ?? uuid,
+        emailMessageId: values.emailMessageId ?? values.email_message_id ?? '',
+        emailFrom: values.emailFrom ?? values.email_from ?? '',
+        link: values.link ?? '',
+        title: values.title ?? null,
+        description: values.description ?? null,
+        read: values.read ?? false,
+        clicked: values.clicked ?? false,
+        importedAt: values.importedAt ?? values.imported_at ?? now,
+      };
+    }
+    case 'setting':
+      return {
+        key: values.key ?? '',
+        value: values.value ?? '',
+      };
     default:
       return {id, ...values};
   }
@@ -452,6 +515,7 @@ function createSelectBuilder(targetTable?: any, fields?: any) {
   let whereCondition: any = undefined;
   let joinConfigs: Array<{table: any; onCondition: any}> = [];
   let hasGroupBy = false;
+  let orderByColumns: Array<{column: any; direction: 'asc' | 'desc'}> = [];
 
   const builder: any = {
     from(table: any) {
@@ -462,7 +526,18 @@ function createSelectBuilder(targetTable?: any, fields?: any) {
       whereCondition = condition;
       return builder;
     },
-    orderBy() {
+    orderBy(...cols: any[]) {
+      orderByColumns = cols.map((col: any) => {
+        let direction = col.direction ?? 'asc';
+        // Handle desc() wrapper: check queryChunks for " desc" string
+        if (col?.queryChunks && !col.direction) {
+          const hasDesc = col.queryChunks.some((chunk: any) =>
+            Array.isArray(chunk?.value) && chunk.value.some((v: any) => typeof v === 'string' && v.includes('desc'))
+          );
+          if (hasDesc) direction = 'desc';
+        }
+        return {column: col, direction};
+      });
       return builder;
     },
     limit(n: number) {
@@ -550,6 +625,36 @@ function createSelectBuilder(targetTable?: any, fields?: any) {
         delete r._sourceTable;
       });
 
+      // Apply ordering
+      if (orderByColumns.length > 0) {
+        result.sort((a: any, b: any) => {
+          for (const {column, direction} of orderByColumns) {
+            let fieldName: string | undefined;
+
+            // Extract column name from SQL object (desc/asc wrapper)
+            if (column?.queryChunks) {
+              for (const chunk of column.queryChunks) {
+                if (chunk?.name && chunk?.table) {
+                  fieldName = colToField(chunk.table, chunk.name);
+                  break;
+                }
+              }
+            } else {
+              const colName = column.name || column;
+              fieldName = colToField(fromTable, colName);
+            }
+
+            if (!fieldName) continue;
+            const aVal = a[fieldName];
+            const bVal = b[fieldName];
+
+            if (aVal < bVal) return direction === 'asc' ? -1 : 1;
+            if (aVal > bVal) return direction === 'asc' ? 1 : -1;
+          }
+          return 0;
+        });
+      }
+
       if (builder._offset) {
         result = result.slice(builder._offset);
       }
@@ -566,7 +671,9 @@ function createSelectBuilder(targetTable?: any, fields?: any) {
 
 function createInsertBuilder(table: any) {
   let valuesToInsert: any[] = [];
-  let conflictAction: 'nothing' | null = null;
+  let conflictAction: 'nothing' | 'update' | null = null;
+  let conflictTargetColumns: any[] = [];
+  let conflictUpdateSet: any = {};
 
   const builder: any = {
     values(vals: any) {
@@ -584,6 +691,35 @@ function createInsertBuilder(table: any) {
           if (existing) continue;
         }
 
+        if (conflictAction === 'nothing' && tableName(table) === 'email_item') {
+          const dbColNames = conflictTargetColumns.map((col: any) => col.name || col);
+          const existing = storeArr.find((row: any) =>
+            dbColNames.every((dbColName: string) => {
+              const fieldName = colToField(table, dbColName);
+              return row[fieldName] === val[fieldName];
+            }),
+          );
+          if (existing) continue;
+        }
+
+        if (conflictAction === 'update') {
+          const dbColNames = conflictTargetColumns.map((col: any) => col.name || col);
+          const existingIdx = storeArr.findIndex((row: any) =>
+            dbColNames.every((dbColName: string) => {
+              const fieldName = colToField(table, dbColName);
+              return row[fieldName] === val[fieldName];
+            }),
+          );
+          if (existingIdx >= 0) {
+            const existingRow = storeArr[existingIdx];
+            for (const [key, value] of Object.entries(conflictUpdateSet)) {
+              existingRow[key] = value;
+            }
+            inserted.push(existingRow);
+            continue;
+          }
+        }
+
         const id = store.nextId[idKey]++;
         const row = defaultsForTable(table, val, id);
         storeArr.push(row);
@@ -592,8 +728,21 @@ function createInsertBuilder(table: any) {
 
       return Promise.resolve(inserted);
     },
-    onConflictDoNothing() {
+    onConflictDoNothing(options?: any) {
       conflictAction = 'nothing';
+      if (options?.target) {
+        conflictTargetColumns = Array.isArray(options.target) ? options.target : [options.target];
+      }
+      return builder;
+    },
+    onConflictDoUpdate(options?: any) {
+      conflictAction = 'update';
+      if (options?.target) {
+        conflictTargetColumns = Array.isArray(options.target) ? options.target : [options.target];
+      }
+      if (options?.set) {
+        conflictUpdateSet = options.set;
+      }
       return builder;
     },
     then(resolve: any) {
@@ -604,6 +753,34 @@ function createInsertBuilder(table: any) {
         if (conflictAction === 'nothing' && tableName(table) === 'tag') {
           const existing = store.tags.find((t) => t.text === val.text);
           if (existing) continue;
+        }
+
+        if (conflictAction === 'nothing' && tableName(table) === 'email_item') {
+          const dbColNames = conflictTargetColumns.map((col: any) => col.name || col);
+          const existing = storeArr.find((row: any) =>
+            dbColNames.every((dbColName: string) => {
+              const fieldName = colToField(table, dbColName);
+              return row[fieldName] === val[fieldName];
+            }),
+          );
+          if (existing) continue;
+        }
+
+        if (conflictAction === 'update' && conflictTargetColumns?.length) {
+          const dbColNames = conflictTargetColumns.map((col: any) => col.name || col);
+          const existingIdx = storeArr.findIndex((row: any) =>
+            dbColNames.every((dbColName: string) => {
+              const fieldName = colToField(table, dbColName);
+              return row[fieldName] === val[fieldName];
+            }),
+          );
+          if (existingIdx >= 0) {
+            const existingRow = storeArr[existingIdx];
+            for (const [key, value] of Object.entries(conflictUpdateSet)) {
+              existingRow[key] = value;
+            }
+            continue;
+          }
         }
 
         const id = store.nextId[idKey]++;
@@ -722,6 +899,12 @@ function replaceStoreArray(table: any, kept: any[]) {
       break;
     case 'tag_alias':
       store.tagAliases = kept;
+      break;
+    case 'email_item':
+      store.emailItems = kept;
+      break;
+    case 'setting':
+      store.settings = kept;
       break;
   }
 }
