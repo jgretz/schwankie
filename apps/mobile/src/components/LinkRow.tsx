@@ -14,7 +14,13 @@ type LinkRowProps = {
 
 export function LinkRow({ link, colors }: LinkRowProps) {
   const date = new Date(link.createDate).toLocaleDateString();
-  const url = new URL(link.url).hostname;
+  const url = (() => {
+    try {
+      return new URL(link.url).hostname;
+    } catch {
+      return link.url;
+    }
+  })();
 
   return (
     <View

@@ -27,9 +27,8 @@ export default function QueueScreen() {
         offset: pageParam,
       });
     },
-    getNextPageParam: (lastPage, pages) => {
-      const offset = pages.length * PAGE_SIZE;
-      return lastPage.items.length === PAGE_SIZE ? offset : undefined;
+    getNextPageParam: (lastPage) => {
+      return lastPage.hasMore ? lastPage.nextOffset : undefined;
     },
     initialPageParam: 0,
   });
