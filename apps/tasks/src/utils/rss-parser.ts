@@ -29,7 +29,12 @@ async function fetchFeed(url: string, retries = 1): Promise<Parser.Output<Record
   });
 
   try {
-    return (await parser.parseURL(url)) as unknown as Parser.Output<Record<string, unknown>>;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 20_000);
+    const response = await fetch(url, {signal: controller.signal});
+    clearTimeout(timeoutId);
+    const xml = await response.text();
+    return (await parser.parseString(xml)) as unknown as Parser.Output<Record<string, unknown>>;
   } catch (error) {
     if (retries > 0) {
       try {
@@ -37,7 +42,7 @@ async function fetchFeed(url: string, retries = 1): Promise<Parser.Output<Record
         const xml = await response.text();
         const sanitized = sanitizeXml(xml);
         return (await parser.parseString(sanitized)) as unknown as Parser.Output<Record<string, unknown>>;
-      } catch (fallbackError) {
+      } catch (_fallbackError) {
         throw error;
       }
     }

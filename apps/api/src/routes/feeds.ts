@@ -20,9 +20,7 @@ import {
 } from '../validators/feeds';
 
 function parseId(idStr: string | undefined): string | null {
-  if (!idStr) return null;
-  const id = Number(idStr);
-  return Number.isNaN(id) ? null : idStr;
+  return idStr || null;
 }
 
 export const feedsRoutes = new Hono();
