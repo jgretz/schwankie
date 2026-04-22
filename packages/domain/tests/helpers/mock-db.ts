@@ -84,6 +84,17 @@ type SettingRow = {
   value: string;
 };
 
+type WorkRequestRow = {
+  id: string;
+  type: string;
+  payload: Record<string, any>;
+  status: string;
+  errorMessage: string | null;
+  createdAt: Date;
+  startedAt: Date | null;
+  completedAt: Date | null;
+};
+
 export const store = {
   links: [] as LinkRow[],
   tags: [] as TagRow[],
@@ -93,6 +104,7 @@ export const store = {
   rssItems: [] as (RssItemRow & {_insertionOrder: number})[],
   emailItems: [] as EmailItemRow[],
   settings: [] as SettingRow[],
+  workRequests: [] as WorkRequestRow[],
   nextId: {link: 1, tag: 1, linkTag: 1, tagAlias: 1, emailItem: 1, setting: 1},
   insertionCounter: 0,
 };
@@ -106,6 +118,7 @@ export function resetStore() {
   store.rssItems = [];
   store.emailItems = [];
   store.settings = [];
+  store.workRequests = [];
   store.nextId = {link: 1, tag: 1, linkTag: 1, tagAlias: 1, emailItem: 1, setting: 1};
   store.insertionCounter = 0;
 }
@@ -137,6 +150,8 @@ function getStoreForTable(table: any): any[] {
       return store.emailItems;
     case 'setting':
       return store.settings;
+    case 'work_request':
+      return store.workRequests;
     default:
       throw new Error(`Unknown table: ${name}`);
   }
@@ -161,6 +176,8 @@ function getNextIdKey(table: any): keyof typeof store.nextId {
       return 'emailItem';
     case 'setting':
       return 'setting';
+    case 'work_request':
+      return 'link';
     default:
       throw new Error(`Unknown table: ${name}`);
   }
@@ -242,6 +259,16 @@ const COLUMN_MAP: Record<string, Record<string, string>> = {
   setting: {
     key: 'key',
     value: 'value',
+  },
+  work_request: {
+    id: 'id',
+    type: 'type',
+    payload: 'payload',
+    status: 'status',
+    error_message: 'errorMessage',
+    created_at: 'createdAt',
+    started_at: 'startedAt',
+    completed_at: 'completedAt',
   },
 };
 
@@ -503,6 +530,17 @@ function defaultsForTable(table: any, values: any, id: number): any {
       return {
         key: values.key ?? '',
         value: values.value ?? '',
+      };
+    case 'work_request':
+      return {
+        id: values.id ?? crypto.randomUUID(),
+        type: values.type ?? '',
+        payload: values.payload ?? {},
+        status: values.status ?? 'pending',
+        errorMessage: values.errorMessage ?? values.error_message ?? null,
+        createdAt: values.createdAt ?? values.created_at ?? now,
+        startedAt: values.startedAt ?? values.started_at ?? null,
+        completedAt: values.completedAt ?? values.completed_at ?? null,
       };
     default:
       return {id, ...values};
