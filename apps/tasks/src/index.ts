@@ -8,6 +8,7 @@ import {scoreLinksHandler} from './jobs/score-links';
 import {normalizeTagsHandler} from './jobs/normalize-tags';
 import {importFeedHandler} from './jobs/import-feed';
 import {createScheduleFeedImportsHandler} from './jobs/schedule-feed-imports';
+import {importEmailsHandler} from './jobs/import-emails';
 import {startHealthServer} from './healthCheck';
 import {runWithAutoRecovery} from './connectionManager';
 
@@ -19,6 +20,8 @@ const envSchema = z.object({
   WORKER_ID: z.string().optional(),
   OLLAMA_URL: z.string().url().optional(),
   OLLAMA_MODEL: z.string().default('llama3.2:3b'),
+  OLLAMA_SCORE_HIGH: z.coerce.number().default(4),
+  OLLAMA_SCORE_LOW: z.coerce.number().default(-2),
 });
 const env = parseEnv(envSchema);
 
@@ -35,6 +38,7 @@ const jobDefinitions: JobDefinition[] = [
   {queue: 'normalize-tags', schedule: '*/5 * * * *'},
   {queue: 'import-feed', schedule: ''},
   {queue: 'schedule-feed-imports', schedule: '*/30 * * * *'},
+  {queue: 'import-emails', schedule: '0 * * * *'},
 ];
 
 async function setupWorkers(boss: PgBoss): Promise<void> {
@@ -44,6 +48,7 @@ async function setupWorkers(boss: PgBoss): Promise<void> {
     'normalize-tags': normalizeTagsHandler,
     'import-feed': importFeedHandler as PgBoss.WorkHandler<unknown>,
     'schedule-feed-imports': createScheduleFeedImportsHandler(boss),
+    'import-emails': importEmailsHandler as PgBoss.WorkHandler<unknown>,
   };
 
   for (const {queue, schedule} of jobDefinitions) {

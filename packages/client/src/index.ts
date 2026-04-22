@@ -40,6 +40,7 @@ export {markRssItemRead} from './calls/mark-rss-item-read';
 export {promoteRssItem} from './calls/promote-rss-item';
 export {fetchAllFeeds} from './calls/fetch-all-feeds';
 export {bulkUpsertRssItems} from './calls/bulk-upsert-rss-items';
+export {bulkUpsertEmailItems} from './calls/bulk-upsert-email-items';
 
 // types
 export type {
