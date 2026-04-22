@@ -1,13 +1,14 @@
+import type {Database} from 'database';
 import {link, linkTag} from 'database';
 import {getDb} from '../db';
 import {resolveTags, upsertTags} from '../lib/upsert-tags';
 import type {CreateLinkInput, LinkWithTags} from '../types';
 
-export async function createLink(input: CreateLinkInput): Promise<LinkWithTags> {
-  const db = getDb();
+export async function createLink(input: CreateLinkInput, db?: Database): Promise<LinkWithTags> {
+  const database = db || getDb();
   const normalizedTags = resolveTags(input.tags);
 
-  return db.transaction(async (tx) => {
+  const execute = async (tx: any) => {
     const tagRecords = await upsertTags(tx, normalizedTags);
 
     const [created] = await tx
@@ -29,5 +30,10 @@ export async function createLink(input: CreateLinkInput): Promise<LinkWithTags> 
       ...created!,
       tags: tagRecords.map((t) => ({id: t.id, text: t.text})),
     };
-  });
+  };
+
+  if (db) {
+    return execute(database);
+  }
+  return database.transaction(execute);
 }

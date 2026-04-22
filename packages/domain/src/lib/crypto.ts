@@ -45,17 +45,9 @@ export function decryptToken(ciphertext: string, key: Uint8Array): string {
 
   const [ivB64, ctB64, tagB64] = parts;
 
-  let iv: Buffer;
-  let ct: Buffer;
-  let authTag: Buffer;
-
-  try {
-    iv = Buffer.from(ivB64, 'base64');
-    ct = Buffer.from(ctB64, 'base64');
-    authTag = Buffer.from(tagB64, 'base64');
-  } catch (error) {
-    throw new Error('Invalid base64 in ciphertext');
-  }
+  const iv = Buffer.from(ivB64, 'base64');
+  const ct = Buffer.from(ctB64, 'base64');
+  const authTag = Buffer.from(tagB64, 'base64');
 
   if (iv.length !== IV_LENGTH) {
     throw new Error(`Invalid IV length. Expected ${IV_LENGTH}, got ${iv.length}`);
@@ -69,8 +61,8 @@ export function decryptToken(ciphertext: string, key: Uint8Array): string {
   decipher.setAuthTag(new Uint8Array(authTag));
 
   try {
-    const decrypted = decipher.update(ct as any, 'binary', 'utf8');
-    return decrypted + decipher.final('utf8');
+    const decrypted = decipher.update(ct as Uint8Array) + decipher.final('utf8');
+    return decrypted;
   } catch (error) {
     throw new Error('Authentication tag verification failed. Ciphertext may be tampered.');
   }

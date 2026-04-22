@@ -64,7 +64,7 @@ export const store = {
   tagAliases: [] as TagAliasRow[],
   emailItems: [] as EmailItemRow[],
   settings: [] as SettingRow[],
-  nextId: {link: 1, tag: 1, linkTag: 1, tagAlias: 1, emailItem: 1},
+  nextId: {link: 1, tag: 1, linkTag: 1, tagAlias: 1, emailItem: 1, setting: 1},
 };
 
 export function resetStore() {
@@ -74,7 +74,7 @@ export function resetStore() {
   store.tagAliases = [];
   store.emailItems = [];
   store.settings = [];
-  store.nextId = {link: 1, tag: 1, linkTag: 1, tagAlias: 1, emailItem: 1};
+  store.nextId = {link: 1, tag: 1, linkTag: 1, tagAlias: 1, emailItem: 1, setting: 1};
 }
 
 // --- Table identity ---
@@ -119,7 +119,7 @@ function getNextIdKey(table: any): keyof typeof store.nextId {
     case 'email_item':
       return 'emailItem';
     case 'setting':
-      return 'link';
+      return 'setting';
     default:
       throw new Error(`Unknown table: ${name}`);
   }

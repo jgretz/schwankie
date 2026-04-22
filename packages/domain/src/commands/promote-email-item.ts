@@ -16,12 +16,15 @@ export async function promoteEmailItem(id: string): Promise<number> {
       throw new Error(`Email item ${id} not found`);
     }
 
-    const link = await createLink({
-      url: item.link,
-      title: item.title || item.link,
-      description: item.description || undefined,
-      status: 'queued',
-    });
+    const link = await createLink(
+      {
+        url: item.link,
+        title: item.title || item.link,
+        description: item.description || undefined,
+        status: 'queued',
+      },
+      tx as any,
+    );
 
     await tx
       .update(emailItem)
