@@ -1,3 +1,4 @@
+import type PgBoss from 'pg-boss';
 import {getLinksNeedingScoring, updateLinkScore} from 'client';
 import {generate} from '../lib/ollama';
 
@@ -81,6 +82,10 @@ async function getOllamaQuality(
     return null;
   }
 }
+
+export const scoreLinksHandler: PgBoss.WorkHandler<unknown> = async () => {
+  await scoreLinks(process.env.OLLAMA_URL, process.env.OLLAMA_MODEL || 'llama3.2:3b');
+};
 
 export async function scoreLinks(ollamaUrl?: string, ollamaModel?: string): Promise<void> {
   const {items: links} = await getLinksNeedingScoring(10);
