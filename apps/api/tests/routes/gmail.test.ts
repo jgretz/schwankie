@@ -63,10 +63,12 @@ const mockExchangeGmailCodeWithGoogle = mock(async () => ({
   email: 'user@gmail.com',
 }));
 
+class GmailTokenRevokedError extends Error {}
+
 mock.module('../../src/lib/gmail-oauth', () => ({
   buildGmailAuthUrl: mockBuildGmailAuthUrl,
   exchangeGmailCodeWithGoogle: mockExchangeGmailCodeWithGoogle,
-  GmailTokenRevokedError: Error,
+  GmailTokenRevokedError,
 }));
 
 mock.module('../../src/commands/refresh-gmail-tokens', () => ({
@@ -229,6 +231,19 @@ describe('Gmail Routes', function () {
       });
 
       expect(res.status).toBe(404);
+    });
+
+    it('should return 410 and clear tokens on invalid_grant', async function () {
+      mockRefreshGmailTokens.mockRejectedValueOnce(
+        new GmailTokenRevokedError('invalid_grant'),
+      );
+
+      const app = makeApp();
+      const res = await app.request('/api/gmail/tokens', {
+        headers: {Authorization: 'Bearer test-key'},
+      });
+
+      expect(res.status).toBe(410);
     });
   });
 });

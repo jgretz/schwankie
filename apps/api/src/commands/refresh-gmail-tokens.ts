@@ -1,4 +1,4 @@
-import {getGmailTokens, setGmailTokens, clearGmailTokens, type GmailTokens} from '@domain';
+import {getGmailTokens, setGmailTokens, clearGmailAuthTokens, type GmailTokens} from '@domain';
 import {refreshGmailTokensWithGoogle, GmailTokenRevokedError} from '../lib/gmail-oauth';
 
 const EXPIRY_SKEW_SECONDS = 60;
@@ -34,8 +34,7 @@ export async function refreshGmailTokens(): Promise<GmailTokens | null> {
     };
   } catch (error) {
     if (error instanceof GmailTokenRevokedError) {
-      await clearGmailTokens();
-      throw error;
+      await clearGmailAuthTokens();
     }
     throw error;
   }
