@@ -1,4 +1,33 @@
-import type {feed, link, rssItem} from 'database';
+import type {emailItem, feed, link, rssItem} from 'database';
+
+export type EmailItem = typeof emailItem.$inferSelect;
+
+export type CreateEmailItemInput = {
+  emailMessageId: string;
+  emailFrom: string;
+  link: string;
+  title?: string;
+  description?: string;
+  importedAt?: Date;
+};
+
+export type ListEmailItemsParams = {
+  limit: number;
+  offset: number;
+  read?: boolean;
+};
+
+export type ListEmailItemsResult = {
+  items: EmailItem[];
+  total: number;
+  hasMore: boolean;
+};
+
+export type GmailTokens = {
+  accessToken: string;
+  refreshToken: string;
+  expiry: Date;
+};
 
 export type LinkWithTags = typeof link.$inferSelect & {
   tags: Array<{id: number; text: string}>;

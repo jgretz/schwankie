@@ -6,3 +6,4 @@ export {tagAlias} from './tag-alias.schema';
 export {setting} from './setting.schema';
 export {feed} from './feed.schema';
 export {rssItem} from './rss-item.schema';
+export {emailItem} from './email-item.schema';

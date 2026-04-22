@@ -9,6 +9,9 @@ export {resolveTagMinCount} from './queries/resolve-tag-min-count';
 export {listFeeds} from './queries/list-feeds';
 export {getFeed} from './queries/get-feed';
 export {listRssItems} from './queries/list-rss-items';
+export {listEmailItems} from './queries/list-email-items';
+export {getEmailItem} from './queries/get-email-item';
+export {getGmailTokens} from './queries/get-gmail-tokens';
 
 // commands
 export {createLink} from './commands/create-link';
@@ -26,10 +29,16 @@ export {deleteFeed} from './commands/delete-feed';
 export {createRssItem} from './commands/create-rss-item';
 export {markRssItemRead} from './commands/mark-rss-item-read';
 export {promoteRssItem} from './commands/promote-rss-item';
+export {createEmailItem} from './commands/create-email-item';
+export {markEmailItemRead} from './commands/mark-email-item-read';
+export {promoteEmailItem} from './commands/promote-email-item';
+export {setGmailTokens} from './commands/set-gmail-tokens';
+export {setGmailFilter} from './commands/set-gmail-filter';
 
 // lib
 export {normalizeTag} from './lib/normalize-tag';
 export {validateSettingValue} from './lib/setting-schemas';
+export {loadKey, encryptToken, decryptToken} from './lib/crypto';
 
 // types
 export type {
@@ -52,5 +61,10 @@ export type {
   CreateRssItemInput,
   ListRssItemsParams,
   ListRssItemsResult,
+  EmailItem,
+  CreateEmailItemInput,
+  ListEmailItemsParams,
+  ListEmailItemsResult,
+  GmailTokens,
 } from './types';
 export type {LinkStatus} from './queries/get-tags-with-count';

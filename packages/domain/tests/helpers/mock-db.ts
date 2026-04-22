@@ -67,6 +67,23 @@ type RssItemRow = {
   createdAt: Date;
 };
 
+type EmailItemRow = {
+  id: string;
+  emailMessageId: string;
+  emailFrom: string;
+  link: string;
+  title: string | null;
+  description: string | null;
+  read: boolean;
+  clicked: boolean;
+  importedAt: Date;
+};
+
+type SettingRow = {
+  key: string;
+  value: string;
+};
+
 export const store = {
   links: [] as LinkRow[],
   tags: [] as TagRow[],
@@ -74,7 +91,9 @@ export const store = {
   tagAliases: [] as TagAliasRow[],
   feeds: [] as (FeedRow & {_insertionOrder: number})[],
   rssItems: [] as (RssItemRow & {_insertionOrder: number})[],
-  nextId: {link: 1, tag: 1, linkTag: 1, tagAlias: 1},
+  emailItems: [] as EmailItemRow[],
+  settings: [] as SettingRow[],
+  nextId: {link: 1, tag: 1, linkTag: 1, tagAlias: 1, emailItem: 1, setting: 1},
   insertionCounter: 0,
 };
 
@@ -85,7 +104,9 @@ export function resetStore() {
   store.tagAliases = [];
   store.feeds = [];
   store.rssItems = [];
-  store.nextId = {link: 1, tag: 1, linkTag: 1, tagAlias: 1};
+  store.emailItems = [];
+  store.settings = [];
+  store.nextId = {link: 1, tag: 1, linkTag: 1, tagAlias: 1, emailItem: 1, setting: 1};
   store.insertionCounter = 0;
 }
 
@@ -112,6 +133,10 @@ function getStoreForTable(table: any): any[] {
       return store.feeds;
     case 'rss_item':
       return store.rssItems;
+    case 'email_item':
+      return store.emailItems;
+    case 'setting':
+      return store.settings;
     default:
       throw new Error(`Unknown table: ${name}`);
   }
@@ -132,6 +157,10 @@ function getNextIdKey(table: any): keyof typeof store.nextId {
       return 'link';
     case 'rss_item':
       return 'link';
+    case 'email_item':
+      return 'emailItem';
+    case 'setting':
+      return 'setting';
     default:
       throw new Error(`Unknown table: ${name}`);
   }
@@ -198,6 +227,21 @@ const COLUMN_MAP: Record<string, Record<string, string>> = {
     read: 'read',
     clicked: 'clicked',
     created_at: 'createdAt',
+  },
+  email_item: {
+    id: 'id',
+    email_message_id: 'emailMessageId',
+    email_from: 'emailFrom',
+    link: 'link',
+    title: 'title',
+    description: 'description',
+    read: 'read',
+    clicked: 'clicked',
+    imported_at: 'importedAt',
+  },
+  setting: {
+    key: 'key',
+    value: 'value',
   },
 };
 
@@ -441,6 +485,25 @@ function defaultsForTable(table: any, values: any, id: number): any {
         createdAt: values.createdAt ?? values.created_at ?? now,
         _insertionOrder: store.insertionCounter++,
       };
+    case 'email_item': {
+      const uuid = `550e8400-e29b-41d4-a716-${id.toString().padStart(12, '0')}`;
+      return {
+        id: values.id ?? uuid,
+        emailMessageId: values.emailMessageId ?? values.email_message_id ?? '',
+        emailFrom: values.emailFrom ?? values.email_from ?? '',
+        link: values.link ?? '',
+        title: values.title ?? null,
+        description: values.description ?? null,
+        read: values.read ?? false,
+        clicked: values.clicked ?? false,
+        importedAt: values.importedAt ?? values.imported_at ?? now,
+      };
+    }
+    case 'setting':
+      return {
+        key: values.key ?? '',
+        value: values.value ?? '',
+      };
     default:
       return {id, ...values};
   }
@@ -674,6 +737,8 @@ function createSelectBuilder(targetTable?: any, fields?: any) {
                   isDesc = true;
                 }
               }
+            } else if (col?.name && col?.table) {
+              colInfo = col;
             }
 
             if (colInfo?.name && colInfo?.table) {
@@ -682,7 +747,9 @@ function createSelectBuilder(targetTable?: any, fields?: any) {
               const bVal = b[field];
 
               let cmp = 0;
-              if (aVal < bVal) cmp = -1;
+              if (aVal == null && bVal != null) cmp = 1;
+              else if (aVal != null && bVal == null) cmp = -1;
+              else if (aVal < bVal) cmp = -1;
               else if (aVal > bVal) cmp = 1;
               else if (aVal === bVal) {
                 // Tiebreaker: use insertion order
@@ -714,7 +781,9 @@ function createSelectBuilder(targetTable?: any, fields?: any) {
 
 function createInsertBuilder(table: any) {
   let valuesToInsert: any[] = [];
-  let conflictAction: 'nothing' | null = null;
+  let conflictAction: 'nothing' | 'update' | null = null;
+  let conflictTargetColumns: any[] = [];
+  let conflictUpdateSet: any = {};
 
   const builder: any = {
     values(vals: any) {
@@ -739,6 +808,39 @@ function createInsertBuilder(table: any) {
           if (existing) continue;
         }
 
+        if (
+          conflictAction === 'nothing' &&
+          conflictTargetColumns.length > 0 &&
+          (tableName(table) === 'email_item' || tableName(table) === 'setting')
+        ) {
+          const dbColNames = conflictTargetColumns.map((col: any) => col.name || col);
+          const existing = storeArr.find((row: any) =>
+            dbColNames.every((dbColName: string) => {
+              const fieldName = colToField(table, dbColName);
+              return row[fieldName] === val[fieldName];
+            }),
+          );
+          if (existing) continue;
+        }
+
+        if (conflictAction === 'update') {
+          const dbColNames = conflictTargetColumns.map((col: any) => col.name || col);
+          const existingIdx = storeArr.findIndex((row: any) =>
+            dbColNames.every((dbColName: string) => {
+              const fieldName = colToField(table, dbColName);
+              return row[fieldName] === val[fieldName];
+            }),
+          );
+          if (existingIdx >= 0) {
+            const existingRow = storeArr[existingIdx];
+            for (const [key, value] of Object.entries(conflictUpdateSet)) {
+              existingRow[key] = value;
+            }
+            inserted.push(existingRow);
+            continue;
+          }
+        }
+
         const id = store.nextId[idKey]++;
         const row = defaultsForTable(table, val, id);
         storeArr.push(row);
@@ -747,8 +849,21 @@ function createInsertBuilder(table: any) {
 
       return Promise.resolve(inserted);
     },
-    onConflictDoNothing() {
+    onConflictDoNothing(options?: any) {
       conflictAction = 'nothing';
+      if (options?.target) {
+        conflictTargetColumns = Array.isArray(options.target) ? options.target : [options.target];
+      }
+      return builder;
+    },
+    onConflictDoUpdate(options?: any) {
+      conflictAction = 'update';
+      if (options?.target) {
+        conflictTargetColumns = Array.isArray(options.target) ? options.target : [options.target];
+      }
+      if (options?.set) {
+        conflictUpdateSet = options.set;
+      }
       return builder;
     },
     then(resolve: any) {
@@ -766,6 +881,38 @@ function createInsertBuilder(table: any) {
             (item) => item.feedId === val.feedId && item.guid === val.guid,
           );
           if (existing) continue;
+        }
+
+        if (
+          conflictAction === 'nothing' &&
+          conflictTargetColumns.length > 0 &&
+          (tableName(table) === 'email_item' || tableName(table) === 'setting')
+        ) {
+          const dbColNames = conflictTargetColumns.map((col: any) => col.name || col);
+          const existing = storeArr.find((row: any) =>
+            dbColNames.every((dbColName: string) => {
+              const fieldName = colToField(table, dbColName);
+              return row[fieldName] === val[fieldName];
+            }),
+          );
+          if (existing) continue;
+        }
+
+        if (conflictAction === 'update' && conflictTargetColumns?.length) {
+          const dbColNames = conflictTargetColumns.map((col: any) => col.name || col);
+          const existingIdx = storeArr.findIndex((row: any) =>
+            dbColNames.every((dbColName: string) => {
+              const fieldName = colToField(table, dbColName);
+              return row[fieldName] === val[fieldName];
+            }),
+          );
+          if (existingIdx >= 0) {
+            const existingRow = storeArr[existingIdx];
+            for (const [key, value] of Object.entries(conflictUpdateSet)) {
+              existingRow[key] = value;
+            }
+            continue;
+          }
         }
 
         const id = store.nextId[idKey]++;
@@ -890,6 +1037,12 @@ function replaceStoreArray(table: any, kept: any[]) {
       break;
     case 'rss_item':
       store.rssItems = kept;
+      break;
+    case 'email_item':
+      store.emailItems = kept;
+      break;
+    case 'setting':
+      store.settings = kept;
       break;
   }
 }
