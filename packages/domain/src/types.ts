@@ -1,4 +1,4 @@
-import type {emailItem, link} from 'database';
+import type {emailItem, feed, link, rssItem} from 'database';
 
 export type EmailItem = typeof emailItem.$inferSelect;
 
@@ -90,3 +90,46 @@ export type UpdateLinkInput = {
 export type MergeTagInput = {aliasTagId: number; canonicalTagId: number};
 export type RenameTagInput = {id: number; text: string};
 export type SettingResponse = {key: string; value: string};
+
+export type Feed = typeof feed.$inferSelect;
+export type CreateFeedInput = {
+  name: string;
+  sourceUrl: string;
+};
+
+export type UpdateFeedInput = {
+  name?: string;
+  sourceUrl?: string;
+  lastFetchedAt?: string | null;
+  errorCount?: number;
+  lastError?: string | null;
+  disabled?: boolean;
+};
+
+export type RssItem = typeof rssItem.$inferSelect;
+export type CreateRssItemInput = {
+  feedId: string;
+  guid: string;
+  title: string;
+  link: string;
+  summary?: string;
+  content?: string;
+  imageUrl?: string;
+  publishedAt?: string;
+};
+
+export type ListRssItemsParams = {
+  feedId: string;
+  limit?: number;
+  offset?: number;
+  read?: boolean;
+  clicked?: boolean;
+  q?: string;
+};
+
+export type ListRssItemsResult = {
+  items: RssItem[];
+  hasMore: boolean;
+  nextOffset: number;
+  total: number;
+};

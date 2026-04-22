@@ -40,6 +40,33 @@ type TagAliasRow = {
   createDate: Date;
 };
 
+type FeedRow = {
+  id: string;
+  name: string;
+  sourceUrl: string;
+  lastFetchedAt: Date | null;
+  errorCount: number;
+  lastError: string | null;
+  disabled: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+type RssItemRow = {
+  id: string;
+  feedId: string;
+  guid: string;
+  title: string;
+  link: string;
+  summary: string | null;
+  content: string | null;
+  imageUrl: string | null;
+  publishedAt: Date | null;
+  read: boolean;
+  clicked: boolean;
+  createdAt: Date;
+};
+
 type EmailItemRow = {
   id: string;
   emailMessageId: string;
@@ -62,9 +89,12 @@ export const store = {
   tags: [] as TagRow[],
   linkTags: [] as LinkTagRow[],
   tagAliases: [] as TagAliasRow[],
+  feeds: [] as (FeedRow & {_insertionOrder: number})[],
+  rssItems: [] as (RssItemRow & {_insertionOrder: number})[],
   emailItems: [] as EmailItemRow[],
   settings: [] as SettingRow[],
   nextId: {link: 1, tag: 1, linkTag: 1, tagAlias: 1, emailItem: 1, setting: 1},
+  insertionCounter: 0,
 };
 
 export function resetStore() {
@@ -72,9 +102,12 @@ export function resetStore() {
   store.tags = [];
   store.linkTags = [];
   store.tagAliases = [];
+  store.feeds = [];
+  store.rssItems = [];
   store.emailItems = [];
   store.settings = [];
   store.nextId = {link: 1, tag: 1, linkTag: 1, tagAlias: 1, emailItem: 1, setting: 1};
+  store.insertionCounter = 0;
 }
 
 // --- Table identity ---
@@ -96,6 +129,10 @@ function getStoreForTable(table: any): any[] {
       return store.linkTags;
     case 'tag_alias':
       return store.tagAliases;
+    case 'feed':
+      return store.feeds;
+    case 'rss_item':
+      return store.rssItems;
     case 'email_item':
       return store.emailItems;
     case 'setting':
@@ -116,6 +153,10 @@ function getNextIdKey(table: any): keyof typeof store.nextId {
       return 'linkTag';
     case 'tag_alias':
       return 'tagAlias';
+    case 'feed':
+      return 'link';
+    case 'rss_item':
+      return 'link';
     case 'email_item':
       return 'emailItem';
     case 'setting':
@@ -161,6 +202,31 @@ const COLUMN_MAP: Record<string, Record<string, string>> = {
     canonical_tag_id: 'canonicalTagId',
     source: 'source',
     create_date: 'createDate',
+  },
+  feed: {
+    id: 'id',
+    name: 'name',
+    source_url: 'sourceUrl',
+    last_fetched_at: 'lastFetchedAt',
+    error_count: 'errorCount',
+    last_error: 'lastError',
+    disabled: 'disabled',
+    created_at: 'createdAt',
+    updated_at: 'updatedAt',
+  },
+  rss_item: {
+    id: 'id',
+    feed_id: 'feedId',
+    guid: 'guid',
+    title: 'title',
+    link: 'link',
+    summary: 'summary',
+    content: 'content',
+    image_url: 'imageUrl',
+    published_at: 'publishedAt',
+    read: 'read',
+    clicked: 'clicked',
+    created_at: 'createdAt',
   },
   email_item: {
     id: 'id',
@@ -390,6 +456,35 @@ function defaultsForTable(table: any, values: any, id: number): any {
         source: values.source ?? '',
         createDate: values.createDate ?? now,
       };
+    case 'feed':
+      return {
+        id: values.id ?? crypto.randomUUID(),
+        name: values.name ?? '',
+        sourceUrl: values.sourceUrl ?? values.source_url ?? '',
+        lastFetchedAt: values.lastFetchedAt ?? values.last_fetched_at ?? null,
+        errorCount: values.errorCount ?? values.error_count ?? 0,
+        lastError: values.lastError ?? values.last_error ?? null,
+        disabled: values.disabled ?? false,
+        createdAt: values.createdAt ?? values.created_at ?? now,
+        updatedAt: values.updatedAt ?? values.updated_at ?? now,
+        _insertionOrder: store.insertionCounter++,
+      };
+    case 'rss_item':
+      return {
+        id: values.id ?? crypto.randomUUID(),
+        feedId: values.feedId ?? values.feed_id ?? '',
+        guid: values.guid ?? '',
+        title: values.title ?? '',
+        link: values.link ?? '',
+        summary: values.summary ?? null,
+        content: values.content ?? null,
+        imageUrl: values.imageUrl ?? values.image_url ?? null,
+        publishedAt: values.publishedAt ?? values.published_at ?? null,
+        read: values.read ?? false,
+        clicked: values.clicked ?? false,
+        createdAt: values.createdAt ?? values.created_at ?? now,
+        _insertionOrder: store.insertionCounter++,
+      };
     case 'email_item': {
       const uuid = `550e8400-e29b-41d4-a716-${id.toString().padStart(12, '0')}`;
       return {
@@ -515,7 +610,7 @@ function createSelectBuilder(targetTable?: any, fields?: any) {
   let whereCondition: any = undefined;
   let joinConfigs: Array<{table: any; onCondition: any}> = [];
   let hasGroupBy = false;
-  let orderByColumns: Array<{column: any; direction: 'asc' | 'desc'}> = [];
+  let orderByDirs: Array<{col: any; desc: boolean}> = [];
 
   const builder: any = {
     from(table: any) {
@@ -527,17 +622,13 @@ function createSelectBuilder(targetTable?: any, fields?: any) {
       return builder;
     },
     orderBy(...cols: any[]) {
-      orderByColumns = cols.map((col: any) => {
-        let direction = col.direction ?? 'asc';
-        // Handle desc() wrapper: check queryChunks for " desc" string
-        if (col?.queryChunks && !col.direction) {
-          const hasDesc = col.queryChunks.some((chunk: any) =>
-            Array.isArray(chunk?.value) && chunk.value.some((v: any) => typeof v === 'string' && v.includes('desc'))
-          );
-          if (hasDesc) direction = 'desc';
+      for (const col of cols) {
+        if (col) {
+          // Drizzle desc() wraps columns with {__drizzle_SortBuilder: true, direction: 'DESC', ...}
+          const isDesc = col.direction === 'DESC' || col.__drizzle_SortBuilder === true;
+          orderByDirs.push({col, desc: isDesc});
         }
-        return {column: col, direction};
-      });
+      }
       return builder;
     },
     limit(n: number) {
@@ -625,31 +716,50 @@ function createSelectBuilder(targetTable?: any, fields?: any) {
         delete r._sourceTable;
       });
 
-      // Apply ordering
-      if (orderByColumns.length > 0) {
+      // Apply orderBy sorting
+      if (orderByDirs.length > 0) {
         result.sort((a: any, b: any) => {
-          for (const {column, direction} of orderByColumns) {
-            let fieldName: string | undefined;
+          for (const {col, desc: isDescFromParam} of orderByDirs) {
+            let colInfo: any = null;
+            let isDesc = isDescFromParam;
 
-            // Extract column name from SQL object (desc/asc wrapper)
-            if (column?.queryChunks) {
-              for (const chunk of column.queryChunks) {
-                if (chunk?.name && chunk?.table) {
-                  fieldName = colToField(chunk.table, chunk.name);
-                  break;
+            // Extract column and DESC info from queryChunks
+            // Format: chunk[0] = SQL, chunk[1] = column info, chunk[2] = " desc"
+            if (col.queryChunks && col.queryChunks.length >= 2) {
+              colInfo = col.queryChunks[1];
+
+              // Check for DESC in chunk[2]
+              if (col.queryChunks[2]?.value) {
+                const valStr = Array.isArray(col.queryChunks[2].value)
+                  ? col.queryChunks[2].value[0]
+                  : col.queryChunks[2].value;
+                if (typeof valStr === 'string' && valStr.toLowerCase().includes('desc')) {
+                  isDesc = true;
                 }
               }
-            } else {
-              const colName = column.name || column;
-              fieldName = colToField(fromTable, colName);
+            } else if (col?.name && col?.table) {
+              colInfo = col;
             }
 
-            if (!fieldName) continue;
-            const aVal = a[fieldName];
-            const bVal = b[fieldName];
+            if (colInfo?.name && colInfo?.table) {
+              const field = colToField(colInfo.table, colInfo.name);
+              const aVal = a[field];
+              const bVal = b[field];
 
-            if (aVal < bVal) return direction === 'asc' ? -1 : 1;
-            if (aVal > bVal) return direction === 'asc' ? 1 : -1;
+              let cmp = 0;
+              if (aVal == null && bVal != null) cmp = 1;
+              else if (aVal != null && bVal == null) cmp = -1;
+              else if (aVal < bVal) cmp = -1;
+              else if (aVal > bVal) cmp = 1;
+              else if (aVal === bVal) {
+                // Tiebreaker: use insertion order
+                const aOrder = (a as any)._insertionOrder ?? 0;
+                const bOrder = (b as any)._insertionOrder ?? 0;
+                cmp = aOrder - bOrder;
+              }
+
+              if (cmp !== 0) return isDesc ? -cmp : cmp;
+            }
           }
           return 0;
         });
@@ -691,7 +801,18 @@ function createInsertBuilder(table: any) {
           if (existing) continue;
         }
 
-        if (conflictAction === 'nothing' && tableName(table) === 'email_item') {
+        if (conflictAction === 'nothing' && tableName(table) === 'rss_item') {
+          const existing = store.rssItems.find(
+            (item) => item.feedId === val.feedId && item.guid === val.guid,
+          );
+          if (existing) continue;
+        }
+
+        if (
+          conflictAction === 'nothing' &&
+          conflictTargetColumns.length > 0 &&
+          (tableName(table) === 'email_item' || tableName(table) === 'setting')
+        ) {
           const dbColNames = conflictTargetColumns.map((col: any) => col.name || col);
           const existing = storeArr.find((row: any) =>
             dbColNames.every((dbColName: string) => {
@@ -755,7 +876,18 @@ function createInsertBuilder(table: any) {
           if (existing) continue;
         }
 
-        if (conflictAction === 'nothing' && tableName(table) === 'email_item') {
+        if (conflictAction === 'nothing' && tableName(table) === 'rss_item') {
+          const existing = store.rssItems.find(
+            (item) => item.feedId === val.feedId && item.guid === val.guid,
+          );
+          if (existing) continue;
+        }
+
+        if (
+          conflictAction === 'nothing' &&
+          conflictTargetColumns.length > 0 &&
+          (tableName(table) === 'email_item' || tableName(table) === 'setting')
+        ) {
           const dbColNames = conflictTargetColumns.map((col: any) => col.name || col);
           const existing = storeArr.find((row: any) =>
             dbColNames.every((dbColName: string) => {
@@ -899,6 +1031,12 @@ function replaceStoreArray(table: any, kept: any[]) {
       break;
     case 'tag_alias':
       store.tagAliases = kept;
+      break;
+    case 'feed':
+      store.feeds = kept;
+      break;
+    case 'rss_item':
+      store.rssItems = kept;
       break;
     case 'email_item':
       store.emailItems = kept;

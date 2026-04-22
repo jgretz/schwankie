@@ -1,6 +1,13 @@
 import {createLink} from '../../src/commands/create-link';
+import {createFeed} from '../../src/commands/create-feed';
+import {createRssItem} from '../../src/commands/create-rss-item';
 import {createEmailItem} from '../../src/commands/create-email-item';
-import type {CreateLinkInput, CreateEmailItemInput} from '../../src/types';
+import type {
+  CreateLinkInput,
+  CreateFeedInput,
+  CreateRssItemInput,
+  CreateEmailItemInput,
+} from '../../src/types';
 
 export async function makeLink(overrides: Partial<CreateLinkInput> = {}) {
   const input: CreateLinkInput = {
@@ -10,6 +17,28 @@ export async function makeLink(overrides: Partial<CreateLinkInput> = {}) {
   };
 
   return createLink(input);
+}
+
+export async function makeFeed(overrides: Partial<CreateFeedInput> = {}) {
+  const input: CreateFeedInput = {
+    name: `Test Feed ${Date.now()}`,
+    sourceUrl: `https://test-feed-${Date.now()}-${Math.random().toString(36).slice(2)}.com/feed.xml`,
+    ...overrides,
+  };
+
+  return createFeed(input);
+}
+
+export async function makeRssItem(feedId: string, overrides: Partial<CreateRssItemInput> = {}) {
+  const input: CreateRssItemInput = {
+    feedId,
+    guid: `test-guid-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    title: 'Test RSS Item',
+    link: `https://test-${Date.now()}.com/article`,
+    ...overrides,
+  };
+
+  return createRssItem(input);
 }
 
 let emailItemTimestamp = Date.now();

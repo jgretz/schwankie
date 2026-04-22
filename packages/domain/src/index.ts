@@ -6,6 +6,9 @@ export {listTags} from './queries/list-tags';
 export {getLink} from './queries/get-link';
 export {getSetting} from './queries/get-setting';
 export {resolveTagMinCount} from './queries/resolve-tag-min-count';
+export {listFeeds} from './queries/list-feeds';
+export {getFeed} from './queries/get-feed';
+export {listRssItems} from './queries/list-rss-items';
 export {listEmailItems} from './queries/list-email-items';
 export {getEmailItem} from './queries/get-email-item';
 export {getGmailTokens} from './queries/get-gmail-tokens';
@@ -20,6 +23,12 @@ export {deleteTag} from './commands/delete-tag';
 export {markTagNormalized} from './commands/normalize-tag';
 export {resetEnrichment} from './commands/reset-enrichment';
 export {setSetting} from './commands/set-setting';
+export {createFeed} from './commands/create-feed';
+export {updateFeed} from './commands/update-feed';
+export {deleteFeed} from './commands/delete-feed';
+export {createRssItem} from './commands/create-rss-item';
+export {markRssItemRead} from './commands/mark-rss-item-read';
+export {promoteRssItem} from './commands/promote-rss-item';
 export {createEmailItem} from './commands/create-email-item';
 export {markEmailItemRead} from './commands/mark-email-item-read';
 export {promoteEmailItem} from './commands/promote-email-item';
@@ -45,6 +54,13 @@ export type {
   MergeTagInput,
   RenameTagInput,
   SettingResponse,
+  Feed,
+  CreateFeedInput,
+  UpdateFeedInput,
+  RssItem,
+  CreateRssItemInput,
+  ListRssItemsParams,
+  ListRssItemsResult,
   EmailItem,
   CreateEmailItemInput,
   ListEmailItemsParams,
