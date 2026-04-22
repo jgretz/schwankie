@@ -40,12 +40,42 @@ type TagAliasRow = {
   createDate: Date;
 };
 
+type FeedRow = {
+  id: string;
+  name: string;
+  sourceUrl: string;
+  lastFetchedAt: Date | null;
+  errorCount: number;
+  lastError: string | null;
+  disabled: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+type RssItemRow = {
+  id: string;
+  feedId: string;
+  guid: string;
+  title: string;
+  link: string;
+  summary: string | null;
+  content: string | null;
+  imageUrl: string | null;
+  publishedAt: Date | null;
+  read: boolean;
+  clicked: boolean;
+  createdAt: Date;
+};
+
 export const store = {
   links: [] as LinkRow[],
   tags: [] as TagRow[],
   linkTags: [] as LinkTagRow[],
   tagAliases: [] as TagAliasRow[],
+  feeds: [] as (FeedRow & {_insertionOrder: number})[],
+  rssItems: [] as (RssItemRow & {_insertionOrder: number})[],
   nextId: {link: 1, tag: 1, linkTag: 1, tagAlias: 1},
+  insertionCounter: 0,
 };
 
 export function resetStore() {
@@ -53,7 +83,10 @@ export function resetStore() {
   store.tags = [];
   store.linkTags = [];
   store.tagAliases = [];
+  store.feeds = [];
+  store.rssItems = [];
   store.nextId = {link: 1, tag: 1, linkTag: 1, tagAlias: 1};
+  store.insertionCounter = 0;
 }
 
 // --- Table identity ---
@@ -75,6 +108,10 @@ function getStoreForTable(table: any): any[] {
       return store.linkTags;
     case 'tag_alias':
       return store.tagAliases;
+    case 'feed':
+      return store.feeds;
+    case 'rss_item':
+      return store.rssItems;
     default:
       throw new Error(`Unknown table: ${name}`);
   }
@@ -91,6 +128,10 @@ function getNextIdKey(table: any): keyof typeof store.nextId {
       return 'linkTag';
     case 'tag_alias':
       return 'tagAlias';
+    case 'feed':
+      return 'link';
+    case 'rss_item':
+      return 'link';
     default:
       throw new Error(`Unknown table: ${name}`);
   }
@@ -132,6 +173,31 @@ const COLUMN_MAP: Record<string, Record<string, string>> = {
     canonical_tag_id: 'canonicalTagId',
     source: 'source',
     create_date: 'createDate',
+  },
+  feed: {
+    id: 'id',
+    name: 'name',
+    source_url: 'sourceUrl',
+    last_fetched_at: 'lastFetchedAt',
+    error_count: 'errorCount',
+    last_error: 'lastError',
+    disabled: 'disabled',
+    created_at: 'createdAt',
+    updated_at: 'updatedAt',
+  },
+  rss_item: {
+    id: 'id',
+    feed_id: 'feedId',
+    guid: 'guid',
+    title: 'title',
+    link: 'link',
+    summary: 'summary',
+    content: 'content',
+    image_url: 'imageUrl',
+    published_at: 'publishedAt',
+    read: 'read',
+    clicked: 'clicked',
+    created_at: 'createdAt',
   },
 };
 
@@ -346,6 +412,35 @@ function defaultsForTable(table: any, values: any, id: number): any {
         source: values.source ?? '',
         createDate: values.createDate ?? now,
       };
+    case 'feed':
+      return {
+        id: values.id ?? crypto.randomUUID(),
+        name: values.name ?? '',
+        sourceUrl: values.sourceUrl ?? values.source_url ?? '',
+        lastFetchedAt: values.lastFetchedAt ?? values.last_fetched_at ?? null,
+        errorCount: values.errorCount ?? values.error_count ?? 0,
+        lastError: values.lastError ?? values.last_error ?? null,
+        disabled: values.disabled ?? false,
+        createdAt: values.createdAt ?? values.created_at ?? now,
+        updatedAt: values.updatedAt ?? values.updated_at ?? now,
+        _insertionOrder: store.insertionCounter++,
+      };
+    case 'rss_item':
+      return {
+        id: values.id ?? crypto.randomUUID(),
+        feedId: values.feedId ?? values.feed_id ?? '',
+        guid: values.guid ?? '',
+        title: values.title ?? '',
+        link: values.link ?? '',
+        summary: values.summary ?? null,
+        content: values.content ?? null,
+        imageUrl: values.imageUrl ?? values.image_url ?? null,
+        publishedAt: values.publishedAt ?? values.published_at ?? null,
+        read: values.read ?? false,
+        clicked: values.clicked ?? false,
+        createdAt: values.createdAt ?? values.created_at ?? now,
+        _insertionOrder: store.insertionCounter++,
+      };
     default:
       return {id, ...values};
   }
@@ -452,6 +547,7 @@ function createSelectBuilder(targetTable?: any, fields?: any) {
   let whereCondition: any = undefined;
   let joinConfigs: Array<{table: any; onCondition: any}> = [];
   let hasGroupBy = false;
+  let orderByDirs: Array<{col: any; desc: boolean}> = [];
 
   const builder: any = {
     from(table: any) {
@@ -462,7 +558,14 @@ function createSelectBuilder(targetTable?: any, fields?: any) {
       whereCondition = condition;
       return builder;
     },
-    orderBy() {
+    orderBy(...cols: any[]) {
+      for (const col of cols) {
+        if (col) {
+          // Drizzle desc() wraps columns with {__drizzle_SortBuilder: true, direction: 'DESC', ...}
+          const isDesc = col.direction === 'DESC' || col.__drizzle_SortBuilder === true;
+          orderByDirs.push({col, desc: isDesc});
+        }
+      }
       return builder;
     },
     limit(n: number) {
@@ -550,6 +653,51 @@ function createSelectBuilder(targetTable?: any, fields?: any) {
         delete r._sourceTable;
       });
 
+      // Apply orderBy sorting
+      if (orderByDirs.length > 0) {
+        result.sort((a: any, b: any) => {
+          for (const {col, desc: isDescFromParam} of orderByDirs) {
+            let colInfo: any = null;
+            let isDesc = isDescFromParam;
+
+            // Extract column and DESC info from queryChunks
+            // Format: chunk[0] = SQL, chunk[1] = column info, chunk[2] = " desc"
+            if (col.queryChunks && col.queryChunks.length >= 2) {
+              colInfo = col.queryChunks[1];
+
+              // Check for DESC in chunk[2]
+              if (col.queryChunks[2]?.value) {
+                const valStr = Array.isArray(col.queryChunks[2].value)
+                  ? col.queryChunks[2].value[0]
+                  : col.queryChunks[2].value;
+                if (typeof valStr === 'string' && valStr.toLowerCase().includes('desc')) {
+                  isDesc = true;
+                }
+              }
+            }
+
+            if (colInfo?.name && colInfo?.table) {
+              const field = colToField(colInfo.table, colInfo.name);
+              const aVal = a[field];
+              const bVal = b[field];
+
+              let cmp = 0;
+              if (aVal < bVal) cmp = -1;
+              else if (aVal > bVal) cmp = 1;
+              else if (aVal === bVal) {
+                // Tiebreaker: use insertion order
+                const aOrder = (a as any)._insertionOrder ?? 0;
+                const bOrder = (b as any)._insertionOrder ?? 0;
+                cmp = aOrder - bOrder;
+              }
+
+              if (cmp !== 0) return isDesc ? -cmp : cmp;
+            }
+          }
+          return 0;
+        });
+      }
+
       if (builder._offset) {
         result = result.slice(builder._offset);
       }
@@ -584,6 +732,13 @@ function createInsertBuilder(table: any) {
           if (existing) continue;
         }
 
+        if (conflictAction === 'nothing' && tableName(table) === 'rss_item') {
+          const existing = store.rssItems.find(
+            (item) => item.feedId === val.feedId && item.guid === val.guid,
+          );
+          if (existing) continue;
+        }
+
         const id = store.nextId[idKey]++;
         const row = defaultsForTable(table, val, id);
         storeArr.push(row);
@@ -603,6 +758,13 @@ function createInsertBuilder(table: any) {
       for (const val of valuesToInsert) {
         if (conflictAction === 'nothing' && tableName(table) === 'tag') {
           const existing = store.tags.find((t) => t.text === val.text);
+          if (existing) continue;
+        }
+
+        if (conflictAction === 'nothing' && tableName(table) === 'rss_item') {
+          const existing = store.rssItems.find(
+            (item) => item.feedId === val.feedId && item.guid === val.guid,
+          );
           if (existing) continue;
         }
 
@@ -722,6 +884,12 @@ function replaceStoreArray(table: any, kept: any[]) {
       break;
     case 'tag_alias':
       store.tagAliases = kept;
+      break;
+    case 'feed':
+      store.feeds = kept;
+      break;
+    case 'rss_item':
+      store.rssItems = kept;
       break;
   }
 }
