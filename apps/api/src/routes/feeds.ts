@@ -42,6 +42,11 @@ feedsRoutes.post('/api/feeds', auth, async (c) => {
   return c.json(result, 201);
 });
 
+feedsRoutes.get('/api/feeds/all', auth, async (c) => {
+  const result = await listFeeds();
+  return c.json(result);
+});
+
 feedsRoutes.get('/api/feeds/:id', async (c) => {
   const id = parseId(c.req.param('id'));
   if (id === null) {
@@ -125,11 +130,6 @@ feedsRoutes.post('/api/feeds/:feedId/items/:itemId/promote', auth, async (c) => 
   }
   const link = await getLink(linkId);
   return c.json(link);
-});
-
-feedsRoutes.get('/api/feeds/all', auth, async (c) => {
-  const result = await listFeeds();
-  return c.json(result);
 });
 
 feedsRoutes.post('/api/feeds/:feedId/items/bulk-upsert', auth, async (c) => {
