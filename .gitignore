@@ -39,6 +39,7 @@ lerna-debug.log*
 !.vscode/launch.json
 !.vscode/extensions.json
 CLAUDE-WORKING.md
+CLAUDE-TASK.md
 .mcp.json
 .worksite/
 .worksite-*
