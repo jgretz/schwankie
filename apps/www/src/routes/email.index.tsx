@@ -1,6 +1,7 @@
 import {createFileRoute, redirect, useNavigate} from '@tanstack/react-router';
 import {useState, useCallback} from 'react';
 import {z} from 'zod';
+import {toast} from 'sonner';
 import {Button} from '@www/components/ui/button';
 import {useEmailItems, useMarkEmailItemRead, usePromoteEmailItem} from '@www/hooks/use-email-items';
 import type {EmailItemData} from 'client';
@@ -33,7 +34,7 @@ function EmailPage() {
   const navigate = useNavigate({from: '/email/'});
   const [hiddenItems, setHiddenItems] = useState<Set<string>>(new Set());
 
-  const {data: emailData, isLoading} = useEmailItems({unread: search.unread, from: search.from});
+  const {data: emailData, isLoading, error} = useEmailItems({unread: search.unread, from: search.from});
   const markReadMutation = useMarkEmailItemRead();
   const promoteMutation = usePromoteEmailItem();
 
@@ -48,6 +49,7 @@ function EmailPage() {
         setHiddenItems((prev) => new Set([...prev, itemId]));
       } catch (error) {
         console.error('Failed to mark as read:', error);
+        toast.error('Failed to mark as read');
       }
     },
     [markReadMutation],
@@ -60,6 +62,7 @@ function EmailPage() {
         setHiddenItems((prev) => new Set([...prev, itemId]));
       } catch (error) {
         console.error('Failed to promote:', error);
+        toast.error('Failed to promote');
       }
     },
     [promoteMutation],
@@ -73,6 +76,14 @@ function EmailPage() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <p className="text-text-muted">Loading emails...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-destructive">Failed to load emails. Please try again.</p>
       </div>
     );
   }

@@ -32,13 +32,13 @@ emailsRouter.post('/api/emails/bulk-upsert', auth, async (c) => {
 });
 
 emailsRouter.post('/api/emails/:id/read', auth, async (c) => {
-  const id = c.req.param('id') as string;
+  const id = c.req.param('id');
   await markEmailItemRead(id);
   return c.json({marked: true});
 });
 
 emailsRouter.post('/api/emails/:id/promote', auth, async (c) => {
-  const id = c.req.param('id') as string;
+  const id = c.req.param('id');
   const link = await promoteEmailItem(id);
   return c.json(link);
 });
