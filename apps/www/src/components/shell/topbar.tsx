@@ -13,7 +13,7 @@ type TopbarProps = {
 };
 
 type NavLink = {
-  to: '/' | '/queue' | '/feeds' | '/admin' | '/about';
+  to: '/' | '/queue' | '/feeds' | '/email' | '/admin' | '/about';
   label: string;
   exact: boolean;
   icon?: 'settings';
@@ -32,6 +32,7 @@ const publicLinks: NavLink[] = [
 const adminLinks: NavLink[] = [
   {to: '/queue', label: 'Queue', exact: true},
   {to: '/feeds', label: 'Feeds', exact: false}, // refactor in WS-6
+  {to: '/email', label: 'Email', exact: true}, // refactor in WS-6
   {to: '/admin', label: 'Admin', exact: true, icon: 'settings'},
 ];
 

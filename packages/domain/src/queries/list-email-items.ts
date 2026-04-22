@@ -5,12 +5,16 @@ import type {ListEmailItemsParams, ListEmailItemsResult} from '../types';
 
 export async function listEmailItems(params: ListEmailItemsParams): Promise<ListEmailItemsResult> {
   const db = getDb();
-  const {limit, offset, read} = params;
+  const {limit, offset, read, from} = params;
 
   const conditions = [];
 
   if (read !== undefined) {
     conditions.push(eq(emailItem.read, read));
+  }
+
+  if (from) {
+    conditions.push(eq(emailItem.emailFrom, from));
   }
 
   const where = conditions.length > 0 ? and(...conditions) : undefined;

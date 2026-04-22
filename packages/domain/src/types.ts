@@ -15,6 +15,7 @@ export type ListEmailItemsParams = {
   limit: number;
   offset: number;
   read?: boolean;
+  from?: string;
 };
 
 export type ListEmailItemsResult = {
