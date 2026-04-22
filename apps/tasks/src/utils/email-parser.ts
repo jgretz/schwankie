@@ -200,7 +200,7 @@ const SKIP_SELECTORS = [
   '[class*="unsubscribe"]', '[class*="preferences"]',
 ];
 
-function isInSkipRegion($el: ReturnType<cheerio.CheerioAPI>, $: cheerio.CheerioAPI): boolean {
+function isInSkipRegion($el: ReturnType<cheerio.CheerioAPI>): boolean {
   return SKIP_SELECTORS.some((sel) => $el.closest(sel).length > 0);
 }
 
@@ -337,7 +337,7 @@ export function parseLinksFromHtml(html: string): ParsedLink[] {
     const $el = $(element);
 
     // Skip if in excluded structural region
-    if (isInSkipRegion($el, $)) return;
+    if (isInSkipRegion($el)) return;
 
     const href = $el.attr('href');
     if (!href || !href.startsWith('http')) return;
@@ -386,7 +386,7 @@ export function parseLinksWithScores(html: string): ScoredLink[] {
   allListItems.each((index, li) => {
     const $li = $(li);
 
-    if (isInSkipRegion($li, $)) return;
+    if (isInSkipRegion($li)) return;
 
     const $anchor = $li.find('a[href]').first();
     if (!$anchor.length) return;
@@ -425,7 +425,7 @@ export function parseLinksWithScores(html: string): ScoredLink[] {
     const $container = $(container);
     containerIndex++;
 
-    if (isInSkipRegion($container, $)) return;
+    if (isInSkipRegion($container)) return;
 
     // Skip if this is a deeply nested container
     if ($container.find('p, div, td').length > 0) return;
