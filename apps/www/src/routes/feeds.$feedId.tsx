@@ -63,10 +63,19 @@ function FeedDetailPage() {
     setHiddenItems((prev) => new Set([...prev, itemId]));
   }, []);
 
-  if (feedsQuery.isLoading || !feed) {
+  if (feedsQuery.isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <p className="text-text-muted">Loading feed...</p>
+      </div>
+    );
+  }
+
+  if (!feed) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+        <p className="text-text-muted">Feed not found</p>
+        <Button onClick={() => navigate({to: '/feeds'})}>Back to feeds</Button>
       </div>
     );
   }
