@@ -24,7 +24,8 @@
           "root": "./src/app"
         }
       ],
-      "expo-share-extension"
+      "expo-share-extension",
+      "expo-web-browser"
     ],
     "ios": {
       "supportsTablet": true,
