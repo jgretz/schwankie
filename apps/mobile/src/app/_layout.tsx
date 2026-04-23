@@ -2,6 +2,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import Toast from 'react-native-toast-message';
 import { init } from 'client';
 
 const queryClient = new QueryClient();
@@ -24,6 +25,7 @@ export default function RootLayout() {
       <QueryClientProvider client={queryClient}>
         <Stack screenOptions={{ headerShown: false }} />
         <StatusBar style="auto" />
+        <Toast />
       </QueryClientProvider>
     </SafeAreaProvider>
   );
