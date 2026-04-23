@@ -67,6 +67,7 @@ mock.module('@domain', () => ({
   init: () => {},
   createRssItem: mockSetSetting,
   listEmailItems: mockGetSetting,
+  countRecentEmailItems: mockGetSetting,
   getEmailItem: mockGetSetting,
   createEmailItem: mockSetSetting,
   markEmailItemRead: mockSetSetting,
