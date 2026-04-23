@@ -9,6 +9,9 @@ export const updateFeedSchema = z.object({
   name: z.string().min(1).optional(),
   sourceUrl: z.string().url().optional(),
   disabled: z.boolean().optional(),
+  errorCount: z.number().int().nonnegative().optional(),
+  lastError: z.string().nullable().optional(),
+  lastFetchedAt: z.string().datetime().nullable().optional(),
 });
 
 export const bulkUpsertItemsSchema = z.object({

@@ -117,6 +117,9 @@ export type UpdateFeedInput = {
   name?: string;
   sourceUrl?: string;
   disabled?: boolean;
+  errorCount?: number;
+  lastError?: string | null;
+  lastFetchedAt?: string | null;
 };
 
 export type BulkUpsertRssItemsInput = {

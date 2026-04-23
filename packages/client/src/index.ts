@@ -32,6 +32,7 @@ export {getGmailStatus} from './calls/get-gmail-status';
 export {setGmailFilter} from './calls/set-gmail-filter';
 export {getGmailTokens} from './calls/get-gmail-tokens';
 export {fetchFeeds} from './calls/fetch-feeds';
+export {getFeed} from './calls/get-feed';
 export {createFeed} from './calls/create-feed';
 export {updateFeed} from './calls/update-feed';
 export {deleteFeed} from './calls/delete-feed';
@@ -53,6 +54,7 @@ export {completeWorkRequest} from './calls/complete-work-request';
 export {failWorkRequest} from './calls/fail-work-request';
 export {triggerRefreshAllFeeds} from './calls/trigger-refresh-all-feeds';
 export {triggerRefreshEmails} from './calls/trigger-refresh-emails';
+export {cleanupWorkRequests} from './calls/cleanup-work-requests';
 
 // types
 export type {

@@ -6,6 +6,7 @@ import {
   markWorkRequestProcessing,
   markWorkRequestCompleted,
   markWorkRequestFailed,
+  cleanupOldWorkRequests,
 } from '@domain';
 
 import {authMiddleware} from '../middleware/auth';
@@ -56,6 +57,11 @@ workRoutes.post('/api/work/:id/fail', auth, async (c) => {
 
   const result = await markWorkRequestFailed(idParsed.data.id, bodyParsed.data.errorMessage);
   return c.json(result);
+});
+
+workRoutes.post('/api/work/cleanup', auth, async (c) => {
+  const count = await cleanupOldWorkRequests();
+  return c.json({count});
 });
 
 workRoutes.post('/api/feeds/refresh', auth, async (c) => {

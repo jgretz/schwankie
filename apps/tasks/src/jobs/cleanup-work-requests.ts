@@ -1,8 +1,8 @@
 import type PgBoss from 'pg-boss';
 
-import {cleanupOldWorkRequests} from '@domain';
+import {cleanupWorkRequests} from 'client';
 
 export const cleanupWorkRequestsHandler: PgBoss.WorkHandler<unknown> = async () => {
-  const count = await cleanupOldWorkRequests();
+  const {count} = await cleanupWorkRequests();
   console.log(`[cleanup-work-requests] deleted ${count} old work requests`);
 };

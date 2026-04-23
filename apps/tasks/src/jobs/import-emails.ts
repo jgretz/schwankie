@@ -1,6 +1,10 @@
 import type PgBoss from 'pg-boss';
-import {getSetting, setSetting, bulkUpsertEmailItems} from '@domain';
-import {getGmailTokens} from 'client';
+import {
+  getSetting,
+  setSetting,
+  bulkUpsertEmailItems,
+  getGmailTokens,
+} from 'client';
 import {GmailClient, extractDisplayName} from '../utils/gmail-client';
 import {
   parseLinksWithScores,
@@ -72,7 +76,8 @@ export async function importEmailsHandler(_jobs: PgBoss.Job[]): Promise<void> {
     }
 
     // Fetch filter from settings
-    const filter = await getSetting('gmail_filter');
+    const filterSetting = await getSetting('gmail_filter');
+    const filter = filterSetting?.value ?? '';
     const gmailClient = new GmailClient(tokens.accessToken, tokens.refreshToken || '');
 
     // Get Ollama config from env
@@ -80,7 +85,7 @@ export async function importEmailsHandler(_jobs: PgBoss.Job[]): Promise<void> {
     const ollamaModel = process.env.OLLAMA_MODEL || 'llama3.2:3b';
 
     // List unread messages
-    const messageIds = await gmailClient.listMessages(filter || '');
+    const messageIds = await gmailClient.listMessages(filter);
 
     if (messageIds.length === 0) {
       console.log('No unread messages found');
@@ -112,7 +117,7 @@ export async function importEmailsHandler(_jobs: PgBoss.Job[]): Promise<void> {
             description: parsed.description,
           }));
 
-          const inserted = await bulkUpsertEmailItems(items);
+          const {inserted} = await bulkUpsertEmailItems({items});
           linkCount += inserted;
         }
 
