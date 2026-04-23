@@ -87,7 +87,7 @@ type SettingRow = {
 type WorkRequestRow = {
   id: string;
   type: string;
-  payload: Record<string, any>;
+  payload: Record<string, unknown>;
   status: string;
   errorMessage: string | null;
   createdAt: Date;
@@ -1081,6 +1081,9 @@ function replaceStoreArray(table: any, kept: any[]) {
       break;
     case 'setting':
       store.settings = kept;
+      break;
+    case 'work_request':
+      store.workRequests = kept;
       break;
   }
 }
