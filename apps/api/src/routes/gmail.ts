@@ -5,6 +5,7 @@ import {
   setSetting,
   clearGmailTokens,
   setGmailTokens,
+  countRecentEmailItems,
   type GmailTokens,
 } from '@domain';
 import {
@@ -58,11 +59,13 @@ gmailRouter.get('/api/gmail/status', auth, async (c) => {
   const email = await getSetting('gmail_email');
   const filter = await getSetting('gmail_filter');
   const lastImportedAt = await getSetting('gmail_last_imported_at');
+  const recentCount = await countRecentEmailItems(7);
 
   return c.json({
     connected: !!email,
     filter: filter || null,
     lastImportedAt: lastImportedAt || null,
+    recentCount,
     email: email || undefined,
   });
 });

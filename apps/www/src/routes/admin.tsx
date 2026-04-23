@@ -13,10 +13,11 @@ export const Route = createFileRoute('/admin')({
 });
 
 const navItems = [
-  {to: '/admin', label: 'General', exact: true},
+  {to: '/admin/general', label: 'General', exact: true},
+  {to: '/admin/feeds', label: 'Feeds', exact: true},
+  {to: '/admin/gmail', label: 'Gmail', exact: true},
   {to: '/admin/dead-links', label: 'Dead Links', exact: true},
   {to: '/admin/tags', label: 'Tags', exact: true},
-  {to: '/admin/gmail', label: 'Gmail', exact: true},
 ] as const;
 
 function AdminLayout() {

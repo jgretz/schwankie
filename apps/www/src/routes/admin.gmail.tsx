@@ -87,6 +87,52 @@ function AdminGmailPage() {
     [handleFilterSave],
   );
 
+  const validateIMAPFilter = (filterStr: string): {valid: boolean; error?: string} => {
+    if (!filterStr.trim()) return {valid: false, error: 'Filter is empty'};
+
+    let parenCount = 0;
+    let inQuotes = false;
+    let escapeNext = false;
+
+    for (let i = 0; i < filterStr.length; i++) {
+      const char = filterStr[i];
+
+      if (escapeNext) {
+        escapeNext = false;
+        continue;
+      }
+
+      if (char === '\\') {
+        escapeNext = true;
+        continue;
+      }
+
+      if (char === '"') {
+        inQuotes = !inQuotes;
+        continue;
+      }
+
+      if (!inQuotes) {
+        if (char === '(') parenCount++;
+        if (char === ')') parenCount--;
+      }
+    }
+
+    if (inQuotes) return {valid: false, error: 'Unclosed quoted string'};
+    if (parenCount !== 0) return {valid: false, error: 'Unbalanced parentheses'};
+
+    return {valid: true};
+  };
+
+  const handleTestFilter = useCallback(() => {
+    const validation = validateIMAPFilter(filter);
+    if (!validation.valid) {
+      toast.error(validation.error || 'Invalid filter syntax');
+      return;
+    }
+    toast.success('Filter syntax is valid');
+  }, [filter]);
+
   if (isLoading) {
     return (
       <div className="px-6 py-6">
@@ -105,18 +151,16 @@ function AdminGmailPage() {
 
   return (
     <div className="px-6 py-6">
-      <div className="mb-6">
-        <h2 className="font-serif text-[1.35rem] font-semibold text-text mb-1">Gmail Settings</h2>
-        <p className="text-text-muted font-sans text-[0.9rem]">Manage your Gmail connection and email imports</p>
+      <div className="mb-5 flex items-baseline gap-3">
+        <h2 className="font-serif text-[1.35rem] font-semibold text-text">Gmail</h2>
       </div>
 
+      <div className="space-y-6">
+        <div className="border border-border rounded-lg p-6 space-y-6">
+          <div>
+            <h3 className="font-serif text-lg text-text mb-4">Connection</h3>
 
-      <div className="border border-border rounded-lg p-6 space-y-6">
-        <div>
-          <h3 className="font-serif text-lg text-text mb-3">Connection Status</h3>
-
-          {status?.connected ? (
-            <div className="space-y-4">
+            {status?.connected ? (
               <div className="p-3 bg-bg-subtle rounded">
                 <p className="font-sans text-[0.9rem] text-text">
                   <span className="font-semibold">Connected:</span> {status.email}
@@ -126,35 +170,54 @@ function AdminGmailPage() {
                     Last imported: {new Date(status.lastImportedAt).toLocaleString()}
                   </p>
                 )}
-              </div>
-
-              <div>
-                <label className="block font-sans text-[0.9rem] text-text mb-2">Email Filter (IMAP search query)</label>
-                <input
-                  type="text"
-                  value={filter}
-                  onChange={(e) => {
-                    setFilter(e.target.value);
-                    debouncedSave(e.target.value);
-                  }}
-                  placeholder="e.g., from:example@gmail.com subject:important"
-                  className="w-full px-3 py-2 border border-border rounded font-sans text-[0.9rem] text-text bg-bg placeholder-text-faint focus:outline-none focus:ring-2 focus:ring-accent"
-                  disabled={filterLoading}
-                />
-                <p className="font-sans text-[0.8rem] text-text-muted mt-2">
-                  Use IMAP search syntax to filter which emails are imported.
+                <p className="font-sans text-[0.85rem] text-text-muted mt-2">
+                  Emails imported (7 days): <span className="font-semibold">{status.recentCount}</span>
                 </p>
               </div>
+            ) : (
+              <p className="text-text-muted font-sans text-[0.9rem]">Gmail is not connected. Connect to start importing emails.</p>
+            )}
+          </div>
 
-              <Button variant="destructive" onClick={handleDisconnect}>
-                Disconnect Gmail
-              </Button>
-            </div>
-          ) : (
-            <div>
-              <p className="text-text-muted font-sans text-[0.9rem] mb-4">Gmail is not connected. Connect to start importing emails.</p>
-              <Button onClick={handleConnect}>Connect Gmail</Button>
-            </div>
+          {status?.connected && (
+            <>
+              <div className="pt-4 border-t border-border">
+                <h3 className="font-serif text-lg text-text mb-4">Filter</h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block font-sans text-[0.9rem] text-text mb-2">Email Filter (IMAP search query)</label>
+                    <textarea
+                      value={filter}
+                      onChange={(e) => {
+                        setFilter(e.target.value);
+                        debouncedSave(e.target.value);
+                      }}
+                      placeholder="e.g., from:example@gmail.com subject:important"
+                      className="w-full px-3 py-2 border border-border rounded font-sans text-[0.9rem] text-text bg-bg placeholder-text-faint focus:outline-none focus:ring-2 focus:ring-accent"
+                      disabled={filterLoading}
+                      rows={3}
+                    />
+                    <p className="font-sans text-[0.8rem] text-text-muted mt-2">
+                      Use IMAP search syntax to filter which emails are imported. Leave empty to import all emails.
+                    </p>
+                  </div>
+
+                  <Button size="sm" variant="outline" onClick={handleTestFilter} disabled={!filter.trim()}>
+                    Test Filter
+                  </Button>
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-4 border-t border-border">
+                <Button variant="destructive" onClick={handleDisconnect}>
+                  Disconnect Gmail
+                </Button>
+              </div>
+            </>
+          )}
+
+          {!status?.connected && (
+            <Button onClick={handleConnect}>Connect Gmail</Button>
           )}
         </div>
       </div>

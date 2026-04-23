@@ -10,6 +10,7 @@ export {listFeeds} from './queries/list-feeds';
 export {getFeed} from './queries/get-feed';
 export {listRssItems} from './queries/list-rss-items';
 export {listEmailItems} from './queries/list-email-items';
+export {countRecentEmailItems} from './queries/count-recent-email-items';
 export {getEmailItem} from './queries/get-email-item';
 export {getGmailTokens} from './queries/get-gmail-tokens';
 export {listPendingWorkRequests} from './queries/list-pending-work-requests';
