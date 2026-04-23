@@ -8,7 +8,14 @@ type ListEmailItemsParams = {
   from?: string;
 };
 
-export function listEmailItems(params: ListEmailItemsParams = {}): Promise<{items: EmailItemData[]; total: number}> {
+type ListEmailItemsResponse = {
+  items: EmailItemData[];
+  total: number;
+  hasMore: boolean;
+  nextOffset: number;
+};
+
+export function listEmailItems(params: ListEmailItemsParams = {}): Promise<ListEmailItemsResponse> {
   const search = new URLSearchParams();
   if (params.limit != null) search.set('limit', String(params.limit));
   if (params.offset != null) search.set('offset', String(params.offset));
@@ -16,5 +23,5 @@ export function listEmailItems(params: ListEmailItemsParams = {}): Promise<{item
   if (params.from) search.set('from', params.from);
 
   const qs = search.toString();
-  return apiFetch<{items: EmailItemData[]; total: number}>(`/api/emails${qs ? `?${qs}` : ''}`);
+  return apiFetch<ListEmailItemsResponse>(`/api/emails${qs ? `?${qs}` : ''}`);
 }

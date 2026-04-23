@@ -1,5 +1,5 @@
 import {createFileRoute, redirect, useNavigate} from '@tanstack/react-router';
-import {useMemo, useState, useCallback} from 'react';
+import {useMemo, useState, useCallback, useEffect, useRef} from 'react';
 import {z} from 'zod';
 import {toast} from 'sonner';
 import type {RssItemWithFeedData} from 'client';
@@ -53,11 +53,34 @@ function RssPage() {
     feedId: search.feedId,
   });
 
-  const items = query.data?.items ?? [];
+  const items = useMemo<RssItemWithFeedData[]>(
+    () => query.data?.pages.flatMap((page) => page.items) ?? [],
+    [query.data],
+  );
+  const total = query.data?.pages[0]?.total ?? 0;
   const visibleItems = useMemo(
     () => items.filter((item) => !hiddenItems.has(item.id)),
     [items, hiddenItems],
   );
+
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting && query.hasNextPage && !query.isFetchingNextPage) {
+          query.fetchNextPage();
+        }
+      },
+      {rootMargin: '200px', threshold: 0},
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [query.hasNextPage, query.isFetchingNextPage, query.fetchNextPage]);
 
   const grouped = useMemo(() => {
     const groups: Record<string, {feedName: string; items: RssItemWithFeedData[]}> = {};
@@ -146,8 +169,8 @@ function RssPage() {
         <div>
           <h1 className="font-serif text-3xl text-text mb-1">RSS</h1>
           <p className="text-text-muted font-sans text-[0.9rem]">
-            {visibleItems.length} {search.unread ? 'unread' : ''} item
-            {visibleItems.length !== 1 ? 's' : ''}
+            {visibleItems.length} of {total} {search.unread ? 'unread' : ''} item
+            {total !== 1 ? 's' : ''}
             {feedOptions.length > 0 && ` across ${feedOptions.length} feeds`}
           </p>
         </div>
@@ -247,6 +270,14 @@ function RssPage() {
               onPromote={handlePromote(item.feedId, item.id)}
             />
           ))}
+        </div>
+      )}
+
+      <div ref={sentinelRef} className="h-1" />
+
+      {query.isFetchingNextPage && (
+        <div className="flex justify-center py-6">
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-border border-t-accent" />
         </div>
       )}
     </div>

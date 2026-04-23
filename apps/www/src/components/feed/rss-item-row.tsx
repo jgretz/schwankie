@@ -49,9 +49,17 @@ export function RssItemRow({item, sourceLabel, onMarkRead, onPromote, onRemove}:
     return null;
   }
 
-  const publishDate = item.publishedAt
-    ? new Date(item.publishedAt).toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: '2-digit'})
-    : new Date(item.createdAt).toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: '2-digit'});
+  // Clamp to createdAt: some historical rows have publishedAt set to a future
+  // time, which is impossible (the import happens at createdAt). Prefer the
+  // earlier of the two.
+  const createdMs = new Date(item.createdAt).getTime();
+  const publishedMs = item.publishedAt ? new Date(item.publishedAt).getTime() : null;
+  const displayMs =
+    publishedMs !== null && publishedMs <= createdMs ? publishedMs : createdMs;
+  const d = new Date(displayMs);
+  const datePart = d.toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'});
+  const timePart = d.toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
+  const publishDate = `${datePart} @ ${timePart}`;
 
   return (
     <div className="flex items-center justify-between border-b border-border py-3 px-4 hover:bg-bg-subtle transition-colors group">

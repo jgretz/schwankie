@@ -1,5 +1,5 @@
 import {createFileRoute, redirect, useNavigate} from '@tanstack/react-router';
-import {useState, useCallback} from 'react';
+import {useState, useCallback, useEffect, useMemo, useRef} from 'react';
 import {z} from 'zod';
 import {Button} from '@www/components/ui/button';
 import {RssItemRow} from '@www/components/feed/rss-item-row';
@@ -38,6 +38,30 @@ function FeedDetailPage() {
   const {query: itemsQuery, markReadMutation, promoteMutation} = useRssItems(feedId, unread);
 
   const feed = feedsQuery.data?.find((f) => f.id === feedId);
+
+  const items = useMemo(
+    () => itemsQuery.data?.pages.flatMap((page) => page.items) ?? [],
+    [itemsQuery.data],
+  );
+
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting && itemsQuery.hasNextPage && !itemsQuery.isFetchingNextPage) {
+          itemsQuery.fetchNextPage();
+        }
+      },
+      {rootMargin: '200px', threshold: 0},
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [itemsQuery.hasNextPage, itemsQuery.isFetchingNextPage, itemsQuery.fetchNextPage]);
 
   const handleToggleUnread = useCallback(() => {
     navigate({search: {unread: (!unread).toString()}});
@@ -80,7 +104,7 @@ function FeedDetailPage() {
     );
   }
 
-  const visibleItems = itemsQuery.data?.items.filter((item) => !hiddenItems.has(item.id)) ?? [];
+  const visibleItems = items.filter((item) => !hiddenItems.has(item.id));
 
   return (
     <div className="space-y-6">
@@ -128,6 +152,14 @@ function FeedDetailPage() {
               onRemove={handleRemoveItem}
             />
           ))}
+        </div>
+      )}
+
+      <div ref={sentinelRef} className="h-1" />
+
+      {itemsQuery.isFetchingNextPage && (
+        <div className="flex justify-center py-6">
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-border border-t-accent" />
         </div>
       )}
 

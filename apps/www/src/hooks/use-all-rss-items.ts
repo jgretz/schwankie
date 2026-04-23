@@ -1,4 +1,4 @@
-import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
+import {useInfiniteQuery, useMutation, useQueryClient} from '@tanstack/react-query';
 import {listAllRssItems} from 'client';
 import {initClient} from '@www/lib/init-client';
 import {
@@ -14,18 +14,22 @@ type Options = {
   feedId?: string;
 };
 
+const PAGE_SIZE = 50;
+
 export function useAllRssItems(options: Options = {}) {
   const queryClient = useQueryClient();
 
-  const query = useQuery({
+  const query = useInfiniteQuery({
     queryKey: ['all-rss-items', options],
-    queryFn: () =>
+    queryFn: ({pageParam = 0}) =>
       listAllRssItems({
-        limit: 50,
-        offset: 0,
+        limit: PAGE_SIZE,
+        offset: pageParam,
         read: options.unread !== undefined ? !options.unread : undefined,
         feedId: options.feedId,
       }),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.nextOffset : undefined),
   });
 
   const markReadMutation = useMutation({

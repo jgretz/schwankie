@@ -10,7 +10,14 @@ type FetchFeedItemsParams = {
   q?: string;
 };
 
-export function fetchFeedItems(params: FetchFeedItemsParams): Promise<{items: RssItemData[]; total: number}> {
+type FetchFeedItemsResponse = {
+  items: RssItemData[];
+  total: number;
+  hasMore: boolean;
+  nextOffset: number;
+};
+
+export function fetchFeedItems(params: FetchFeedItemsParams): Promise<FetchFeedItemsResponse> {
   const search = new URLSearchParams();
   if (params.limit != null) search.set('limit', String(params.limit));
   if (params.offset != null) search.set('offset', String(params.offset));
@@ -19,5 +26,5 @@ export function fetchFeedItems(params: FetchFeedItemsParams): Promise<{items: Rs
   if (params.q) search.set('q', params.q);
 
   const qs = search.toString();
-  return apiFetch<{items: RssItemData[]; total: number}>(`/api/feeds/${params.feedId}/items${qs ? `?${qs}` : ''}`);
+  return apiFetch<FetchFeedItemsResponse>(`/api/feeds/${params.feedId}/items${qs ? `?${qs}` : ''}`);
 }

@@ -1,5 +1,5 @@
 import {createFileRoute, redirect, useNavigate} from '@tanstack/react-router';
-import {useState, useCallback, useMemo} from 'react';
+import {useState, useCallback, useEffect, useMemo, useRef} from 'react';
 import {z} from 'zod';
 import {toast} from 'sonner';
 import type {EmailItemData} from 'client';
@@ -50,7 +50,7 @@ function EmailsPage() {
   const [hiddenItems, setHiddenItems] = useState<Set<string>>(new Set());
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const {data: emailData, isLoading, error} = useEmailItems({
+  const emailsQuery = useEmailItems({
     unread: search.unread,
     from: search.from,
   });
@@ -58,11 +58,34 @@ function EmailsPage() {
   const promoteMutation = usePromoteEmailItem();
   const markAllReadMutation = useMarkAllEmailItemsRead();
 
-  const items = emailData?.items ?? [];
+  const items = useMemo<EmailItemData[]>(
+    () => emailsQuery.data?.pages.flatMap((page) => page.items) ?? [],
+    [emailsQuery.data],
+  );
+  const total = emailsQuery.data?.pages[0]?.total ?? 0;
   const visibleItems = useMemo(
     () => items.filter((item) => !hiddenItems.has(item.id)),
     [items, hiddenItems],
   );
+
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting && emailsQuery.hasNextPage && !emailsQuery.isFetchingNextPage) {
+          emailsQuery.fetchNextPage();
+        }
+      },
+      {rootMargin: '200px', threshold: 0},
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [emailsQuery.hasNextPage, emailsQuery.isFetchingNextPage, emailsQuery.fetchNextPage]);
 
   const grouped = useMemo(() => {
     const groups: Record<string, EmailItemData[]> = {};
@@ -157,8 +180,8 @@ function EmailsPage() {
         <div>
           <h1 className="font-serif text-3xl text-text mb-1">Emails</h1>
           <p className="text-text-muted font-sans text-[0.9rem]">
-            {visibleItems.length} {search.unread ? 'unread' : ''} item
-            {visibleItems.length !== 1 ? 's' : ''}
+            {visibleItems.length} of {total} {search.unread ? 'unread' : ''} item
+            {total !== 1 ? 's' : ''}
           </p>
         </div>
         <div className="flex gap-2">
@@ -217,9 +240,9 @@ function EmailsPage() {
         )}
       </div>
 
-      {isLoading ? (
+      {emailsQuery.isLoading ? (
         <div className="text-center py-12 text-text-muted">Loading emails…</div>
-      ) : error ? (
+      ) : emailsQuery.isError ? (
         <div className="text-center py-12 text-destructive">Failed to load emails.</div>
       ) : visibleItems.length === 0 ? (
         <div className="text-center py-12">
@@ -263,6 +286,14 @@ function EmailsPage() {
           ))}
         </div>
       )}
+
+      <div ref={sentinelRef} className="h-1" />
+
+      {emailsQuery.isFetchingNextPage && (
+        <div className="flex justify-center py-6">
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-border border-t-accent" />
+        </div>
+      )}
     </div>
   );
 }
@@ -275,11 +306,10 @@ type EmailRowProps = {
 };
 
 function EmailRow({item, showSender, onMarkRead, onPromote}: EmailRowProps) {
-  const date = new Date(item.importedAt).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: '2-digit',
-  });
+  const d = new Date(item.importedAt);
+  const datePart = d.toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'});
+  const timePart = d.toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
+  const date = `${datePart} @ ${timePart}`;
 
   return (
     <div className="flex items-center justify-between border-b border-border py-3 px-4 hover:bg-bg-subtle transition-colors group">

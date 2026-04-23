@@ -36,5 +36,6 @@ export async function listEmailItems(params: ListEmailItemsParams): Promise<List
     items,
     total,
     hasMore: offset + limit < total,
+    nextOffset: Math.min(offset + limit, total),
   };
 }

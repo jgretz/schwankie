@@ -22,6 +22,7 @@ export type ListEmailItemsResult = {
   items: EmailItem[];
   total: number;
   hasMore: boolean;
+  nextOffset: number;
 };
 
 export type GmailTokens = {
