@@ -31,7 +31,7 @@ function AdminHub() {
       icon: '🏷️',
     },
     {
-      to: '/admin',
+      to: '/admin/general',
       label: 'General Settings',
       description: 'Adjust general preferences',
       icon: '⚙️',

@@ -70,6 +70,7 @@ export type GmailStatusResponse = {
   connected: boolean;
   filter: string | null;
   lastImportedAt: string | null;
+  recentCount: number;
   email?: string;
 };
 

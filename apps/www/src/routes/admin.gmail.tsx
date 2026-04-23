@@ -92,7 +92,7 @@ function AdminGmailPage() {
       toast.error('Filter is empty');
       return;
     }
-    toast.success(`Filter syntax valid: "${filter}"`);
+    toast.info(`Filter: "${filter}" (will be tested on next import)`);
   }, [filter]);
 
   if (isLoading) {
@@ -132,6 +132,9 @@ function AdminGmailPage() {
                     Last imported: {new Date(status.lastImportedAt).toLocaleString()}
                   </p>
                 )}
+                <p className="font-sans text-[0.85rem] text-text-muted mt-2">
+                  Emails imported (7 days): <span className="font-semibold">{status.recentCount}</span>
+                </p>
               </div>
             ) : (
               <p className="text-text-muted font-sans text-[0.9rem]">Gmail is not connected. Connect to start importing emails.</p>
