@@ -23,11 +23,19 @@
         {
           "root": "./src/app"
         }
-      ]
+      ],
+      "expo-share-extension"
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.schwankie.app"
+      "bundleIdentifier": "com.schwankie.app",
+      "appExtensions": [
+        {
+          "name": "SchwankieShareExtension",
+          "bundleIdentifier": "com.schwankie.app.share",
+          "deploymentTarget": "13.0"
+        }
+      ]
     },
     "android": {
       "adaptiveIcon": {
@@ -41,8 +49,21 @@
     },
     "extra": {
       "eas": {
-        "projectId": "placeholder-eas-project-id"
+        "projectId": "placeholder-eas-project-id",
+        "build": {
+          "experimental": {
+            "ios": {
+              "appExtensions": [
+                {
+                  "targetName": "SchwankieShareExtension",
+                  "bundleIdentifier": "com.schwankie.app.share"
+                }
+              ]
+            }
+          }
+        }
       }
-    }
+    },
+    "expo.doctor.reactNativeDirectoryCheck.exclude": ["expo-share-extension"]
   }
 }

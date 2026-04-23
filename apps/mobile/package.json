@@ -17,7 +17,9 @@
     "client": "workspace:*",
     "expo": "~55.0.4",
     "expo-constants": "~55.0.7",
+    "expo-haptics": "^55.0.14",
     "expo-router": "~55.0.3",
+    "expo-share-extension": "^5.0.6",
     "expo-status-bar": "~55.0.4",
     "expo-web-browser": "~15.0.2",
     "react": "19.2.4",
@@ -32,6 +34,10 @@
     "typescript": "~5.6"
   },
   "expo": {
-    "doctor": {}
+    "doctor": {
+      "reactNativeDirectoryCheck": {
+        "exclude": ["expo-share-extension"]
+      }
+    }
   }
 }
