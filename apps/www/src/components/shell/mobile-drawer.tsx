@@ -1,9 +1,12 @@
+import {Link} from '@tanstack/react-router';
 import {useEffect, useRef} from 'react';
 import {cn} from '@www/lib/utils';
 import {TagList} from './tag-list';
-import type {Tag} from './types';
+import type {CurrentSection, Tag} from './types';
+import {sections} from './sections';
 
 type MobileDrawerProps = {
+  currentSection: CurrentSection;
   tags: Tag[];
   selectedTags: string[];
   onTagToggle: (tagText: string) => void;
@@ -11,7 +14,38 @@ type MobileDrawerProps = {
   onClose: () => void;
 };
 
+function MobileSectionNav({
+  currentSection,
+  onClose,
+}: {
+  currentSection: string;
+  onClose: () => void;
+}) {
+  return (
+    <nav className="flex flex-col gap-1 border-b border-border pb-3 mb-4">
+      {sections.map(({id, label, to}) => (
+        <Link
+          key={id}
+          to={to}
+          onClick={onClose}
+          className={cn(
+            'rounded-[5px] px-2 py-[7px] text-sm font-medium text-text-muted transition-colors hover:bg-bg-subtle hover:text-text',
+            currentSection === id && 'border-l-2 border-accent bg-bg-subtle text-accent',
+          )}
+          activeProps={{
+            className: 'border-l-2 border-accent bg-bg-subtle text-accent',
+          }}
+          activeOptions={{exact: false}}
+        >
+          {label}
+        </Link>
+      ))}
+    </nav>
+  );
+}
+
 export function MobileDrawer({
+  currentSection,
   tags,
   selectedTags,
   onTagToggle,
@@ -72,19 +106,19 @@ export function MobileDrawer({
         ref={drawerRef}
         role="dialog"
         aria-modal="true"
-        aria-label="Tag filters"
+        aria-label="Navigation"
         className={cn(
           'fixed left-0 top-0 z-[201] h-full w-[280px] overflow-y-auto bg-bg shadow-lg transition-transform duration-200',
           isOpen ? 'translate-x-0' : '-translate-x-full',
         )}
       >
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
-          <span className="font-serif text-sm font-semibold text-text">Filters</span>
+          <span className="font-serif text-sm font-semibold text-text">Navigation</span>
           <button
             type="button"
             onClick={onClose}
             className="flex h-7 w-7 items-center justify-center rounded-md text-text-muted transition-colors hover:bg-bg-subtle hover:text-text"
-            aria-label="Close filters"
+            aria-label="Close navigation"
           >
             <svg
               width="16"
@@ -100,7 +134,10 @@ export function MobileDrawer({
         </div>
 
         <div className="p-4">
-          <TagList tags={tags} selectedTags={selectedTags} onTagToggle={onTagToggle} />
+          <MobileSectionNav currentSection={currentSection} onClose={onClose} />
+          {currentSection === 'queue' && (
+            <TagList tags={tags} selectedTags={selectedTags} onTagToggle={onTagToggle} />
+          )}
         </div>
       </div>
     </>

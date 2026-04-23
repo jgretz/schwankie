@@ -1,4 +1,4 @@
-import {createFileRoute, useNavigate} from '@tanstack/react-router';
+import {createFileRoute, redirect, useNavigate} from '@tanstack/react-router';
 import {z} from 'zod';
 import {FeedPage} from '@www/components/feed/feed-page';
 import {useFeedNavigation} from '@www/hooks/use-feed-navigation';
@@ -11,6 +11,11 @@ const searchSchema = z.object({
 export type FeedSearch = z.infer<typeof searchSchema>;
 
 export const Route = createFileRoute('/')({
+  beforeLoad: ({context}) => {
+    if (context.auth.authenticated) {
+      throw redirect({to: '/queue'});
+    }
+  },
   validateSearch: searchSchema,
   head: () => ({
     meta: [

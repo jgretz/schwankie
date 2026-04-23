@@ -2,10 +2,11 @@ import {type ReactNode, useState} from 'react';
 import {MobileDrawer} from './mobile-drawer';
 import {Sidebar} from './sidebar';
 import {Topbar} from './topbar';
-import type {Tag} from './types';
+import type {CurrentSection, Tag} from './types';
 
 type AppShellProps = {
   children: ReactNode;
+  currentSection: CurrentSection;
   tags: Tag[];
   selectedTags: string[];
   onTagToggle: (tagText: string) => void;
@@ -13,12 +14,11 @@ type AppShellProps = {
   onSearchChange: (value: string) => void;
   showAddButton: boolean;
   onAddClick: () => void;
-  isAuthenticated?: boolean;
-  hideSidebar?: boolean;
 };
 
 export function AppShell({
   children,
+  currentSection,
   tags,
   selectedTags,
   onTagToggle,
@@ -26,8 +26,6 @@ export function AppShell({
   onSearchChange,
   showAddButton,
   onAddClick,
-  isAuthenticated,
-  hideSidebar,
 }: AppShellProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -44,27 +42,28 @@ export function AppShell({
         showAddButton={showAddButton}
         onAddClick={onAddClick}
         showMenuButton={true}
-        isAuthenticated={isAuthenticated}
         onMenuClick={() => setDrawerOpen(true)}
       />
 
       <div className="mx-auto flex min-h-[calc(100vh-3.5rem)] max-w-[1200px]">
-        {!hideSidebar && (
-          <Sidebar tags={tags} selectedTags={selectedTags} onTagToggle={onTagToggle} />
-        )}
+        <Sidebar
+          currentSection={currentSection}
+          tags={tags}
+          selectedTags={selectedTags}
+          onTagToggle={onTagToggle}
+        />
 
         <main className="min-w-0 flex-1">{children}</main>
       </div>
 
-      {!hideSidebar && (
-        <MobileDrawer
-          tags={tags}
-          selectedTags={selectedTags}
-          onTagToggle={handleMobileTagToggle}
-          isOpen={drawerOpen}
-          onClose={() => setDrawerOpen(false)}
-        />
-      )}
+      <MobileDrawer
+        currentSection={currentSection}
+        tags={tags}
+        selectedTags={selectedTags}
+        onTagToggle={handleMobileTagToggle}
+        isOpen={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+      />
     </>
   );
 }

@@ -100,10 +100,12 @@ function RootComponent() {
 function ShellWithData() {
   const {openAdd} = useLinkModal();
   const {auth} = Route.useRouteContext();
-  const {tags, selectedTags, searchValue, onSearchChange, onTagToggle, isAdmin} = useFeedFilters();
+  const {tags, selectedTags, searchValue, onSearchChange, onTagToggle, currentSection} =
+    useFeedFilters();
 
   return (
     <AppShell
+      currentSection={currentSection}
       tags={tags}
       selectedTags={selectedTags}
       onTagToggle={onTagToggle}
@@ -111,8 +113,6 @@ function ShellWithData() {
       onSearchChange={onSearchChange}
       showAddButton={auth.authenticated}
       onAddClick={openAdd}
-      isAuthenticated={auth.authenticated}
-      hideSidebar={isAdmin}
     >
       <Outlet />
     </AppShell>

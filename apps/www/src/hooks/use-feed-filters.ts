@@ -2,13 +2,31 @@ import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useNavigate, useRouterState, useSearch} from '@tanstack/react-router';
 import {useTags} from '@www/hooks/use-tags';
 import {parseTagSlugs} from '@www/lib/parse-tag-slugs';
+import type {CurrentSection} from '@www/components/shell/types';
 import type {FeedSearch} from '@www/routes/index';
 
-export function useFeedFilters() {
+export function useFeedFilters(): {
+  tags: Array<{id: number; text: string; count: number}>;
+  selectedTags: string[];
+  searchValue: string;
+  onSearchChange: (value: string) => void;
+  onTagToggle: (tagText: string) => void;
+  currentSection: CurrentSection;
+} {
   const navigate = useNavigate();
 
   const pathname = useRouterState({select: (s) => s.location.pathname});
-  const isAdmin = pathname.startsWith('/admin');
+
+  const currentSection = pathname.startsWith('/admin')
+    ? 'admin'
+    : pathname === '/queue'
+      ? 'queue'
+      : pathname.startsWith('/feeds')
+        ? 'feeds'
+        : pathname.startsWith('/email')
+          ? 'emails'
+          : 'public';
+
   const status = pathname === '/queue' ? 'queued' : 'saved';
   const currentPath = pathname === '/queue' ? '/queue' : '/';
 
@@ -68,6 +86,6 @@ export function useFeedFilters() {
     searchValue,
     onSearchChange,
     onTagToggle,
-    isAdmin,
+    currentSection,
   };
 }

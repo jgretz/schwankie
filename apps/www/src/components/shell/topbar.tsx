@@ -9,72 +9,7 @@ type TopbarProps = {
   onAddClick: () => void;
   onMenuClick?: () => void;
   showMenuButton?: boolean;
-  isAuthenticated?: boolean;
 };
-
-type NavLink = {
-  to: '/' | '/queue' | '/feeds' | '/email' | '/admin' | '/about';
-  label: string;
-  exact: boolean;
-  icon?: 'settings';
-};
-
-type NavLinkListProps = {
-  links: NavLink[];
-  linkClassName?: string;
-};
-
-const publicLinks: NavLink[] = [
-  {to: '/', label: 'Compendium', exact: true},
-  {to: '/about', label: 'About', exact: true},
-];
-
-const adminLinks: NavLink[] = [
-  {to: '/queue', label: 'Queue', exact: true},
-  {to: '/feeds', label: 'Feeds', exact: false}, // refactor in WS-6
-  {to: '/email', label: 'Email', exact: true}, // refactor in WS-6
-  {to: '/admin', label: 'Admin', exact: true, icon: 'settings'},
-];
-
-function SettingsIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-    >
-      <circle cx="12" cy="12" r="3" />
-      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
-    </svg>
-  );
-}
-
-function NavLinkList({links, linkClassName}: NavLinkListProps) {
-  return links.map(({to, label, exact, icon}) => (
-    <Link
-      key={to}
-      to={to}
-      aria-label={icon === 'settings' ? label : undefined}
-      className={
-        icon === 'settings'
-          ? 'flex h-8 w-8 items-center justify-center rounded-md border-[1.5px] border-border text-text-muted transition-colors hover:border-accent hover:bg-bg-subtle hover:text-accent'
-          : cn(
-              'rounded-[5px] px-3 text-[0.8rem] font-medium text-text-muted transition-colors hover:bg-bg-subtle hover:text-text',
-              linkClassName,
-            )
-      }
-      activeProps={{
-        className: icon === 'settings' ? '!border-accent !text-accent' : '!text-accent',
-      }}
-      activeOptions={{exact}}
-    >
-      {icon === 'settings' ? <SettingsIcon /> : label}
-    </Link>
-  ));
-}
 
 export function Topbar({
   searchValue,
@@ -83,9 +18,7 @@ export function Topbar({
   onAddClick,
   onMenuClick,
   showMenuButton,
-  isAuthenticated,
 }: TopbarProps) {
-  const navLinks = isAuthenticated ? [...publicLinks, ...adminLinks] : publicLinks;
   return (
     <header className="sticky top-0 z-[100] border-b border-border bg-bg">
       <div className="flex h-14 items-center gap-3 px-4 md:gap-4 md:px-8">
@@ -138,11 +71,7 @@ export function Topbar({
           />
         </div>
 
-        <nav className="ml-auto hidden items-center gap-1 md:flex md:gap-2">
-          <NavLinkList links={navLinks} linkClassName="py-1.5" />
-        </nav>
-
-        <div className="hidden md:block">
+        <div className="ml-auto hidden md:block">
           <ThemeToggle />
         </div>
 
@@ -159,28 +88,23 @@ export function Topbar({
             +
           </button>
         )}
-      </div>
 
-      <div className="flex items-center justify-center gap-1 border-t border-border px-4 py-1.5 md:hidden">
-        <nav className="flex gap-1">
-          <NavLinkList links={navLinks} linkClassName="py-1" />
-        </nav>
-
-        <ThemeToggle />
-
-        {showAddButton && (
-          <button
-            type="button"
-            onClick={onAddClick}
-            className={cn(
-              'ml-1 flex h-[28px] w-[28px] items-center justify-center rounded-md border-[1.5px] border-border text-text-muted transition-colors',
-              'hover:border-accent hover:bg-bg-subtle hover:text-accent',
-            )}
-            aria-label="Add link"
-          >
-            +
-          </button>
-        )}
+        <div className="flex items-center gap-1 md:hidden">
+          <ThemeToggle />
+          {showAddButton && (
+            <button
+              type="button"
+              onClick={onAddClick}
+              className={cn(
+                'ml-1 flex h-[28px] w-[28px] items-center justify-center rounded-md border-[1.5px] border-border text-text-muted transition-colors',
+                'hover:border-accent hover:bg-bg-subtle hover:text-accent',
+              )}
+              aria-label="Add link"
+            >
+              +
+            </button>
+          )}
+        </div>
       </div>
     </header>
   );
