@@ -27,3 +27,14 @@ export const promoteEmailItemAction = createServerFn({method: 'POST'})
     const {promoteEmailItem} = await import('client');
     return promoteEmailItem(data.id);
   });
+
+const markAllEmailItemsReadInput = z.object({from: z.string().optional()});
+
+export const markAllEmailItemsReadAction = createServerFn({method: 'POST'})
+  .inputValidator(markAllEmailItemsReadInput)
+  .handler(async ({data}) => {
+    await getClient();
+    await requireAuth();
+    const {markAllEmailItemsRead} = await import('client');
+    return markAllEmailItemsRead(data.from);
+  });

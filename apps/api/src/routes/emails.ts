@@ -3,6 +3,7 @@ import {authMiddleware} from '../middleware/auth';
 import {
   bulkUpsertEmailItems,
   listEmailItems,
+  markAllEmailItemsRead,
   markEmailItemRead,
   promoteEmailItem,
 } from '@domain';
@@ -29,6 +30,12 @@ emailsRouter.post('/api/emails/bulk-upsert', auth, async (c) => {
 
   const inserted = await bulkUpsertEmailItems(parsed.data.items);
   return c.json({inserted}, 200);
+});
+
+emailsRouter.post('/api/emails/mark-all-read', auth, async (c) => {
+  const from = c.req.query('from') || undefined;
+  const count = await markAllEmailItemsRead({from});
+  return c.json({count});
 });
 
 emailsRouter.post('/api/emails/:id/read', auth, async (c) => {

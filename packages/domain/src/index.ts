@@ -9,6 +9,8 @@ export {resolveTagMinCount} from './queries/resolve-tag-min-count';
 export {listFeeds} from './queries/list-feeds';
 export {getFeed} from './queries/get-feed';
 export {listRssItems} from './queries/list-rss-items';
+export {listAllRssItems} from './queries/list-all-rss-items';
+export {markAllRssItemsRead} from './commands/mark-all-rss-items-read';
 export {listEmailItems} from './queries/list-email-items';
 export {countRecentEmailItems} from './queries/count-recent-email-items';
 export {getEmailItem} from './queries/get-email-item';
@@ -35,6 +37,7 @@ export {bulkUpsertRssItems} from './commands/bulk-upsert-rss-items';
 export {bulkUpsertEmailItems} from './commands/bulk-upsert-email-items';
 export {createEmailItem} from './commands/create-email-item';
 export {markEmailItemRead} from './commands/mark-email-item-read';
+export {markAllEmailItemsRead} from './commands/mark-all-email-items-read';
 export {promoteEmailItem} from './commands/promote-email-item';
 export {setGmailTokens} from './commands/set-gmail-tokens';
 export {setGmailFilter} from './commands/set-gmail-filter';
@@ -71,6 +74,9 @@ export type {
   CreateRssItemInput,
   ListRssItemsParams,
   ListRssItemsResult,
+  RssItemWithFeed,
+  ListAllRssItemsParams,
+  ListAllRssItemsResult,
   EmailItem,
   CreateEmailItemInput,
   ListEmailItemsParams,

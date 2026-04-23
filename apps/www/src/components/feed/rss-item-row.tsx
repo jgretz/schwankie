@@ -5,12 +5,13 @@ import {Button} from '@www/components/ui/button';
 
 type RssItemRowProps = {
   item: RssItemData;
+  sourceLabel?: string;
   onMarkRead?: () => void | Promise<void>;
   onPromote?: () => void | Promise<void>;
   onRemove?: (itemId: string) => void;
 };
 
-export function RssItemRow({item, onMarkRead, onPromote, onRemove}: RssItemRowProps) {
+export function RssItemRow({item, sourceLabel, onMarkRead, onPromote, onRemove}: RssItemRowProps) {
   const [isHidden, setIsHidden] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -66,7 +67,9 @@ export function RssItemRow({item, onMarkRead, onPromote, onRemove}: RssItemRowPr
         {item.summary && (
           <p className="text-text-muted font-sans text-[0.85rem] line-clamp-2 mt-1">{item.summary}</p>
         )}
-        <span className="text-text-faint font-sans text-[0.8rem] mt-1 block">{publishDate}</span>
+        <span className="text-text-faint font-sans text-[0.8rem] mt-1 block">
+          {sourceLabel ? `${sourceLabel} · ${publishDate}` : publishDate}
+        </span>
       </div>
       <div className="flex gap-2 ml-4 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
         <Button

@@ -135,6 +135,22 @@ export type ListRssItemsResult = {
   total: number;
 };
 
+export type RssItemWithFeed = RssItem & {feedName: string};
+
+export type ListAllRssItemsParams = {
+  limit?: number;
+  offset?: number;
+  read?: boolean;
+  feedId?: string;
+};
+
+export type ListAllRssItemsResult = {
+  items: RssItemWithFeed[];
+  hasMore: boolean;
+  nextOffset: number;
+  total: number;
+};
+
 export type WorkRequest = typeof workRequest.$inferSelect;
 export type WorkRequestType = 'refresh-all-feeds' | 'refresh-emails';
 

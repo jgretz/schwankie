@@ -7,7 +7,9 @@ import {
   deleteFeed,
   getFeed,
   listRssItems,
+  listAllRssItems,
   markRssItemRead,
+  markAllRssItemsRead,
   promoteRssItem,
   bulkUpsertRssItems,
   getLink,
@@ -17,6 +19,7 @@ import {
   updateFeedSchema,
   bulkUpsertItemsSchema,
   listFeedItemsSchema,
+  listAllRssItemsSchema,
 } from '../validators/feeds';
 
 function parseId(idStr: string | undefined): string | null {
@@ -25,6 +28,26 @@ function parseId(idStr: string | undefined): string | null {
 
 export const feedsRoutes = new Hono();
 const auth = authMiddleware();
+
+feedsRoutes.get('/api/rss-items', async (c) => {
+  const parsed = listAllRssItemsSchema.safeParse({
+    limit: c.req.query('limit'),
+    offset: c.req.query('offset'),
+    read: c.req.query('read'),
+    feedId: c.req.query('feedId'),
+  });
+  if (!parsed.success) {
+    return c.json({error: 'Invalid query parameters', details: parsed.error.flatten()}, 400);
+  }
+  const result = await listAllRssItems(parsed.data);
+  return c.json(result);
+});
+
+feedsRoutes.post('/api/rss-items/mark-all-read', auth, async (c) => {
+  const feedId = c.req.query('feedId') || undefined;
+  const count = await markAllRssItemsRead({feedId});
+  return c.json({count});
+});
 
 feedsRoutes.get('/api/feeds', async (c) => {
   const result = await listFeeds();

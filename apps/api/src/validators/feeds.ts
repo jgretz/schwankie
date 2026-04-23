@@ -33,3 +33,10 @@ export const listFeedItemsSchema = z.object({
   clicked: z.coerce.boolean().optional(),
   q: z.string().optional(),
 });
+
+export const listAllRssItemsSchema = z.object({
+  limit: z.coerce.number().int().positive().default(50),
+  offset: z.coerce.number().int().nonnegative().default(0),
+  read: z.coerce.boolean().optional(),
+  feedId: z.string().optional(),
+});

@@ -36,13 +36,16 @@ export {createFeed} from './calls/create-feed';
 export {updateFeed} from './calls/update-feed';
 export {deleteFeed} from './calls/delete-feed';
 export {fetchFeedItems} from './calls/fetch-feed-items';
+export {listAllRssItems} from './calls/list-all-rss-items';
 export {markRssItemRead} from './calls/mark-rss-item-read';
+export {markAllRssItemsRead} from './calls/mark-all-rss-items-read';
 export {promoteRssItem} from './calls/promote-rss-item';
 export {fetchAllFeeds} from './calls/fetch-all-feeds';
 export {bulkUpsertRssItems} from './calls/bulk-upsert-rss-items';
 export {bulkUpsertEmailItems} from './calls/bulk-upsert-email-items';
 export {listEmailItems} from './calls/list-email-items';
 export {markEmailItemRead} from './calls/mark-email-item-read';
+export {markAllEmailItemsRead} from './calls/mark-all-email-items-read';
 export {promoteEmailItem} from './calls/promote-email-item';
 export {listPendingWorkRequests} from './calls/list-pending-work-requests';
 export {startWorkRequest} from './calls/start-work-request';
@@ -67,6 +70,7 @@ export type {
   GmailTokensResponse,
   FeedData,
   RssItemData,
+  RssItemWithFeedData,
   CreateFeedInput,
   UpdateFeedInput,
   BulkUpsertRssItemsInput,

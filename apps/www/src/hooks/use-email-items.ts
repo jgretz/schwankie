@@ -1,6 +1,10 @@
 import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import {listEmailItems} from 'client';
-import {markEmailItemReadAction, promoteEmailItemAction} from '../lib/email-actions';
+import {
+  markAllEmailItemsReadAction,
+  markEmailItemReadAction,
+  promoteEmailItemAction,
+} from '../lib/email-actions';
 
 interface UseEmailItemsOptions {
   unread?: boolean;
@@ -39,6 +43,17 @@ export function usePromoteEmailItem() {
     onSuccess: () => {
       queryClient.invalidateQueries({queryKey: ['email-items']});
       queryClient.invalidateQueries({queryKey: ['links']});
+    },
+  });
+}
+
+export function useMarkAllEmailItemsRead() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (from?: string) => markAllEmailItemsReadAction({data: {from}}),
+    onSuccess: () => {
+      queryClient.invalidateQueries({queryKey: ['email-items']});
     },
   });
 }

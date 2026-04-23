@@ -106,6 +106,8 @@ export type RssItemData = {
   createdAt: string;
 };
 
+export type RssItemWithFeedData = RssItemData & {feedName: string};
+
 export type CreateFeedInput = {
   name: string;
   sourceUrl: string;
