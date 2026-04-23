@@ -1,9 +1,16 @@
-import { Tabs, Link } from 'expo-router';
-import { MaterialIcons } from '@expo/vector-icons';
-import { useColors } from '../../theme/use-colors';
+import {Tabs, Link} from 'expo-router';
+import {MaterialIcons} from '@expo/vector-icons';
+import {useColors} from '../../theme/use-colors';
 
 export default function TabsLayout() {
   const colors = useColors();
+
+  const addButton = (href: string) => () =>
+    (
+      <Link href={href} style={{marginRight: 16, padding: 8}}>
+        <MaterialIcons name="add" size={24} color={colors.accent} />
+      </Link>
+    );
 
   return (
     <Tabs
@@ -25,45 +32,36 @@ export default function TabsLayout() {
           borderTopColor: colors.border,
           borderTopWidth: 1,
         },
-        headerRight: () => (
-          <Link
-            href="/add"
-            style={{
-              marginRight: 16,
-              padding: 8,
-            }}
-          >
-            <MaterialIcons name="add" size={24} color={colors.accent} />
-          </Link>
-        ),
       }}
     >
+      <Tabs.Screen
+        name="compendium"
+        options={{
+          title: 'Compendium',
+          tabBarIcon: ({color}) => <MaterialIcons name="library-books" size={24} color={color} />,
+          headerRight: addButton('/add?status=saved'),
+        }}
+      />
       <Tabs.Screen
         name="index"
         options={{
           title: 'Queue',
-          tabBarIcon: ({ color }) => <MaterialIcons name="inbox" size={24} color={color} />,
+          tabBarIcon: ({color}) => <MaterialIcons name="inbox" size={24} color={color} />,
+          headerRight: addButton('/add'),
         }}
       />
       <Tabs.Screen
         name="feeds"
         options={{
-          title: 'Feeds',
-          tabBarIcon: ({ color }) => <MaterialIcons name="rss-feed" size={24} color={color} />,
+          title: 'RSS',
+          tabBarIcon: ({color}) => <MaterialIcons name="rss-feed" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
         name="emails"
         options={{
           title: 'Emails',
-          tabBarIcon: ({ color }) => <MaterialIcons name="mail" size={24} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="settings"
-        options={{
-          title: 'Settings',
-          tabBarIcon: ({ color }) => <MaterialIcons name="settings" size={24} color={color} />,
+          tabBarIcon: ({color}) => <MaterialIcons name="mail" size={24} color={color} />,
         }}
       />
     </Tabs>

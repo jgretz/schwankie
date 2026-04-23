@@ -1,12 +1,14 @@
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert, ScrollView, Keyboard } from 'react-native';
 import { useState } from 'react';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useColors } from '../theme/use-colors';
 import { useCreateLink } from '../services/links';
 
 export default function AddLinkScreen() {
   const colors = useColors();
   const router = useRouter();
+  const params = useLocalSearchParams<{ status?: string }>();
+  const targetStatus: 'saved' | 'queued' = params.status === 'saved' ? 'saved' : 'queued';
   const [url, setUrl] = useState('');
   const [tags, setTags] = useState('');
   const [title, setTitle] = useState('');
@@ -32,7 +34,7 @@ export default function AddLinkScreen() {
           url: urlObj.toString(),
           title: title.trim() || urlObj.hostname || url,
           tags: tagArray,
-          status: 'queued',
+          status: targetStatus,
         },
         {
           onSuccess: () => {
@@ -40,9 +42,11 @@ export default function AddLinkScreen() {
             setUrl('');
             setTags('');
             setTitle('');
-            Alert.alert('Success', 'Link added to queue', [
-              { text: 'OK', onPress: () => router.back() },
-            ]);
+            Alert.alert(
+              'Success',
+              targetStatus === 'saved' ? 'Added to Compendium' : 'Link added to queue',
+              [{ text: 'OK', onPress: () => router.back() }],
+            );
           },
           onError: (error) => {
             Alert.alert('Error', error instanceof Error ? error.message : 'Failed to create link');

@@ -1,12 +1,15 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {useInfiniteQuery, useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import Toast from 'react-native-toast-message';
 import {
   fetchFeeds,
-  fetchFeedItems,
+  listAllRssItems,
+  markAllRssItemsRead,
   markRssItemRead,
   promoteRssItem,
   triggerRefreshAllFeeds,
 } from 'client';
+
+const PAGE_SIZE = 50;
 
 export function useListFeeds() {
   return useQuery({
@@ -15,16 +18,23 @@ export function useListFeeds() {
   });
 }
 
-export function useFeedItems(feedId: string) {
-  return useQuery({
-    queryKey: ['feeds', feedId, 'items'],
-    queryFn: () =>
-      fetchFeedItems({
-        feedId,
-        limit: 50,
-        offset: 0,
+type UseAllRssItemsOptions = {
+  unread?: boolean;
+  feedId?: string;
+};
+
+export function useAllRssItems(options: UseAllRssItemsOptions = {}) {
+  return useInfiniteQuery({
+    queryKey: ['all-rss-items', options],
+    queryFn: ({pageParam = 0}) =>
+      listAllRssItems({
+        limit: PAGE_SIZE,
+        offset: pageParam,
+        read: options.unread !== undefined ? !options.unread : undefined,
+        feedId: options.feedId,
       }),
-    enabled: !!feedId,
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.nextOffset : undefined),
   });
 }
 
@@ -32,10 +42,10 @@ export function useMarkRssItemRead() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ feedId, itemId }: { feedId: string; itemId: string }) =>
+    mutationFn: ({feedId, itemId}: {feedId: string; itemId: string}) =>
       markRssItemRead(feedId, itemId),
-    onSuccess: (_, { feedId }) => {
-      queryClient.invalidateQueries({ queryKey: ['feeds', feedId, 'items'] });
+    onSuccess: () => {
+      queryClient.invalidateQueries({queryKey: ['all-rss-items']});
     },
     onError: (error) => {
       console.error('[useMarkRssItemRead] Error:', error);
@@ -52,17 +62,40 @@ export function usePromoteRssItem() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ feedId, itemId }: { feedId: string; itemId: string }) =>
+    mutationFn: ({feedId, itemId}: {feedId: string; itemId: string}) =>
       promoteRssItem(feedId, itemId),
-    onSuccess: (_, { feedId }) => {
-      queryClient.invalidateQueries({ queryKey: ['feeds', feedId, 'items'] });
-      queryClient.invalidateQueries({ queryKey: ['links', 'queued'] });
+    onSuccess: () => {
+      queryClient.invalidateQueries({queryKey: ['all-rss-items']});
+      queryClient.invalidateQueries({queryKey: ['links', 'queued']});
     },
     onError: (error) => {
       console.error('[usePromoteRssItem] Error:', error);
       Toast.show({
         type: 'error',
         text1: 'Failed to promote',
+        text2: error instanceof Error ? error.message : 'Unknown error',
+      });
+    },
+  });
+}
+
+export function useMarkAllRssItemsRead() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (feedId?: string) => markAllRssItemsRead(feedId),
+    onSuccess: (result) => {
+      Toast.show({
+        type: 'success',
+        text1: `Marked ${result.count} as read`,
+      });
+      queryClient.invalidateQueries({queryKey: ['all-rss-items']});
+    },
+    onError: (error) => {
+      console.error('[useMarkAllRssItemsRead] Error:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Failed to mark all as read',
         text2: error instanceof Error ? error.message : 'Unknown error',
       });
     },
@@ -77,10 +110,10 @@ export function useTriggerRefreshAllFeeds() {
     onSuccess: () => {
       Toast.show({
         type: 'success',
-        text1: 'Feeds refreshed',
+        text1: 'Feeds refresh queued',
         text2: 'Feed content is being updated',
       });
-      queryClient.invalidateQueries({ queryKey: ['feeds'] });
+      queryClient.invalidateQueries({queryKey: ['all-rss-items']});
     },
     onError: (error) => {
       console.error('[useTriggerRefreshAllFeeds] Error:', error);

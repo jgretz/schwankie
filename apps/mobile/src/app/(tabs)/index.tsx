@@ -1,15 +1,16 @@
-import { View, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
-import * as WebBrowser from 'expo-web-browser';
-import { useInfiniteQuery } from '@tanstack/react-query';
-import { fetchLinks } from 'client';
-import { useColors } from '../../theme/use-colors';
-import { LinkRow } from '../../components/LinkRow';
-import { EmptyState } from '../../components/EmptyState';
-
-const PAGE_SIZE = 25;
+import {View, FlatList, ActivityIndicator, RefreshControl} from 'react-native';
+import {useState} from 'react';
+import Toast from 'react-native-toast-message';
+import {useColors} from '../../theme/use-colors';
+import {LinkRow} from '../../components/LinkRow';
+import {LinkActions} from '../../components/LinkActions';
+import {EmptyState} from '../../components/EmptyState';
+import {useDeleteLink, useLinks, useUpdateLink} from '../../services/links';
 
 export default function QueueScreen() {
   const colors = useColors();
+  const [pendingPromoteId, setPendingPromoteId] = useState<number | null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
 
   const {
     data,
@@ -20,20 +21,10 @@ export default function QueueScreen() {
     error,
     refetch,
     isRefetching,
-  } = useInfiniteQuery({
-    queryKey: ['links', 'queued'],
-    queryFn: async ({ pageParam = 0 }) => {
-      return fetchLinks({
-        status: 'queued',
-        limit: PAGE_SIZE,
-        offset: pageParam,
-      });
-    },
-    getNextPageParam: (lastPage) => {
-      return lastPage.hasMore ? lastPage.nextOffset : undefined;
-    },
-    initialPageParam: 0,
-  });
+  } = useLinks('queued');
+
+  const {mutate: updateLink, isPending: isPromoting} = useUpdateLink();
+  const {mutate: deleteLink, isPending: isDeleting} = useDeleteLink();
 
   const links = data?.pages.flatMap((page) => page.items) ?? [];
 
@@ -43,13 +34,39 @@ export default function QueueScreen() {
     }
   };
 
-  const handleLinkPress = async (url: string) => {
-    await WebBrowser.openBrowserAsync(url);
+  const handlePromote = (id: number) => {
+    setPendingPromoteId(id);
+    updateLink(
+      {id, data: {status: 'saved'}},
+      {
+        onSuccess: () => {
+          Toast.show({type: 'success', text1: 'Added to Compendium'});
+        },
+        onSettled: () => setPendingPromoteId(null),
+      },
+    );
+  };
+
+  const handleDelete = (id: number) => {
+    setPendingDeleteId(id);
+    deleteLink(id, {
+      onSuccess: () => {
+        Toast.show({type: 'success', text1: 'Link deleted'});
+      },
+      onSettled: () => setPendingDeleteId(null),
+    });
   };
 
   if (isLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bg }}>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: colors.bg,
+        }}
+      >
         <ActivityIndicator size="large" color={colors.accent} />
       </View>
     );
@@ -57,37 +74,37 @@ export default function QueueScreen() {
 
   if (error) {
     return (
-      <View style={{ flex: 1, backgroundColor: colors.bg }}>
-        <EmptyState
-          title="Error loading links"
-          message={error.message}
-          colors={colors}
-        />
+      <View style={{flex: 1, backgroundColor: colors.bg}}>
+        <EmptyState title="Error loading links" message={error.message} colors={colors} />
       </View>
     );
   }
 
   if (links.length === 0) {
     return (
-      <View style={{ flex: 1, backgroundColor: colors.bg }}>
-        <EmptyState
-          title="Queue empty"
-          message="No queued links yet"
-          colors={colors}
-        />
+      <View style={{flex: 1, backgroundColor: colors.bg}}>
+        <EmptyState title="Queue empty" message="No queued links yet" colors={colors} />
       </View>
     );
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.bg }}>
+    <View style={{flex: 1, backgroundColor: colors.bg}}>
       <FlatList
         data={links}
         keyExtractor={(item) => String(item.id)}
-        renderItem={({ item }) => (
-          <TouchableOpacity onPress={() => handleLinkPress(item.url)}>
+        renderItem={({item}) => (
+          <View>
             <LinkRow link={item} colors={colors} />
-          </TouchableOpacity>
+            <LinkActions
+              url={item.url}
+              onPromote={() => handlePromote(item.id)}
+              onDelete={() => handleDelete(item.id)}
+              isPromoting={pendingPromoteId === item.id && isPromoting}
+              isDeleting={pendingDeleteId === item.id && isDeleting}
+              colors={colors}
+            />
+          </View>
         )}
         onEndReached={handleEndReached}
         onEndReachedThreshold={0.5}
@@ -100,12 +117,12 @@ export default function QueueScreen() {
         }
         ListFooterComponent={
           isFetchingNextPage ? (
-            <View style={{ paddingVertical: 20, alignItems: 'center' }}>
+            <View style={{paddingVertical: 20, alignItems: 'center'}}>
               <ActivityIndicator size="small" color={colors.accent} />
             </View>
           ) : null
         }
-        contentContainerStyle={{ paddingBottom: 20 }}
+        contentContainerStyle={{paddingBottom: 20}}
       />
     </View>
   );
