@@ -60,14 +60,14 @@ function FeedsPage() {
           <Button onClick={handleRefresh} disabled={isRefreshing} variant="outline">
             {isRefreshing ? 'Refreshing...' : 'Refresh'}
           </Button>
-          <Link to="/admin/feeds"><Button asChild>Manage feeds →</Button></Link>
+          <Button asChild><Link to="/admin/feeds">Manage feeds →</Link></Button>
         </div>
       </div>
 
       {feeds.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-text-muted font-sans mb-4">No feeds yet.</p>
-          <Link to="/admin/feeds"><Button asChild>Add a feed</Button></Link>
+          <Button asChild><Link to="/admin/feeds">Add a feed</Link></Button>
         </div>
       ) : (
         <div className="border border-border rounded-lg overflow-hidden">
