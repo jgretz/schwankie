@@ -61,7 +61,7 @@ export function decryptToken(ciphertext: string, key: Uint8Array): string {
   decipher.setAuthTag(new Uint8Array(authTag));
 
   try {
-    const decrypted = decipher.update(ct as Uint8Array) + decipher.final('utf8');
+    const decrypted = decipher.update(new Uint8Array(ct)) + decipher.final('utf8');
     return decrypted;
   } catch (error) {
     throw new Error('Authentication tag verification failed. Ciphertext may be tampered.');
