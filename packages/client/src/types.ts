@@ -61,11 +61,6 @@ export type GmailAuthUrlResponse = {
   url: string;
 };
 
-export type GmailConnectResponse = {
-  connected: boolean;
-  email: string;
-};
-
 export type GmailStatusResponse = {
   connected: boolean;
   filter: string | null;

@@ -5,8 +5,11 @@ import {z} from 'zod';
 import {toast} from 'sonner';
 import {Button} from '@www/components/ui/button';
 import {useGmailStatus} from '@www/hooks/use-gmail-status';
-import {disconnectGmailAction, setGmailFilterAction} from '@www/lib/gmail-actions';
-import {getGmailAuthUrl} from 'client';
+import {
+  disconnectGmailAction,
+  getGmailAuthUrlAction,
+  setGmailFilterAction,
+} from '@www/lib/gmail-actions';
 
 export const Route = createFileRoute('/admin/gmail')({
   validateSearch: z.object({
@@ -36,7 +39,7 @@ function AdminGmailPage() {
 
   const handleConnect = useCallback(async () => {
     try {
-      const {url} = await getGmailAuthUrl();
+      const {url} = await getGmailAuthUrlAction();
       window.location.href = url;
     } catch (error) {
       console.error('Failed to get auth URL:', error);

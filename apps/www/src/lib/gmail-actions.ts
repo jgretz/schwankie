@@ -2,18 +2,19 @@ import {createServerFn} from '@tanstack/react-start';
 import {z} from 'zod';
 import {requireAuth, getClient} from './server-helpers';
 
-const exchangeGmailCodeInput = z.object({
-  code: z.string(),
+export const getGmailStatusAction = createServerFn({method: 'GET'}).handler(async () => {
+  await getClient();
+  await requireAuth();
+  const {getGmailStatus} = await import('client');
+  return getGmailStatus();
 });
 
-export const exchangeGmailCodeAction = createServerFn({method: 'POST'})
-  .inputValidator(exchangeGmailCodeInput)
-  .handler(async ({data}) => {
-    await getClient();
-    await requireAuth();
-    const {exchangeGmailCode} = await import('client');
-    return exchangeGmailCode(data.code);
-  });
+export const getGmailAuthUrlAction = createServerFn({method: 'GET'}).handler(async () => {
+  await getClient();
+  await requireAuth();
+  const {getGmailAuthUrl} = await import('client');
+  return getGmailAuthUrl();
+});
 
 export const disconnectGmailAction = createServerFn({method: 'POST'}).handler(async () => {
   await getClient();

@@ -20,7 +20,6 @@ import { Route as EmailIndexRouteImport } from './routes/email.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as FeedsFeedIdRouteImport } from './routes/feeds.$feedId'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
-import { Route as AuthGmailCallbackRouteImport } from './routes/auth.gmail-callback'
 import { Route as AuthCallbackRouteImport } from './routes/auth/callback'
 import { Route as AdminTagsRouteImport } from './routes/admin.tags'
 import { Route as AdminGmailRouteImport } from './routes/admin.gmail'
@@ -83,11 +82,6 @@ const AuthLoginRoute = AuthLoginRouteImport.update({
   path: '/auth/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthGmailCallbackRoute = AuthGmailCallbackRouteImport.update({
-  id: '/auth/gmail-callback',
-  path: '/auth/gmail-callback',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthCallbackRoute = AuthCallbackRouteImport.update({
   id: '/auth/callback',
   path: '/auth/callback',
@@ -131,7 +125,6 @@ export interface FileRoutesByFullPath {
   '/admin/gmail': typeof AdminGmailRoute
   '/admin/tags': typeof AdminTagsRoute
   '/auth/callback': typeof AuthCallbackRoute
-  '/auth/gmail-callback': typeof AuthGmailCallbackRoute
   '/auth/login': typeof AuthLoginRoute
   '/feeds/$feedId': typeof FeedsFeedIdRoute
   '/admin/': typeof AdminIndexRoute
@@ -149,7 +142,6 @@ export interface FileRoutesByTo {
   '/admin/gmail': typeof AdminGmailRoute
   '/admin/tags': typeof AdminTagsRoute
   '/auth/callback': typeof AuthCallbackRoute
-  '/auth/gmail-callback': typeof AuthGmailCallbackRoute
   '/auth/login': typeof AuthLoginRoute
   '/feeds/$feedId': typeof FeedsFeedIdRoute
   '/admin': typeof AdminIndexRoute
@@ -170,7 +162,6 @@ export interface FileRoutesById {
   '/admin/gmail': typeof AdminGmailRoute
   '/admin/tags': typeof AdminTagsRoute
   '/auth/callback': typeof AuthCallbackRoute
-  '/auth/gmail-callback': typeof AuthGmailCallbackRoute
   '/auth/login': typeof AuthLoginRoute
   '/feeds/$feedId': typeof FeedsFeedIdRoute
   '/admin/': typeof AdminIndexRoute
@@ -192,7 +183,6 @@ export interface FileRouteTypes {
     | '/admin/gmail'
     | '/admin/tags'
     | '/auth/callback'
-    | '/auth/gmail-callback'
     | '/auth/login'
     | '/feeds/$feedId'
     | '/admin/'
@@ -210,7 +200,6 @@ export interface FileRouteTypes {
     | '/admin/gmail'
     | '/admin/tags'
     | '/auth/callback'
-    | '/auth/gmail-callback'
     | '/auth/login'
     | '/feeds/$feedId'
     | '/admin'
@@ -230,7 +219,6 @@ export interface FileRouteTypes {
     | '/admin/gmail'
     | '/admin/tags'
     | '/auth/callback'
-    | '/auth/gmail-callback'
     | '/auth/login'
     | '/feeds/$feedId'
     | '/admin/'
@@ -246,7 +234,6 @@ export interface RootRouteChildren {
   FeedsRoute: typeof FeedsRouteWithChildren
   QueueRoute: typeof QueueRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
-  AuthGmailCallbackRoute: typeof AuthGmailCallbackRoute
   AuthLoginRoute: typeof AuthLoginRoute
   EmailIndexRoute: typeof EmailIndexRoute
   EmailsIndexRoute: typeof EmailsIndexRoute
@@ -329,13 +316,6 @@ declare module '@tanstack/react-router' {
       path: '/auth/login'
       fullPath: '/auth/login'
       preLoaderRoute: typeof AuthLoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth/gmail-callback': {
-      id: '/auth/gmail-callback'
-      path: '/auth/gmail-callback'
-      fullPath: '/auth/gmail-callback'
-      preLoaderRoute: typeof AuthGmailCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth/callback': {
@@ -422,7 +402,6 @@ const rootRouteChildren: RootRouteChildren = {
   FeedsRoute: FeedsRouteWithChildren,
   QueueRoute: QueueRoute,
   AuthCallbackRoute: AuthCallbackRoute,
-  AuthGmailCallbackRoute: AuthGmailCallbackRoute,
   AuthLoginRoute: AuthLoginRoute,
   EmailIndexRoute: EmailIndexRoute,
   EmailsIndexRoute: EmailsIndexRoute,

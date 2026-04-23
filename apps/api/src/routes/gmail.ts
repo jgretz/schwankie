@@ -1,4 +1,6 @@
 import {Hono} from 'hono';
+import {parseEnv} from 'env';
+import {z} from 'zod';
 import {authMiddleware} from '../middleware/auth';
 import {
   getSetting,
@@ -14,7 +16,9 @@ import {
   GmailTokenRevokedError,
 } from '../lib/gmail-oauth';
 import {refreshGmailTokens} from '../commands/refresh-gmail-tokens';
-import {exchangeCodeSchema, setGmailFilterSchema} from '../validators/gmail';
+import {setGmailFilterSchema} from '../validators/gmail';
+
+const {WWW_URL} = parseEnv(z.object({WWW_URL: z.string().url()}));
 
 export const gmailRouter = new Hono();
 const auth = authMiddleware();
@@ -24,15 +28,19 @@ gmailRouter.get('/api/gmail/auth-url', auth, async (c) => {
   return c.json({url});
 });
 
-gmailRouter.post('/api/gmail/exchange-code', auth, async (c) => {
-  const parsed = exchangeCodeSchema.safeParse(await c.req.json());
-  if (!parsed.success) {
-    return c.json({error: 'Invalid request body', details: parsed.error.flatten()}, 400);
+gmailRouter.get('/api/email/oauth/callback', async (c) => {
+  const error = c.req.query('error');
+  const code = c.req.query('code');
+
+  if (error) {
+    return c.redirect(`${WWW_URL}/admin/gmail?error=${encodeURIComponent(error)}`);
+  }
+  if (!code) {
+    return c.redirect(`${WWW_URL}/admin/gmail?error=${encodeURIComponent('No authorization code received')}`);
   }
 
   try {
-    const result = await exchangeGmailCodeWithGoogle(parsed.data.code);
-
+    const result = await exchangeGmailCodeWithGoogle(code);
     await Promise.all([
       setGmailTokens({
         accessToken: result.accessToken,
@@ -41,12 +49,10 @@ gmailRouter.post('/api/gmail/exchange-code', auth, async (c) => {
       }),
       setSetting('gmail_email', result.email),
     ]);
-
-    return c.json({connected: true, email: result.email}, 200);
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : 'Failed to exchange code';
-    return c.json({error: message}, 400);
+    return c.redirect(`${WWW_URL}/admin/gmail`);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Failed to exchange code';
+    return c.redirect(`${WWW_URL}/admin/gmail?error=${encodeURIComponent(message)}`);
   }
 });
 

@@ -9,7 +9,9 @@ const mockSetGmailTokens = mock(async () => undefined);
 const mockGetGmailTokens = mock(async () => null as any);
 const mockRefreshGmailTokens = mock(async () => null as any);
 
-mock.module('env', () => ({parseEnv: () => ({API_KEY: 'test-key'})}));
+mock.module('env', () => ({
+  parseEnv: () => ({API_KEY: 'test-key', WWW_URL: 'http://localhost:3000'}),
+}));
 
 mock.module('@domain', () => ({
   getSetting: mockGetSetting,
@@ -111,8 +113,8 @@ describe('Gmail Routes', function () {
     });
   });
 
-  describe('POST /api/gmail/exchange-code', function () {
-    it('should exchange code for tokens', async function () {
+  describe('GET /api/email/oauth/callback', function () {
+    it('should exchange code and redirect to admin on success', async function () {
       mockExchangeGmailCodeWithGoogle.mockResolvedValueOnce({
         accessToken: 'access123',
         refreshToken: 'refresh123',
@@ -121,33 +123,30 @@ describe('Gmail Routes', function () {
       });
 
       const app = makeApp();
-      const res = await app.request('/api/gmail/exchange-code', {
-        method: 'POST',
-        headers: {
-          Authorization: 'Bearer test-key',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({code: 'auth_code_123'}),
+      const res = await app.request('/api/email/oauth/callback?code=auth_code_123', {
+        redirect: 'manual',
       });
 
-      expect(res.status).toBe(200);
-      const json = await res.json();
-      expect(json.connected).toBe(true);
-      expect(json.email).toBe('user@gmail.com');
+      expect(res.status).toBe(302);
+      expect(res.headers.get('location')).toBe('http://localhost:3000/admin/gmail');
     });
 
-    it('should reject invalid request body', async function () {
+    it('should redirect with error when code missing', async function () {
       const app = makeApp();
-      const res = await app.request('/api/gmail/exchange-code', {
-        method: 'POST',
-        headers: {
-          Authorization: 'Bearer test-key',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({invalid: 'data'}),
+      const res = await app.request('/api/email/oauth/callback', {redirect: 'manual'});
+
+      expect(res.status).toBe(302);
+      expect(res.headers.get('location')).toContain('error=');
+    });
+
+    it('should redirect with error when google returns error', async function () {
+      const app = makeApp();
+      const res = await app.request('/api/email/oauth/callback?error=access_denied', {
+        redirect: 'manual',
       });
 
-      expect(res.status).toBe(400);
+      expect(res.status).toBe(302);
+      expect(res.headers.get('location')).toContain('error=access_denied');
     });
   });
 
