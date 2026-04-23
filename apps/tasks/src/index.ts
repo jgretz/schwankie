@@ -32,16 +32,18 @@ init({apiUrl: env.API_URL, apiKey: env.API_KEY});
 interface JobDefinition {
   queue: string;
   schedule: string;
+  runOnBoot?: boolean;
+  options?: PgBoss.WorkOptions;
 }
 
 const jobDefinitions: JobDefinition[] = [
   {queue: 'enrich-content', schedule: '*/1 * * * *'},
   {queue: 'score-links', schedule: '*/2 * * * *'},
   {queue: 'normalize-tags', schedule: '*/5 * * * *'},
-  {queue: 'import-feed', schedule: ''},
+  {queue: 'import-feed', schedule: '', options: {batchSize: 50}},
   {queue: 'schedule-feed-imports', schedule: '*/30 * * * *'},
   {queue: 'import-emails', schedule: '0 * * * *'},
-  {queue: 'process-work-requests', schedule: '*/5 * * * *'},
+  {queue: 'process-work-requests', schedule: '*/5 * * * *', runOnBoot: true},
   {queue: 'cleanup-work-requests', schedule: '0 4 * * *'},
 ];
 
@@ -57,15 +59,27 @@ async function setupWorkers(boss: PgBoss): Promise<void> {
     'cleanup-work-requests': cleanupWorkRequestsHandler,
   };
 
-  for (const {queue, schedule} of jobDefinitions) {
+  for (const {queue, schedule, options} of jobDefinitions) {
     await boss.createQueue(queue);
     if (schedule) {
       await boss.schedule(queue, schedule);
     }
     const handler = handlers[queue];
-    await boss.work(queue, handler);
+    if (options) {
+      await boss.work(queue, options, handler);
+    } else {
+      await boss.work(queue, handler);
+    }
     console.log(`Registered: ${queue}${schedule ? ` (${schedule})` : ''}`);
   }
+
+  for (const {queue, runOnBoot} of jobDefinitions) {
+    if (runOnBoot) {
+      await boss.send(queue, {});
+      console.log(`Dispatched boot run: ${queue}`);
+    }
+  }
+
   console.log('Task runner started successfully');
 }
 
