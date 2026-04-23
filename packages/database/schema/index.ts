@@ -7,3 +7,4 @@ export {setting} from './setting.schema';
 export {feed} from './feed.schema';
 export {rssItem} from './rss-item.schema';
 export {emailItem} from './email-item.schema';
+export {workRequest} from './work-request.schema';

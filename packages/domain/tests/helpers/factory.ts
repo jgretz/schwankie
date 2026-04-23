@@ -2,11 +2,13 @@ import {createLink} from '../../src/commands/create-link';
 import {createFeed} from '../../src/commands/create-feed';
 import {createRssItem} from '../../src/commands/create-rss-item';
 import {createEmailItem} from '../../src/commands/create-email-item';
+import {createWorkRequest} from '../../src/commands/create-work-request';
 import type {
   CreateLinkInput,
   CreateFeedInput,
   CreateRssItemInput,
   CreateEmailItemInput,
+  CreateWorkRequestInput,
 } from '../../src/types';
 
 export async function makeLink(overrides: Partial<CreateLinkInput> = {}) {
@@ -60,4 +62,13 @@ export async function makeEmailItem(overrides: Partial<CreateEmailItemInput> = {
 
 export function resetEmailItemTimestamp() {
   emailItemTimestamp = Date.now();
+}
+
+export async function makeWorkRequest(overrides: Partial<CreateWorkRequestInput> = {}) {
+  const input: CreateWorkRequestInput = {
+    type: 'refresh-all-feeds',
+    ...overrides,
+  };
+
+  return createWorkRequest(input);
 }

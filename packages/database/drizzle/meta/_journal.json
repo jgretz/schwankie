@@ -1,69 +1,76 @@
 {
-	"version": "6",
-	"dialect": "postgresql",
-	"entries": [
-		{
-			"idx": 0,
-			"version": "6",
-			"when": 1773240255146,
-			"tag": "0000_v5-schema",
-			"breakpoints": true
-		},
-		{
-			"idx": 1,
-			"version": "6",
-			"when": 1773698359395,
-			"tag": "0001_add-tag-normalization",
-			"breakpoints": true
-		},
-		{
-			"idx": 2,
-			"version": "6",
-			"when": 1773781928099,
-			"tag": "0002_add-enrichment-failure-tracking",
-			"breakpoints": true
-		},
-		{
-			"idx": 3,
-			"version": "6",
-			"when": 1773788428271,
-			"tag": "0003_composite-status-create-date-index",
-			"breakpoints": true
-		},
-		{
-			"idx": 4,
-			"version": "6",
-			"when": 1773860434516,
-			"tag": "0004_add-link-score",
-			"breakpoints": true
-		},
-		{
-			"idx": 5,
-			"version": "6",
-			"when": 1773863413405,
-			"tag": "0005_add-setting-table",
-			"breakpoints": true
-		},
-		{
-			"idx": 6,
-			"version": "6",
-			"when": 1741070400000,
-			"tag": "0006_align-tag-alias-cleanup",
-			"breakpoints": true
-		},
-		{
-			"idx": 7,
-			"version": "6",
-			"when": 1776871060448,
-			"tag": "0007_add_rss_feeds",
-			"breakpoints": true
-		},
-		{
-			"idx": 8,
-			"version": "6",
-			"when": 1776881860373,
-			"tag": "0008_add_email_items",
-			"breakpoints": true
-		}
-	]
+  "version": "6",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1773240255146,
+      "tag": "0000_v5-schema",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1773698359395,
+      "tag": "0001_add-tag-normalization",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1773781928099,
+      "tag": "0002_add-enrichment-failure-tracking",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1773788428271,
+      "tag": "0003_composite-status-create-date-index",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1773860434516,
+      "tag": "0004_add-link-score",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1773863413405,
+      "tag": "0005_add-setting-table",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1741070400000,
+      "tag": "0006_align-tag-alias-cleanup",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1776871060448,
+      "tag": "0007_add_rss_feeds",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1776881860373,
+      "tag": "0008_add_email_items",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1776895041649,
+      "tag": "0009_add_work_requests",
+      "breakpoints": true
+    }
+  ]
 }

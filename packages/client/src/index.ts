@@ -44,6 +44,12 @@ export {bulkUpsertEmailItems} from './calls/bulk-upsert-email-items';
 export {listEmailItems} from './calls/list-email-items';
 export {markEmailItemRead} from './calls/mark-email-item-read';
 export {promoteEmailItem} from './calls/promote-email-item';
+export {listPendingWorkRequests} from './calls/list-pending-work-requests';
+export {startWorkRequest} from './calls/start-work-request';
+export {completeWorkRequest} from './calls/complete-work-request';
+export {failWorkRequest} from './calls/fail-work-request';
+export {triggerRefreshAllFeeds} from './calls/trigger-refresh-all-feeds';
+export {triggerRefreshEmails} from './calls/trigger-refresh-emails';
 
 // types
 export type {
@@ -64,5 +70,7 @@ export type {
   CreateFeedInput,
   UpdateFeedInput,
   BulkUpsertRssItemsInput,
+  WorkRequestData,
+  WorkRequestResponse,
   EmailItemData,
 } from './types';

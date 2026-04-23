@@ -128,6 +128,21 @@ export type BulkUpsertRssItemsInput = {
   }>;
 };
 
+export type WorkRequestData = {
+  id: string;
+  type: 'refresh-all-feeds' | 'refresh-emails';
+  payload: Record<string, unknown>;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  errorMessage: string | null;
+  createdAt: string;
+  startedAt: string | null;
+  completedAt: string | null;
+};
+
+export type WorkRequestResponse = {
+  id: string;
+};
+
 export type EmailItemData = {
   id: string;
   emailMessageId: string;

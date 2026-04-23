@@ -15,6 +15,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as FeedsIndexRouteImport } from './routes/feeds.index'
+import { Route as EmailsIndexRouteImport } from './routes/emails.index'
 import { Route as EmailIndexRouteImport } from './routes/email.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as FeedsFeedIdRouteImport } from './routes/feeds.$feedId'
@@ -54,6 +55,11 @@ const FeedsIndexRoute = FeedsIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => FeedsRoute,
+} as any)
+const EmailsIndexRoute = EmailsIndexRouteImport.update({
+  id: '/emails/',
+  path: '/emails/',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const EmailIndexRoute = EmailIndexRouteImport.update({
   id: '/email/',
@@ -116,6 +122,7 @@ export interface FileRoutesByFullPath {
   '/feeds/$feedId': typeof FeedsFeedIdRoute
   '/admin/': typeof AdminIndexRoute
   '/email/': typeof EmailIndexRoute
+  '/emails/': typeof EmailsIndexRoute
   '/feeds/': typeof FeedsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -131,6 +138,7 @@ export interface FileRoutesByTo {
   '/feeds/$feedId': typeof FeedsFeedIdRoute
   '/admin': typeof AdminIndexRoute
   '/email': typeof EmailIndexRoute
+  '/emails': typeof EmailsIndexRoute
   '/feeds': typeof FeedsIndexRoute
 }
 export interface FileRoutesById {
@@ -149,6 +157,7 @@ export interface FileRoutesById {
   '/feeds/$feedId': typeof FeedsFeedIdRoute
   '/admin/': typeof AdminIndexRoute
   '/email/': typeof EmailIndexRoute
+  '/emails/': typeof EmailsIndexRoute
   '/feeds/': typeof FeedsIndexRoute
 }
 export interface FileRouteTypes {
@@ -168,6 +177,7 @@ export interface FileRouteTypes {
     | '/feeds/$feedId'
     | '/admin/'
     | '/email/'
+    | '/emails/'
     | '/feeds/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -183,6 +193,7 @@ export interface FileRouteTypes {
     | '/feeds/$feedId'
     | '/admin'
     | '/email'
+    | '/emails'
     | '/feeds'
   id:
     | '__root__'
@@ -200,6 +211,7 @@ export interface FileRouteTypes {
     | '/feeds/$feedId'
     | '/admin/'
     | '/email/'
+    | '/emails/'
     | '/feeds/'
   fileRoutesById: FileRoutesById
 }
@@ -213,6 +225,7 @@ export interface RootRouteChildren {
   AuthGmailCallbackRoute: typeof AuthGmailCallbackRoute
   AuthLoginRoute: typeof AuthLoginRoute
   EmailIndexRoute: typeof EmailIndexRoute
+  EmailsIndexRoute: typeof EmailsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -258,6 +271,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/feeds/'
       preLoaderRoute: typeof FeedsIndexRouteImport
       parentRoute: typeof FeedsRoute
+    }
+    '/emails/': {
+      id: '/emails/'
+      path: '/emails'
+      fullPath: '/emails/'
+      preLoaderRoute: typeof EmailsIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/email/': {
       id: '/email/'
@@ -363,6 +383,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthGmailCallbackRoute: AuthGmailCallbackRoute,
   AuthLoginRoute: AuthLoginRoute,
   EmailIndexRoute: EmailIndexRoute,
+  EmailsIndexRoute: EmailsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
