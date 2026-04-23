@@ -1,4 +1,5 @@
 import { View, FlatList, Text } from 'react-native';
+import { useState } from 'react';
 import { useLocalSearchParams } from 'expo-router';
 import { useColors } from '../../theme/use-colors';
 import { LoadingState, ErrorState, EmptyState } from '../../components/ListStates';
@@ -9,6 +10,8 @@ import type { RssItemData } from 'client';
 export default function FeedDetailScreen() {
   const colors = useColors();
   const { id: feedId } = useLocalSearchParams();
+  const [pendingMarkReadId, setPendingMarkReadId] = useState<string | null>(null);
+  const [pendingPromoteId, setPendingPromoteId] = useState<string | null>(null);
 
   const { data, isLoading, error } = useFeedItems(String(feedId));
   const { mutate: markRead, isPending: isMarkingRead } = useMarkRssItemRead();
@@ -78,10 +81,20 @@ export default function FeedDetailScreen() {
       </View>
       <ItemActions
         url={item.link}
-        onMarkRead={() => markRead({ feedId: String(feedId), itemId: item.id })}
-        onPromote={() => promote({ feedId: String(feedId), itemId: item.id })}
-        isMarkingRead={isMarkingRead}
-        isPromoting={isPromoting}
+        onMarkRead={() => {
+          setPendingMarkReadId(item.id);
+          markRead({ feedId: String(feedId), itemId: item.id }, {
+            onSettled: () => setPendingMarkReadId(null),
+          });
+        }}
+        onPromote={() => {
+          setPendingPromoteId(item.id);
+          promote({ feedId: String(feedId), itemId: item.id }, {
+            onSettled: () => setPendingPromoteId(null),
+          });
+        }}
+        isMarkingRead={pendingMarkReadId === item.id && isMarkingRead}
+        isPromoting={pendingPromoteId === item.id && isPromoting}
         colors={colors}
       />
     </View>

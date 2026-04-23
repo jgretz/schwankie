@@ -13,6 +13,8 @@ export default function EmailsScreen() {
   const { mutate: promote, isPending: isPromoting } = usePromoteEmailItem();
   const { mutate: triggerRefresh, isPending: isRefreshing } = useTriggerRefreshEmails();
   const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
+  const [pendingMarkReadId, setPendingMarkReadId] = useState<string | null>(null);
+  const [pendingPromoteId, setPendingPromoteId] = useState<string | null>(null);
 
   const groupedItems = useMemo(() => {
     if (!data?.items) return {};
@@ -140,10 +142,20 @@ export default function EmailsScreen() {
         </View>
         <ItemActions
           url={item.link}
-          onMarkRead={() => markRead(item.id)}
-          onPromote={() => promote(item.id)}
-          isMarkingRead={isMarkingRead}
-          isPromoting={isPromoting}
+          onMarkRead={() => {
+            setPendingMarkReadId(item.id);
+            markRead(item.id, {
+              onSettled: () => setPendingMarkReadId(null),
+            });
+          }}
+          onPromote={() => {
+            setPendingPromoteId(item.id);
+            promote(item.id, {
+              onSettled: () => setPendingPromoteId(null),
+            });
+          }}
+          isMarkingRead={pendingMarkReadId === item.id && isMarkingRead}
+          isPromoting={pendingPromoteId === item.id && isPromoting}
           colors={colors}
         />
       </View>
