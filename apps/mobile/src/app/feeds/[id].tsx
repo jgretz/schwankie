@@ -1,7 +1,7 @@
-import { View, FlatList, ActivityIndicator, Text } from 'react-native';
+import { View, FlatList, Text } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useColors } from '../../theme/use-colors';
-import { EmptyState } from '../../components/EmptyState';
+import { LoadingState, ErrorState, EmptyState } from '../../components/ListStates';
 import { ItemActions } from '../../components/ItemActions';
 import { useFeedItems, useMarkRssItemRead, usePromoteRssItem } from '../../services/feeds';
 import type { RssItemData } from 'client';
@@ -17,34 +17,26 @@ export default function FeedDetailScreen() {
   const items = data?.items || [];
 
   if (isLoading) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bg }}>
-        <ActivityIndicator size="large" color={colors.accent} />
-      </View>
-    );
+    return <LoadingState colors={colors} />;
   }
 
   if (error) {
     return (
-      <View style={{ flex: 1, backgroundColor: colors.bg }}>
-        <EmptyState
-          title="Error loading items"
-          message={error instanceof Error ? error.message : 'Unknown error'}
-          colors={colors}
-        />
-      </View>
+      <ErrorState
+        title="Error loading items"
+        message={error instanceof Error ? error.message : 'Unknown error'}
+        colors={colors}
+      />
     );
   }
 
   if (items.length === 0) {
     return (
-      <View style={{ flex: 1, backgroundColor: colors.bg }}>
-        <EmptyState
-          title="No items"
-          message="No feed items available"
-          colors={colors}
-        />
-      </View>
+      <EmptyState
+        title="No items"
+        message="No feed items available"
+        colors={colors}
+      />
     );
   }
 

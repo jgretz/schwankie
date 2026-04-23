@@ -1,7 +1,7 @@
-import { View, FlatList, ActivityIndicator, Text, RefreshControl } from 'react-native';
-import { useMemo } from 'react';
+import { View, FlatList, Text, RefreshControl, ScrollView, TouchableOpacity } from 'react-native';
+import { useState, useMemo } from 'react';
 import { useColors } from '../../theme/use-colors';
-import { EmptyState } from '../../components/EmptyState';
+import { LoadingState, ErrorState, EmptyState } from '../../components/ListStates';
 import { ItemActions } from '../../components/ItemActions';
 import { useListEmailItems, useMarkEmailItemRead, usePromoteEmailItem, useTriggerRefreshEmails } from '../../services/emails';
 import type { EmailItemData } from 'client';
@@ -12,6 +12,7 @@ export default function EmailsScreen() {
   const { mutate: markRead, isPending: isMarkingRead } = useMarkEmailItemRead();
   const { mutate: promote, isPending: isPromoting } = usePromoteEmailItem();
   const { mutate: triggerRefresh, isPending: isRefreshing } = useTriggerRefreshEmails();
+  const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
 
   const groupedItems = useMemo(() => {
     if (!data?.items) return {};
@@ -32,45 +33,42 @@ export default function EmailsScreen() {
 
   const groupedKeys = useMemo(() => Object.keys(groupedItems).sort(), [groupedItems]);
 
+  const filteredKeys = useMemo(
+    () => (selectedFilter ? groupedKeys.filter((key) => key === selectedFilter) : groupedKeys),
+    [groupedKeys, selectedFilter],
+  );
+
   const handleRefresh = () => {
     triggerRefresh();
     refetch();
   };
 
   if (isLoading) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bg }}>
-        <ActivityIndicator size="large" color={colors.accent} />
-      </View>
-    );
+    return <LoadingState colors={colors} />;
   }
 
   if (error) {
     return (
-      <View style={{ flex: 1, backgroundColor: colors.bg }}>
-        <EmptyState
-          title="Error loading emails"
-          message={error instanceof Error ? error.message : 'Unknown error'}
-          colors={colors}
-        />
-      </View>
+      <ErrorState
+        title="Error loading emails"
+        message={error instanceof Error ? error.message : 'Unknown error'}
+        colors={colors}
+      />
     );
   }
 
   if (groupedKeys.length === 0) {
     return (
-      <View style={{ flex: 1, backgroundColor: colors.bg }}>
-        <EmptyState
-          title="No emails"
-          message="Email items will appear here"
-          colors={colors}
-        />
-      </View>
+      <EmptyState
+        title="No emails"
+        message="Email items will appear here"
+        colors={colors}
+      />
     );
   }
 
   const flatData: Array<{ type: 'group' | 'item'; from?: string; item?: EmailItemData; key: string }> = [];
-  for (const from of groupedKeys) {
+  for (const from of filteredKeys) {
     flatData.push({ type: 'group', from, key: `group-${from}` });
     for (const item of groupedItems[from]) {
       flatData.push({ type: 'item', item, key: item.id });
@@ -154,6 +152,42 @@ export default function EmailsScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={{ borderBottomWidth: 1, borderBottomColor: colors.border }}
+        contentContainerStyle={{ paddingHorizontal: 12, paddingVertical: 8, gap: 8 }}
+      >
+        <TouchableOpacity
+          onPress={() => setSelectedFilter(null)}
+          style={{
+            paddingHorizontal: 12,
+            paddingVertical: 6,
+            borderRadius: 16,
+            backgroundColor: selectedFilter === null ? colors.accent : colors.border,
+          }}
+        >
+          <Text style={{ fontSize: 12, fontWeight: '600', color: selectedFilter === null ? colors.bg : colors.text }}>
+            All
+          </Text>
+        </TouchableOpacity>
+        {groupedKeys.map((from) => (
+          <TouchableOpacity
+            key={from}
+            onPress={() => setSelectedFilter(from)}
+            style={{
+              paddingHorizontal: 12,
+              paddingVertical: 6,
+              borderRadius: 16,
+              backgroundColor: selectedFilter === from ? colors.accent : colors.border,
+            }}
+          >
+            <Text style={{ fontSize: 12, fontWeight: '600', color: selectedFilter === from ? colors.bg : colors.text }}>
+              {from}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
       <FlatList
         data={flatData}
         keyExtractor={(item) => item.key}

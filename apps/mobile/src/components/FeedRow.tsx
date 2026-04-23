@@ -8,6 +8,7 @@ type FeedRowProps = {
     textMuted: string;
     border: string;
     card: string;
+    error: string;
   };
 };
 
@@ -60,7 +61,7 @@ export function FeedRow({ feed, colors }: FeedRowProps) {
         <Text
           style={{
             fontSize: 12,
-            color: '#d97706',
+            color: colors.error,
             marginTop: 4,
           }}
           numberOfLines={1}
