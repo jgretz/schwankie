@@ -1,4 +1,3 @@
-import Constants from 'expo-constants';
 import { init } from 'client';
 
 let initialized = false;
@@ -6,10 +5,7 @@ let initialized = false;
 export async function ensureClientInit(): Promise<void> {
   if (initialized) return;
 
-  const apiUrl =
-    Constants.expoConfig?.extra?.apiUrl ||
-    process.env.EXPO_PUBLIC_API_URL ||
-    'https://api.schwankie.com';
+  const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'https://api.schwankie.com';
   const apiKey = process.env.EXPO_PUBLIC_API_KEY;
 
   if (!apiKey) {

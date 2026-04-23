@@ -36,14 +36,6 @@ function getTitleFromUrl(url: string): string {
 }
 
 export default function ShareExtension(props: ShareExtensionProps) {
-  if (Platform.OS !== 'ios') {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.errorText}>Share extension is only available on iOS</Text>
-      </View>
-    );
-  }
-
   const [url, setUrl] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -59,6 +51,14 @@ export default function ShareExtension(props: ShareExtensionProps) {
       setUrl(finalUrl);
     }
   }, [props.url, props.text]);
+
+  if (Platform.OS !== 'ios') {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.errorText}>Share extension is only available on iOS</Text>
+      </View>
+    );
+  }
 
   async function handleSave() {
     if (!url.trim()) {
