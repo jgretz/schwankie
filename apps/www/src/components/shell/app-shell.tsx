@@ -2,11 +2,11 @@ import {type ReactNode, useState} from 'react';
 import {MobileDrawer} from './mobile-drawer';
 import {Sidebar} from './sidebar';
 import {Topbar} from './topbar';
-import type {Tag} from './types';
+import type {CurrentSection, Tag} from './types';
 
 type AppShellProps = {
   children: ReactNode;
-  currentSection: 'queue' | 'feeds' | 'emails' | 'admin' | 'public';
+  currentSection: CurrentSection;
   tags: Tag[];
   selectedTags: string[];
   onTagToggle: (tagText: string) => void;

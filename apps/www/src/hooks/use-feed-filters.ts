@@ -2,9 +2,8 @@ import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useNavigate, useRouterState, useSearch} from '@tanstack/react-router';
 import {useTags} from '@www/hooks/use-tags';
 import {parseTagSlugs} from '@www/lib/parse-tag-slugs';
+import type {CurrentSection} from '@www/components/shell/types';
 import type {FeedSearch} from '@www/routes/index';
-
-type CurrentSection = 'queue' | 'feeds' | 'emails' | 'admin' | 'public';
 
 export function useFeedFilters(): {
   tags: Array<{id: number; text: string; count: number}>;

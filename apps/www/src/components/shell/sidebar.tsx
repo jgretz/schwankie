@@ -1,20 +1,15 @@
 import {Link} from '@tanstack/react-router';
 import {cn} from '@www/lib/utils';
-import type {Tag} from './types';
+import type {CurrentSection, Tag} from './types';
 import {TagList} from './tag-list';
+import {sections} from './sections';
 
 type SidebarProps = {
-  currentSection: 'queue' | 'feeds' | 'emails' | 'admin' | 'public';
+  currentSection: CurrentSection;
   tags: Tag[];
   selectedTags: string[];
   onTagToggle: (tagText: string) => void;
 };
-
-const sections = [
-  {id: 'queue', label: 'Queue', to: '/queue' as const},
-  {id: 'feeds', label: 'Feeds', to: '/feeds' as const},
-  {id: 'emails', label: 'Emails', to: '/emails' as const},
-];
 
 function SectionNav({currentSection}: {currentSection: string}) {
   return (

@@ -2,22 +2,17 @@ import {Link} from '@tanstack/react-router';
 import {useEffect, useRef} from 'react';
 import {cn} from '@www/lib/utils';
 import {TagList} from './tag-list';
-import type {Tag} from './types';
+import type {CurrentSection, Tag} from './types';
+import {sections} from './sections';
 
 type MobileDrawerProps = {
-  currentSection: 'queue' | 'feeds' | 'emails' | 'admin' | 'public';
+  currentSection: CurrentSection;
   tags: Tag[];
   selectedTags: string[];
   onTagToggle: (tagText: string) => void;
   isOpen: boolean;
   onClose: () => void;
 };
-
-const sections = [
-  {id: 'queue', label: 'Queue', to: '/queue' as const},
-  {id: 'feeds', label: 'Feeds', to: '/feeds' as const},
-  {id: 'emails', label: 'Emails', to: '/emails' as const},
-];
 
 function MobileSectionNav({
   currentSection,
@@ -34,7 +29,7 @@ function MobileSectionNav({
           to={to}
           onClick={onClose}
           className={cn(
-            'rounded-[5px] px-2 py-[7px] text-sm font-medium text-text-muted transition-colors',
+            'rounded-[5px] px-2 py-[7px] text-sm font-medium text-text-muted transition-colors hover:bg-bg-subtle hover:text-text',
             currentSection === id && 'border-l-2 border-accent bg-bg-subtle text-accent',
           )}
           activeProps={{
