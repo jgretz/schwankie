@@ -50,7 +50,6 @@
     },
     "extra": {
       "eas": {
-        "projectId": "placeholder-eas-project-id",
         "build": {
           "experimental": {
             "ios": {
@@ -58,12 +57,27 @@
                 {
                   "targetName": "SchwankieShareExtension",
                   "bundleIdentifier": "com.schwankie.app.share"
+                },
+                {
+                  "targetName": "SchwankieShareExtension",
+                  "bundleIdentifier": "com.schwankie.app.share",
+                  "entitlements": {
+                    "com.apple.security.application-groups": [
+                      "group.com.schwankie.app"
+                    ]
+                  }
                 }
               ]
             }
           }
-        }
-      }
-    }
+        },
+        "projectId": "6545c080-8c25-4340-b066-c75352fe6bea"
+      },
+      "router": {
+        "root": "./src/app"
+      },
+      "appleApplicationGroup": "group.com.schwankie.app"
+    },
+    "owner": "joshgretz"
   }
 }

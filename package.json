@@ -45,6 +45,10 @@
     "deploy:api": "fly deploy --config ./deploy/api/fly.toml --dockerfile ./deploy/api/Dockerfile",
     "deploy:www": "fly deploy --config ./deploy/www/fly.toml --dockerfile ./deploy/www/Dockerfile",
     "sync-secrets:api": "./scripts/sync-fly-secrets.sh apps/api schwankie-api",
-    "sync-secrets:www": "./scripts/sync-fly-secrets.sh apps/www schwankie"
+    "sync-secrets:www": "./scripts/sync-fly-secrets.sh apps/www schwankie",
+    "sync-secrets:mobile": "bash apps/mobile/scripts/sync-env.sh",
+    "mobile:prebuild": "bun run --cwd apps/mobile bunx expo prebuild --clean",
+    "mobile:build": "bun run --cwd apps/mobile eas build --platform ios --profile production",
+    "mobile:submit": "bun run --cwd apps/mobile eas submit --platform ios --profile production"
   }
 }
