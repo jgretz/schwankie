@@ -45,7 +45,7 @@ function containerExists(containerName: string): boolean {
 
 function isPortInUse(port: number): boolean {
   try {
-    const result = execSync(`docker ps -a --filter "publish=${port}" --format "{{.Names}}"`, {
+    const result = execSync(`lsof -nP -iTCP:${port} -sTCP:LISTEN -t 2>/dev/null`, {
       encoding: 'utf-8',
     });
     return result.trim().length > 0;
