@@ -17,7 +17,7 @@ import {runWithAutoRecovery} from './connectionManager';
 const envSchema = z.object({
   API_URL: z.string().url(),
   API_KEY: z.string(),
-  PGBOSS_DATABASE_URL: z.string().url(),
+  PGBOSS_DATABASE_URL: z.string().url().optional(),
   PG_POOL_SIZE: z.coerce.number().default(10),
   WORKER_ID: z.string().optional(),
   OLLAMA_URL: z.string().url().optional(),

@@ -1,4 +1,5 @@
 import PgBoss from 'pg-boss';
+import {ensureDockerPostgres, waitForReady, getPgBossConnectionString} from './dockerPostgres';
 
 interface ConnectionConfig {
   retryIntervalMs: number;
@@ -43,17 +44,24 @@ async function createTaskRunner(setupCallback: SetupCallback): Promise<TaskRunne
 
   async function attemptConnection(): Promise<PgBoss> {
     const pgBossUrl = process.env.PGBOSS_DATABASE_URL;
-    if (!pgBossUrl) {
-      throw new Error('PGBOSS_DATABASE_URL is required');
-    }
-
     const parsedPoolSize = parseInt(process.env.PG_POOL_SIZE || '10', 10);
     const poolSize = Number.isFinite(parsedPoolSize) && parsedPoolSize > 0 ? parsedPoolSize : 10;
 
-    console.log('Connecting to pg-boss database...');
+    let connectionString: string;
+
+    if (pgBossUrl) {
+      console.log('Connecting to pg-boss database...');
+      connectionString = pgBossUrl;
+    } else {
+      console.log('Starting local pg-boss database...');
+      await ensureDockerPostgres();
+      await waitForReady();
+      console.log('Docker postgres ready');
+      connectionString = getPgBossConnectionString();
+    }
 
     const boss = new PgBoss({
-      connectionString: pgBossUrl,
+      connectionString,
       max: poolSize,
       retryLimit: 3,
       retryDelay: 1000,
