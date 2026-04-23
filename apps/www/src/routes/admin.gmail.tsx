@@ -87,12 +87,50 @@ function AdminGmailPage() {
     [handleFilterSave],
   );
 
+  const validateIMAPFilter = (filterStr: string): {valid: boolean; error?: string} => {
+    if (!filterStr.trim()) return {valid: false, error: 'Filter is empty'};
+
+    let parenCount = 0;
+    let inQuotes = false;
+    let escapeNext = false;
+
+    for (let i = 0; i < filterStr.length; i++) {
+      const char = filterStr[i];
+
+      if (escapeNext) {
+        escapeNext = false;
+        continue;
+      }
+
+      if (char === '\\') {
+        escapeNext = true;
+        continue;
+      }
+
+      if (char === '"') {
+        inQuotes = !inQuotes;
+        continue;
+      }
+
+      if (!inQuotes) {
+        if (char === '(') parenCount++;
+        if (char === ')') parenCount--;
+      }
+    }
+
+    if (inQuotes) return {valid: false, error: 'Unclosed quoted string'};
+    if (parenCount !== 0) return {valid: false, error: 'Unbalanced parentheses'};
+
+    return {valid: true};
+  };
+
   const handleTestFilter = useCallback(() => {
-    if (!filter.trim()) {
-      toast.error('Filter is empty');
+    const validation = validateIMAPFilter(filter);
+    if (!validation.valid) {
+      toast.error(validation.error || 'Invalid filter syntax');
       return;
     }
-    toast.info(`Filter: "${filter}" (will be tested on next import)`);
+    toast.success('Filter syntax is valid');
   }, [filter]);
 
   if (isLoading) {

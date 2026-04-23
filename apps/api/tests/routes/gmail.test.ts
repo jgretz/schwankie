@@ -167,7 +167,7 @@ describe('Gmail Routes', function () {
   });
 
   describe('GET /api/gmail/status', function () {
-    it('should return status', async function () {
+    it('should return status with recent count', async function () {
       mockGetSetting.mockResolvedValueOnce(null);
       mockGetSetting.mockResolvedValueOnce(null);
       mockGetSetting.mockResolvedValueOnce(null);
@@ -182,6 +182,8 @@ describe('Gmail Routes', function () {
       expect(json).toHaveProperty('connected');
       expect(json).toHaveProperty('filter');
       expect(json).toHaveProperty('lastImportedAt');
+      expect(json).toHaveProperty('recentCount');
+      expect(typeof json.recentCount).toBe('number');
     });
   });
 
