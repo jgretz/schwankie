@@ -41,6 +41,9 @@ export {promoteRssItem} from './calls/promote-rss-item';
 export {fetchAllFeeds} from './calls/fetch-all-feeds';
 export {bulkUpsertRssItems} from './calls/bulk-upsert-rss-items';
 export {bulkUpsertEmailItems} from './calls/bulk-upsert-email-items';
+export {listEmailItems} from './calls/list-email-items';
+export {markEmailItemRead} from './calls/mark-email-item-read';
+export {promoteEmailItem} from './calls/promote-email-item';
 export {listPendingWorkRequests} from './calls/list-pending-work-requests';
 export {startWorkRequest} from './calls/start-work-request';
 export {completeWorkRequest} from './calls/complete-work-request';
@@ -69,4 +72,5 @@ export type {
   BulkUpsertRssItemsInput,
   WorkRequestData,
   WorkRequestResponse,
+  EmailItemData,
 } from './types';
