@@ -23,7 +23,7 @@ describe('countRecentEmailItems', function () {
   it('should return 0 when no recent items exist', async function () {
     const count = await countRecentEmailItems(7);
     expect(typeof count).toBe('number');
-    expect(count).toBeGreaterThanOrEqual(0);
+    expect(count).toBe(0);
   });
 
   it('should respect the days parameter', async function () {
