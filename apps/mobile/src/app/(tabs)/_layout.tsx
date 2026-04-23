@@ -1,4 +1,4 @@
-import { Tabs } from 'expo-router';
+import { Tabs, Link } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useColors } from '../../theme/use-colors';
 
@@ -8,7 +8,16 @@ export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
-        headerShown: false,
+        headerShown: true,
+        headerStyle: {
+          backgroundColor: colors.card,
+          borderBottomColor: colors.border,
+          borderBottomWidth: 1,
+        },
+        headerTintColor: colors.text,
+        headerTitleStyle: {
+          fontWeight: '600',
+        },
         tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: colors.textMuted,
         tabBarStyle: {
@@ -16,6 +25,17 @@ export default function TabsLayout() {
           borderTopColor: colors.border,
           borderTopWidth: 1,
         },
+        headerRight: () => (
+          <Link
+            href="/add"
+            style={{
+              marginRight: 16,
+              padding: 8,
+            }}
+          >
+            <MaterialIcons name="add" size={24} color={colors.accent} />
+          </Link>
+        ),
       }}
     >
       <Tabs.Screen
