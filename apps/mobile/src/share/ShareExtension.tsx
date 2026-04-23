@@ -1,9 +1,16 @@
 import { Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import * as ShareExtensionModule from 'expo-share-extension';
 import { useEffect, useState } from 'react';
 import { createLink } from 'client';
 import { ensureClientInit } from '../services/shared-config';
+
+// expo-share-extension is iOS-only and only present in the share extension bundle;
+// lazy-require so the main app bundle doesn't crash when the native module is absent.
+let closeShareExtension: () => void = () => {};
+if (Platform.OS === 'ios') {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  closeShareExtension = require('expo-share-extension').close;
+}
 
 interface ShareExtensionProps {
   url?: string;
@@ -79,7 +86,7 @@ export default function ShareExtension(props: ShareExtensionProps) {
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
       setTimeout(() => {
-        ShareExtensionModule.close();
+        closeShareExtension();
       }, 300);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to save link';
@@ -90,7 +97,7 @@ export default function ShareExtension(props: ShareExtensionProps) {
   }
 
   function handleCancel() {
-    ShareExtensionModule.close();
+    closeShareExtension();
   }
 
   return (

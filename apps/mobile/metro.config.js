@@ -1,4 +1,5 @@
 const { getDefaultConfig } = require('expo/metro-config');
+const { withShareExtension } = require('expo-share-extension/metro');
 const path = require('path');
 
 const projectRoot = __dirname;
@@ -9,4 +10,4 @@ const config = getDefaultConfig(projectRoot);
 config.watchFolders = [repoRoot];
 config.resolver.nodeModulesPaths = [path.resolve(repoRoot, 'node_modules')];
 
-module.exports = config;
+module.exports = withShareExtension(config);
