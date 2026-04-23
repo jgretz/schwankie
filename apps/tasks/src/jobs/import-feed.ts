@@ -7,22 +7,21 @@ interface ImportFeedData {
   sourceUrl: string;
 }
 
-function toIso(dateString: string): string | undefined {
-  const d = new Date(dateString);
-  return Number.isNaN(d.getTime()) ? undefined : d.toISOString();
-}
-
 export const importFeedHandler: PgBoss.WorkHandler<ImportFeedData> = async (jobs) => {
-  const job = jobs[0];
-  if (!job) return;
+  for (const job of jobs) {
+    await processJob(job);
+  }
+};
 
+async function processJob(job: PgBoss.Job<ImportFeedData>): Promise<void> {
   const {feedId, sourceUrl} = job.data;
 
   try {
     const items = await parseFeed(sourceUrl);
+    console.log(`[import-feed] ${sourceUrl}: parsed ${items.length} items`);
 
     if (items.length > 0) {
-      await bulkUpsertRssItems(feedId, {
+      const {inserted} = await bulkUpsertRssItems(feedId, {
         items: items.map((item) => ({
           guid: item.guid,
           title: item.title,
@@ -30,15 +29,16 @@ export const importFeedHandler: PgBoss.WorkHandler<ImportFeedData> = async (jobs
           summary: item.summary || undefined,
           content: item.content || undefined,
           imageUrl: item.imageUrl || undefined,
-          pubDate: item.pubDate ? toIso(item.pubDate) : undefined,
+          pubDate: item.pubDate,
         })),
       });
+      console.log(`[import-feed] ${sourceUrl}: inserted ${inserted} new items`);
     }
 
     await updateFeed(feedId, {errorCount: 0, lastError: null});
   } catch (error) {
     const errorMessage = getErrorMessage(error);
-    console.error(`[import-feed] ${feedId} (${sourceUrl}) failed:`, errorMessage);
+    console.error(`[import-feed] ${sourceUrl} failed: ${errorMessage}`);
     const currentFeed = await getFeed(feedId).catch(() => null);
     const errorCount = (currentFeed?.errorCount || 0) + 1;
     await updateFeed(feedId, {
@@ -47,6 +47,8 @@ export const importFeedHandler: PgBoss.WorkHandler<ImportFeedData> = async (jobs
     }).catch((updateError) => {
       console.error(`[import-feed] ${feedId}: failed to record error`, updateError);
     });
-    throw error;
+    // Don't rethrow — the error is recorded on the feed. Rethrowing makes
+    // pg-boss retry feeds that are permanently broken (bad cert, 404) and
+    // spam the queue.
   }
-};
+}
