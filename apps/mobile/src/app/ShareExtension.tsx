@@ -116,7 +116,7 @@ export default function ShareExtension(props: ShareExtensionProps) {
           onPress={handleSave}
           disabled={loading}
         >
-          <Text style={styles.buttonText}>{loading ? 'Saving...' : 'Save'}</Text>
+          <Text style={styles.saveButtonText}>{loading ? 'Saving...' : 'Save'}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -181,6 +181,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
     color: '#1e1e1e',
+  },
+  saveButtonText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#fff',
   },
   buttonDisabled: {
     opacity: 0.5,
