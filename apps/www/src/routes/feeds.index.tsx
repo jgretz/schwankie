@@ -1,8 +1,7 @@
-import {createFileRoute, redirect, useNavigate} from '@tanstack/react-router';
+import {createFileRoute, redirect, useNavigate, Link} from '@tanstack/react-router';
 import {useState} from 'react';
 import {toast} from 'sonner';
 import {Button} from '@www/components/ui/button';
-import {FeedForm} from '@www/components/feed/feed-form';
 import {useFeeds} from '@www/hooks/use-feeds';
 
 import {triggerRefreshAllFeedsAction} from '@www/lib/work-request-actions';
@@ -24,9 +23,8 @@ export const Route = createFileRoute('/feeds/')({
 
 function FeedsPage() {
   const navigate = useNavigate();
-  const [isFormOpen, setIsFormOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const {query, deleteMutation, updateMutation} = useFeeds();
+  const {query} = useFeeds();
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -39,28 +37,6 @@ function FeedsPage() {
       setIsRefreshing(false);
     }
   };
-
-  async function handleDelete(feedId: string) {
-    if (!confirm('Delete this feed?')) return;
-
-    try {
-      await deleteMutation.mutateAsync(feedId);
-      toast.success('Feed deleted');
-    } catch (error) {
-      console.error('Failed to delete feed:', error);
-      toast.error('Failed to delete feed');
-    }
-  }
-
-  async function handleToggleDisable(feedId: string, currentDisabled: boolean) {
-    try {
-      await updateMutation.mutateAsync({id: feedId, disabled: !currentDisabled});
-      toast.success(currentDisabled ? 'Feed enabled' : 'Feed disabled');
-    } catch (error) {
-      console.error('Failed to update feed:', error);
-      toast.error('Failed to update feed');
-    }
-  }
 
   if (query.isLoading) {
     return (
@@ -84,13 +60,18 @@ function FeedsPage() {
           <Button onClick={handleRefresh} disabled={isRefreshing} variant="outline">
             {isRefreshing ? 'Refreshing...' : 'Refresh'}
           </Button>
-          <Button onClick={() => setIsFormOpen(true)}>Add Feed</Button>
+          <Link to="/admin/feeds">
+            <Button>Manage feeds →</Button>
+          </Link>
         </div>
       </div>
 
       {feeds.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-text-muted font-sans">No feeds yet. Add one to get started.</p>
+          <p className="text-text-muted font-sans mb-4">No feeds yet.</p>
+          <Link to="/admin/feeds">
+            <Button>Add a feed</Button>
+          </Link>
         </div>
       ) : (
         <div className="border border-border rounded-lg overflow-hidden">
@@ -105,37 +86,18 @@ function FeedsPage() {
                     {feed.name}
                   </button>
                   <p className="text-text-muted font-sans text-[0.85rem] mt-1 truncate">{feed.sourceUrl}</p>
+                  {feed.disabled && <p className="text-text-muted font-sans text-[0.85rem] mt-1">Disabled</p>}
                   {feed.errorCount > 0 && (
                     <p className="text-destructive font-sans text-[0.85rem] mt-1">
                       {feed.errorCount} recent error{feed.errorCount !== 1 ? 's' : ''}
                     </p>
                   )}
                 </div>
-                <div className="flex gap-2 ml-4 flex-shrink-0">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleToggleDisable(feed.id, feed.disabled ?? false)}
-                    className="text-[0.8rem]"
-                  >
-                    {feed.disabled ? 'Enable' : 'Disable'}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleDelete(feed.id)}
-                    className="text-[0.8rem]"
-                  >
-                    Delete
-                  </Button>
-                </div>
               </div>
             </div>
           ))}
         </div>
       )}
-
-      <FeedForm open={isFormOpen} onOpenChange={setIsFormOpen} onSuccess={() => query.refetch()} />
     </div>
   );
 }

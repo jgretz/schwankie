@@ -1,109 +1,66 @@
-import {createFileRoute} from '@tanstack/react-router';
-import {useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
-import {Button} from '@www/components/ui/button';
-import {getSetting} from 'client';
-import {setSettingAction} from '@www/lib/settings-actions';
-import {initClient} from '@www/lib/init-client';
-import {useState, useEffect} from 'react';
-
-initClient();
+import {createFileRoute, Link} from '@tanstack/react-router';
 
 export const Route = createFileRoute('/admin/')({
-  component: AdminGeneralPage,
+  component: AdminHub,
 });
 
-function AdminGeneralPage() {
-  const queryClient = useQueryClient();
-
-  // Only fetch client-side (client not initialized during SSR)
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-
-  const {data: settingData, isLoading: settingLoading} = useQuery({
-    queryKey: ['setting', 'tagCountFloor'],
-    queryFn: async () => {
-      try {
-        return await getSetting('tagCountFloor');
-      } catch (error) {
-        if (error instanceof Error && error.message.includes('404')) {
-          return {key: 'tagCountFloor', value: '1'};
-        }
-        throw error;
-      }
+function AdminHub() {
+  const cards = [
+    {
+      to: '/admin/feeds',
+      label: 'Feeds',
+      description: 'Manage your RSS feed subscriptions',
+      icon: '📰',
     },
-    enabled: mounted,
-  });
-
-  const [floorValue, setFloorValue] = useState('1');
-  const [floorSaveError, setFloorSaveError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (settingData) {
-      setFloorValue(settingData.value);
-    }
-  }, [settingData]);
-
-  const floorMutation = useMutation({
-    mutationFn: async (value: string) => {
-      await setSettingAction({data: {key: 'tagCountFloor', value}});
+    {
+      to: '/admin/gmail',
+      label: 'Gmail',
+      description: 'Configure email imports from Gmail',
+      icon: '📧',
     },
-    onSuccess: () => {
-      setFloorSaveError(null);
-      queryClient.invalidateQueries({queryKey: ['tags']});
+    {
+      to: '/admin/dead-links',
+      label: 'Dead Links',
+      description: 'View and manage broken links',
+      icon: '🔗',
     },
-    onError: (error) => {
-      console.error('Failed to save tagCountFloor setting:', error);
-      setFloorSaveError('Failed to save. Please try again.');
+    {
+      to: '/admin/tags',
+      label: 'Tags',
+      description: 'Organize and manage your tags',
+      icon: '🏷️',
     },
-  });
-
-  const handleSaveFloor = () => {
-    const num = Number(floorValue);
-    if (!Number.isInteger(num) || num < 1) {
-      setFloorSaveError('Value must be a whole number of 1 or greater.');
-      return;
-    }
-    setFloorSaveError(null);
-    floorMutation.mutate(String(num));
-  };
+    {
+      to: '/admin',
+      label: 'General Settings',
+      description: 'Adjust general preferences',
+      icon: '⚙️',
+    },
+  ];
 
   return (
     <div className="px-6 py-6">
-      <div className="mb-5 flex items-baseline gap-3">
-        <h2 className="font-serif text-[1.35rem] font-semibold text-text">General</h2>
+      <div className="mb-8">
+        <h2 className="font-serif text-[1.35rem] font-semibold text-text mb-1">Admin</h2>
+        <p className="text-text-muted font-sans text-[0.9rem]">Manage your schwankie settings and data</p>
       </div>
 
-      <div className="space-y-4">
-        <div className="flex items-end gap-3">
-          <div className="flex flex-col">
-            <label htmlFor="tag-floor" className="mb-1 font-sans text-[0.85rem] text-text-muted">
-              Tag count floor
-            </label>
-            <input
-              id="tag-floor"
-              type="number"
-              min="1"
-              value={floorValue}
-              onChange={(e) => setFloorValue(e.target.value)}
-              disabled={settingLoading}
-              className="w-20 rounded border border-border bg-bg px-2 py-1.5 font-sans text-[0.9rem] text-text disabled:opacity-50"
-            />
-          </div>
-          <Button
-            size="sm"
-            onClick={handleSaveFloor}
-            disabled={settingLoading || floorMutation.isPending}
-            variant="default"
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {cards.map((card) => (
+          <Link
+            key={card.to}
+            to={card.to}
+            className="block p-6 border border-border rounded-lg hover:border-accent hover:bg-bg-subtle transition-all duration-200 no-underline"
           >
-            {floorMutation.isPending ? 'Saving...' : 'Save'}
-          </Button>
-        </div>
-        <p className="font-sans text-[0.8rem] text-text-faint">
-          Tags with fewer links than this value will be hidden from the sidebar.
-        </p>
-        {floorSaveError && (
-          <p className="font-sans text-[0.8rem] text-red-600 dark:text-red-400">{floorSaveError}</p>
-        )}
+            <div className="flex items-start gap-4">
+              <div className="text-3xl">{card.icon}</div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-serif text-lg text-text mb-1">{card.label}</h3>
+                <p className="font-sans text-[0.85rem] text-text-muted">{card.description}</p>
+              </div>
+            </div>
+          </Link>
+        ))}
       </div>
     </div>
   );
