@@ -1,4 +1,4 @@
-import { View, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { fetchLinks } from 'client';
@@ -18,6 +18,8 @@ export default function QueueScreen() {
     isFetchingNextPage,
     isLoading,
     error,
+    refetch,
+    isRefetching,
   } = useInfiniteQuery({
     queryKey: ['links', 'queued'],
     queryFn: async ({ pageParam = 0 }) => {
@@ -89,6 +91,13 @@ export default function QueueScreen() {
         )}
         onEndReached={handleEndReached}
         onEndReachedThreshold={0.5}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefetching}
+            onRefresh={refetch}
+            tintColor={colors.accent}
+          />
+        }
         ListFooterComponent={
           isFetchingNextPage ? (
             <View style={{ paddingVertical: 20, alignItems: 'center' }}>
