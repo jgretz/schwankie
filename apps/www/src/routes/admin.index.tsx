@@ -1,10 +1,11 @@
-import {createFileRoute, Link} from '@tanstack/react-router';
+import {createFileRoute, useNavigate} from '@tanstack/react-router';
 
 export const Route = createFileRoute('/admin/')({
   component: AdminHub,
 });
 
 function AdminHub() {
+  const navigate = useNavigate();
   const cards = [
     {
       to: '/admin/feeds',
@@ -47,10 +48,10 @@ function AdminHub() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {cards.map((card) => (
-          <Link
+          <div
             key={card.to}
-            to={card.to}
-            className="block p-6 border border-border rounded-lg hover:border-accent hover:bg-bg-subtle transition-all duration-200 no-underline"
+            onClick={() => navigate({to: card.to})}
+            className="block p-6 border border-border rounded-lg hover:border-accent hover:bg-bg-subtle transition-all duration-200 cursor-pointer"
           >
             <div className="flex items-start gap-4">
               <div className="text-3xl">{card.icon}</div>
@@ -59,7 +60,7 @@ function AdminHub() {
                 <p className="font-sans text-[0.85rem] text-text-muted">{card.description}</p>
               </div>
             </div>
-          </Link>
+          </div>
         ))}
       </div>
     </div>

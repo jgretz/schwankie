@@ -1,4 +1,4 @@
-import {createFileRoute, redirect, useNavigate, Link} from '@tanstack/react-router';
+import {createFileRoute, redirect, useNavigate} from '@tanstack/react-router';
 import {useState} from 'react';
 import {toast} from 'sonner';
 import {Button} from '@www/components/ui/button';
@@ -60,18 +60,14 @@ function FeedsPage() {
           <Button onClick={handleRefresh} disabled={isRefreshing} variant="outline">
             {isRefreshing ? 'Refreshing...' : 'Refresh'}
           </Button>
-          <Link to="/admin/feeds">
-            <Button>Manage feeds →</Button>
-          </Link>
+          <Button onClick={() => navigate({to: '/admin/feeds'})}>Manage feeds →</Button>
         </div>
       </div>
 
       {feeds.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-text-muted font-sans mb-4">No feeds yet.</p>
-          <Link to="/admin/feeds">
-            <Button>Add a feed</Button>
-          </Link>
+          <Button onClick={() => navigate({to: '/admin/feeds'})}>Add a feed</Button>
         </div>
       ) : (
         <div className="border border-border rounded-lg overflow-hidden">
