@@ -6,7 +6,7 @@
     "migrate": "bun drizzle-kit migrate"
   },
   "dependencies": {
-    "drizzle-orm": "^0.30.10",
+    "drizzle-orm": "0.30.10",
     "postgres": "^3.4.4"
   },
   "devDependencies": {
