@@ -3,7 +3,7 @@ import {createFileRoute, redirect, Outlet} from '@tanstack/react-router';
 export const Route = createFileRoute('/feeds')({
   beforeLoad: ({context}) => {
     if (!context.auth.authenticated) {
-      throw redirect({to: '/'});
+      throw redirect({to: '/auth/login', search: {error: undefined}});
     }
   },
   head: () => ({

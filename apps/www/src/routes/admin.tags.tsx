@@ -9,7 +9,7 @@ import {MergeDialog} from '@www/components/admin/merge-dialog';
 export const Route = createFileRoute('/admin/tags')({
   beforeLoad: ({context}) => {
     if (!context.auth.authenticated) {
-      throw redirect({to: '/'});
+      throw redirect({to: '/auth/login', search: {error: undefined}});
     }
   },
   head: () => ({
