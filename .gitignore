@@ -20,6 +20,9 @@ lerna-debug.log*
 # OS
 .DS_Store
 
+# Expo tooling artifacts
+.expo/
+
 # Tests
 /coverage
 /.nyc_output
