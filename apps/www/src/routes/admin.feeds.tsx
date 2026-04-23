@@ -1,14 +1,22 @@
 import {createFileRoute, redirect} from '@tanstack/react-router';
 import {useState} from 'react';
+import {MoreVertical} from 'lucide-react';
 import {toast} from 'sonner';
 import {Button} from '@www/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@www/components/ui/dropdown-menu';
 import {Input} from '@www/components/ui/input';
 import {useFeeds} from '@www/hooks/use-feeds';
 
 export const Route = createFileRoute('/admin/feeds')({
   beforeLoad: ({context}) => {
     if (!context.auth.authenticated) {
-      throw redirect({to: '/'});
+      throw redirect({to: '/auth/login', search: {error: undefined}});
     }
   },
   head: () => ({
@@ -152,8 +160,16 @@ function AdminFeedsPage() {
       )}
 
       {filtered.length > 0 && (
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse">
+        <div className="w-full">
+          <table className="w-full table-fixed border-collapse">
+            <colgroup>
+              <col className="w-[26%]" />
+              <col className="w-[34%]" />
+              <col className="w-[16%]" />
+              <col className="w-[10%]" />
+              <col className="w-[10%]" />
+              <col className="w-[4%]" />
+            </colgroup>
             <thead>
               <tr className="border-b border-border">
                 <th className="py-2 text-left font-sans text-[0.8rem] font-semibold text-text-muted">Name</th>
@@ -161,20 +177,20 @@ function AdminFeedsPage() {
                 <th className="py-2 px-4 text-left font-sans text-[0.8rem] font-semibold text-text-muted">Last Fetched</th>
                 <th className="py-2 px-4 text-left font-sans text-[0.8rem] font-semibold text-text-muted">Status</th>
                 <th className="py-2 px-4 text-left font-sans text-[0.8rem] font-semibold text-text-muted">Error</th>
-                <th className="py-2 px-4 text-right font-sans text-[0.8rem] font-semibold text-text-muted">Actions</th>
+                <th className="py-2 px-4 text-right font-sans text-[0.8rem] font-semibold text-text-muted sr-only">Actions</th>
               </tr>
             </thead>
             <tbody>
               {filtered.map((feed) => (
                 <tr key={feed.id} className="border-b border-border hover:bg-bg-subtle transition-colors">
-                  <td className="py-3 font-sans text-[0.9rem]">
+                  <td className="py-3 pr-4 font-sans text-[0.9rem] align-middle">
                     {editingId === feed.id ? (
                       <div className="flex gap-2">
                         <input
                           type="text"
                           value={editName}
                           onChange={(e) => setEditName(e.target.value)}
-                          className="px-2 py-1 border border-border rounded font-sans text-[0.9rem]"
+                          className="min-w-0 flex-1 px-2 py-1 border border-border rounded font-sans text-[0.9rem]"
                           autoFocus
                         />
                         <Button
@@ -194,51 +210,75 @@ function AdminFeedsPage() {
                         </Button>
                       </div>
                     ) : (
-                      <span>{feed.name}</span>
+                      <span className="block truncate" title={feed.name}>{feed.name}</span>
                     )}
                   </td>
-                  <td className="py-3 px-4 font-sans text-[0.85rem] text-text-muted truncate">{feed.sourceUrl}</td>
-                  <td className="py-3 px-4 font-sans text-[0.85rem] text-text-muted">
-                    {feed.updatedAt ? new Date(feed.updatedAt).toLocaleString() : '—'}
+                  <td className="py-3 px-4 font-sans text-[0.85rem] text-text-muted align-middle">
+                    <a
+                      href={feed.sourceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block truncate hover:text-accent transition-colors"
+                      title={feed.sourceUrl}
+                    >
+                      {feed.sourceUrl.replace(/^https?:\/\/(www\.)?/, '')}
+                    </a>
                   </td>
-                  <td className="py-3 px-4 font-sans text-[0.85rem]">
+                  <td className="py-3 px-4 font-sans text-[0.85rem] text-text-muted align-middle truncate">
+                    {feed.updatedAt ? new Date(feed.updatedAt).toLocaleDateString(undefined, {month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'}) : '—'}
+                  </td>
+                  <td className="py-3 px-4 font-sans text-[0.85rem] align-middle">
                     <span className={feed.disabled ? 'text-text-muted' : 'text-green-600 dark:text-green-400'}>
                       {feed.disabled ? 'Disabled' : 'Active'}
                     </span>
                   </td>
-                  <td className="py-3 px-4 font-sans text-[0.85rem]">
-                    {feed.errorCount > 0 && <span className="text-destructive">{feed.errorCount} error{feed.errorCount !== 1 ? 's' : ''}</span>}
+                  <td className="py-3 px-4 font-sans text-[0.85rem] align-middle">
+                    {feed.errorCount > 0 && (
+                      <span
+                        className="block truncate text-destructive"
+                        title={feed.lastError ?? `${feed.errorCount} error${feed.errorCount !== 1 ? 's' : ''}`}
+                      >
+                        {feed.errorCount} err{feed.errorCount !== 1 ? 's' : ''}
+                      </span>
+                    )}
                   </td>
-                  <td className="py-3 px-4 text-right">
-                    <div className="flex gap-2 justify-end">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          setEditingId(feed.id);
-                          setEditName(feed.name);
-                        }}
-                        disabled={editingId !== null || updateMutation.isPending}
-                      >
-                        Rename
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleToggleDisable(feed.id, feed.disabled ?? false)}
-                        disabled={editingId !== null || updateMutation.isPending}
-                      >
-                        {feed.disabled ? 'Enable' : 'Disable'}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleDeleteFeed(feed.id)}
-                        disabled={editingId !== null || deleteMutation.isPending}
-                      >
-                        Delete
-                      </Button>
-                    </div>
+                  <td className="py-3 pl-2 text-right align-middle">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button
+                          type="button"
+                          aria-label="Feed actions"
+                          disabled={editingId !== null}
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-md text-text-muted transition-colors hover:bg-bg-subtle hover:text-text disabled:opacity-40 disabled:cursor-not-allowed"
+                        >
+                          <MoreVertical className="h-4 w-4" />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-40">
+                        <DropdownMenuItem
+                          onSelect={() => {
+                            setEditingId(feed.id);
+                            setEditName(feed.name);
+                          }}
+                        >
+                          Rename
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onSelect={() => handleToggleDisable(feed.id, feed.disabled ?? false)}
+                          disabled={updateMutation.isPending}
+                        >
+                          {feed.disabled ? 'Enable' : 'Disable'}
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onSelect={() => handleDeleteFeed(feed.id)}
+                          disabled={deleteMutation.isPending}
+                          className="text-destructive focus:text-destructive"
+                        >
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </td>
                 </tr>
               ))}
