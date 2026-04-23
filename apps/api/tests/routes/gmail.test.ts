@@ -27,6 +27,7 @@ mock.module('@domain', () => ({
   getFeed: mockGetSetting,
   listRssItems: mockGetSetting,
   listEmailItems: mockGetSetting,
+  countRecentEmailItems: mock(async () => 0),
   getEmailItem: mockGetSetting,
   createLink: mockSetSetting,
   deleteLink: mockSetSetting,
