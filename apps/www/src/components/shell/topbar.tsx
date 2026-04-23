@@ -9,6 +9,7 @@ type TopbarProps = {
   onAddClick: () => void;
   onMenuClick?: () => void;
   showMenuButton?: boolean;
+  menuButtonMobileOnly?: boolean;
 };
 
 export function Topbar({
@@ -18,6 +19,7 @@ export function Topbar({
   onAddClick,
   onMenuClick,
   showMenuButton,
+  menuButtonMobileOnly,
 }: TopbarProps) {
   return (
     <header className="sticky top-0 z-[100] border-b border-border bg-bg">
@@ -26,7 +28,10 @@ export function Topbar({
           <button
             type="button"
             onClick={onMenuClick}
-            className="flex h-8 w-8 items-center justify-center rounded-md text-text-muted transition-colors hover:bg-bg-subtle hover:text-text md:hidden"
+            className={cn(
+              'flex h-8 w-8 items-center justify-center rounded-md text-text-muted transition-colors hover:bg-bg-subtle hover:text-text',
+              menuButtonMobileOnly && 'md:hidden',
+            )}
             aria-label="Open menu"
           >
             <svg

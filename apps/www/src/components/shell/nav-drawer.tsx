@@ -1,12 +1,13 @@
 import {Link} from '@tanstack/react-router';
 import {useEffect, useRef} from 'react';
 import {cn} from '@www/lib/utils';
+import {sections} from './sections';
 import {TagList} from './tag-list';
 import type {CurrentSection, Tag} from './types';
-import {sections} from './sections';
 
-type MobileDrawerProps = {
+type NavDrawerProps = {
   currentSection: CurrentSection;
+  isAuthenticated: boolean;
   tags: Tag[];
   selectedTags: string[];
   onTagToggle: (tagText: string) => void;
@@ -14,45 +15,19 @@ type MobileDrawerProps = {
   onClose: () => void;
 };
 
-function MobileSectionNav({
-  currentSection,
-  onClose,
-}: {
-  currentSection: string;
-  onClose: () => void;
-}) {
-  return (
-    <nav className="flex flex-col gap-1 border-b border-border pb-3 mb-4">
-      {sections.map(({id, label, to}) => (
-        <Link
-          key={id}
-          to={to}
-          onClick={onClose}
-          className={cn(
-            'rounded-[5px] px-2 py-[7px] text-sm font-medium text-text-muted transition-colors hover:bg-bg-subtle hover:text-text',
-            currentSection === id && 'border-l-2 border-accent bg-bg-subtle text-accent',
-          )}
-          activeProps={{
-            className: 'border-l-2 border-accent bg-bg-subtle text-accent',
-          }}
-          activeOptions={{exact: false}}
-        >
-          {label}
-        </Link>
-      ))}
-    </nav>
-  );
-}
+const TAG_SECTIONS: readonly CurrentSection[] = ['queue', 'public'];
 
-export function MobileDrawer({
+export function NavDrawer({
   currentSection,
+  isAuthenticated,
   tags,
   selectedTags,
   onTagToggle,
   isOpen,
   onClose,
-}: MobileDrawerProps) {
+}: NavDrawerProps) {
   const drawerRef = useRef<HTMLDivElement>(null);
+  const showTags = TAG_SECTIONS.includes(currentSection);
 
   useEffect(
     function trapFocusAndEscape() {
@@ -91,7 +66,6 @@ export function MobileDrawer({
 
   return (
     <>
-      {/* Backdrop */}
       <div
         className={cn(
           'fixed inset-0 z-[200] bg-black/40 dark:bg-black/60 transition-opacity duration-200',
@@ -101,7 +75,6 @@ export function MobileDrawer({
         aria-hidden="true"
       />
 
-      {/* Drawer panel */}
       <div
         ref={drawerRef}
         role="dialog"
@@ -113,7 +86,9 @@ export function MobileDrawer({
         )}
       >
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
-          <span className="font-serif text-sm font-semibold text-text">Navigation</span>
+          <span className="font-serif text-sm font-semibold text-text">
+            {isAuthenticated ? 'Navigation' : 'Filters'}
+          </span>
           <button
             type="button"
             onClick={onClose}
@@ -134,9 +109,32 @@ export function MobileDrawer({
         </div>
 
         <div className="p-4">
-          <MobileSectionNav currentSection={currentSection} onClose={onClose} />
-          {currentSection === 'queue' && (
-            <TagList tags={tags} selectedTags={selectedTags} onTagToggle={onTagToggle} />
+          {isAuthenticated && (
+            <nav className="flex flex-col gap-1">
+              {sections.map(({id, label, to}) => (
+                <Link
+                  key={id}
+                  to={to}
+                  onClick={onClose}
+                  className={cn(
+                    'rounded-[5px] px-2 py-[7px] text-sm font-medium text-text-muted transition-colors hover:bg-bg-subtle hover:text-text',
+                    currentSection === id && 'border-l-2 border-accent bg-bg-subtle text-accent',
+                  )}
+                  activeProps={{
+                    className: 'border-l-2 border-accent bg-bg-subtle text-accent',
+                  }}
+                  activeOptions={{exact: false}}
+                >
+                  {label}
+                </Link>
+              ))}
+            </nav>
+          )}
+
+          {showTags && (
+            <div className={cn(isAuthenticated && 'mt-5 border-t border-border pt-5', 'md:hidden')}>
+              <TagList tags={tags} selectedTags={selectedTags} onTagToggle={onTagToggle} />
+            </div>
           )}
         </div>
       </div>

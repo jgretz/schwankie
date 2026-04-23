@@ -111,7 +111,7 @@ function ShellWithData() {
       onTagToggle={onTagToggle}
       searchValue={searchValue}
       onSearchChange={onSearchChange}
-      showAddButton={auth.authenticated}
+      isAuthenticated={auth.authenticated}
       onAddClick={openAdd}
     >
       <Outlet />
