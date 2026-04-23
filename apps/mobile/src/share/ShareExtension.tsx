@@ -1,8 +1,19 @@
-import { Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import {useEffect, useState} from 'react';
+import {
+  ActivityIndicator,
+  Image,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { useEffect, useState } from 'react';
-import { createLink } from 'client';
-import { ensureClientInit } from '../services/shared-config';
+import {createLink} from 'client';
+import {ensureClientInit} from '../services/shared-config';
+
+const schwankieLogo = require('../../assets/icon.png');
 
 // expo-share-extension is iOS-only and only present in the share extension bundle;
 // lazy-require so the main app bundle doesn't crash when the native module is absent.
@@ -17,46 +28,43 @@ interface ShareExtensionProps {
   text?: string;
 }
 
-const DOMAIN_REGEX = /https?:\/\/[^\s]+|(?:www\.|[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}[^\s]*/;
+type Status = 'idle' | 'saving' | 'success' | 'error';
 
-function extractUrlFromText(text: string | undefined): string | undefined {
-  if (!text) return undefined;
-  const match = text.match(DOMAIN_REGEX);
-  return match ? match[0] : undefined;
+const URL_REGEX = /https?:\/\/[^\s]+/;
+
+function extractUrl(url: string | undefined, text: string | undefined): string {
+  if (url) return url.trim();
+  if (!text) return '';
+  const match = text.match(URL_REGEX);
+  return match ? match[0].trim() : text.trim();
 }
 
 function normalizeUrl(url: string): string {
   const trimmed = url.trim();
-  if (trimmed.match(/^https?:\/\//)) {
-    return trimmed;
-  }
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
   return `https://${trimmed}`;
 }
 
-function getTitleFromUrl(url: string): string {
+function isValidUrl(url: string): boolean {
+  return /^https?:\/\/[^\s.]+\.[^\s]+/.test(url);
+}
+
+function titleFromUrl(url: string): string {
   try {
-    const urlObj = new URL(url);
-    return urlObj.hostname || 'Shared Link';
+    return new URL(url).hostname || 'Shared Link';
   } catch {
     return 'Shared Link';
   }
 }
 
 export default function ShareExtension(props: ShareExtensionProps) {
-  const [url, setUrl] = useState<string>('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [url, setUrl] = useState(() => extractUrl(props.url, props.text));
+  const [status, setStatus] = useState<Status>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
-    let finalUrl = props.url;
-
-    if (!finalUrl && props.text) {
-      finalUrl = extractUrlFromText(props.text);
-    }
-
-    if (finalUrl) {
-      setUrl(finalUrl);
-    }
+    const next = extractUrl(props.url, props.text);
+    if (next) setUrl(next);
   }, [props.url, props.text]);
 
   if (Platform.OS !== 'ios') {
@@ -68,70 +76,109 @@ export default function ShareExtension(props: ShareExtensionProps) {
   }
 
   async function handleSave() {
-    if (!url.trim()) {
-      setError('Please enter a URL');
+    if (status === 'saving') return;
+
+    const trimmed = url.trim();
+    if (!trimmed) {
+      setStatus('error');
+      setErrorMessage('Please enter a URL');
       return;
     }
 
-    setLoading(true);
-    setError(null);
+    const normalized = normalizeUrl(trimmed);
+    if (!isValidUrl(normalized)) {
+      setStatus('error');
+      setErrorMessage(`Invalid URL: ${normalized}`);
+      return;
+    }
+
+    setStatus('saving');
+    setErrorMessage('');
 
     try {
       await ensureClientInit();
-      const normalizedUrl = normalizeUrl(url);
-      const title = getTitleFromUrl(normalizedUrl);
-
-      await createLink({ url: normalizedUrl, title });
-
+      await createLink({url: normalized, title: titleFromUrl(normalized)});
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-
-      setTimeout(() => {
-        closeShareExtension();
-      }, 300);
+      setStatus('success');
+      setTimeout(closeShareExtension, 1200);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to save link';
-      setError(errorMessage);
-      setLoading(false);
+      const message = err instanceof Error ? err.message : 'Failed to save link';
+      setStatus('error');
+      setErrorMessage(message);
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     }
   }
 
-  function handleCancel() {
-    closeShareExtension();
+  if (status === 'saving') {
+    return (
+      <View style={styles.container}>
+        <View style={styles.statusContainer}>
+          <Image source={schwankieLogo} style={styles.logo} />
+          <ActivityIndicator size="large" color="#5b6f8a" style={styles.statusSpinner} />
+          <Text style={styles.statusText}>Saving link…</Text>
+        </View>
+      </View>
+    );
+  }
+
+  if (status === 'success') {
+    return (
+      <View style={styles.container}>
+        <View style={styles.statusContainer}>
+          <Image source={schwankieLogo} style={styles.logo} />
+          <Text style={styles.successGlyph}>✓</Text>
+          <Text style={styles.statusText}>Saved to Schwankie</Text>
+        </View>
+      </View>
+    );
   }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Save to Schwankie</Text>
+      <View style={styles.header}>
+        <Image source={schwankieLogo} style={styles.headerLogo} />
+        <Text style={styles.title}>Save to Schwankie</Text>
+      </View>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Enter URL"
-        placeholderTextColor="#999"
-        value={url}
-        onChangeText={setUrl}
-        editable={!loading}
-        autoFocus
-        selectTextOnFocus
-      />
+      <View style={styles.field}>
+        <Text style={styles.label}>Link</Text>
+        <TextInput
+          style={styles.input}
+          value={url}
+          onChangeText={(value) => {
+            setUrl(value);
+            if (status === 'error') {
+              setStatus('idle');
+              setErrorMessage('');
+            }
+          }}
+          placeholder="https://…"
+          placeholderTextColor="#a89d8a"
+          autoCapitalize="none"
+          autoCorrect={false}
+          keyboardType="url"
+          multiline
+          selectTextOnFocus
+        />
+        {status === 'error' && errorMessage ? (
+          <Text style={styles.errorText}>{errorMessage}</Text>
+        ) : null}
+      </View>
 
-      {error && <Text style={styles.errorText}>{error}</Text>}
-
-      <View style={styles.buttonContainer}>
+      <View style={styles.buttonRow}>
         <TouchableOpacity
-          style={[styles.button, styles.saveButton, loading && styles.buttonDisabled]}
-          onPress={handleSave}
-          disabled={loading}
+          style={[styles.button, styles.cancelButton]}
+          onPress={closeShareExtension}
         >
-          <Text style={styles.saveButtonText}>{loading ? 'Saving...' : 'Save'}</Text>
+          <Text style={styles.cancelButtonText}>Cancel</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.button, styles.cancelButton, loading && styles.buttonDisabled]}
-          onPress={handleCancel}
-          disabled={loading}
+          style={[styles.button, styles.saveButton, !url.trim() && styles.buttonDisabled]}
+          onPress={handleSave}
+          disabled={!url.trim()}
         >
-          <Text style={styles.buttonText}>Cancel</Text>
+          <Text style={styles.saveButtonText}>Save Link</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -142,59 +189,107 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f7f3ed',
-    padding: 16,
-    justifyContent: 'flex-start',
-    paddingTop: 32,
+    padding: 20,
+    paddingTop: 24,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 20,
+  },
+  headerLogo: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
   },
   title: {
     fontSize: 20,
     fontWeight: '600',
-    marginBottom: 16,
     color: '#1e1e1e',
+  },
+  field: {
+    flex: 1,
+    marginBottom: 16,
+  },
+  label: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#6b6459',
+    marginBottom: 6,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   input: {
-    backgroundColor: '#fff',
+    backgroundColor: '#fdfbf6',
     borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 12,
+    borderColor: '#e0d8c7',
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
     fontSize: 16,
-    marginBottom: 12,
     color: '#1e1e1e',
+    minHeight: 72,
+    textAlignVertical: 'top',
   },
-  errorText: {
-    color: '#d32f2f',
-    fontSize: 14,
-    marginBottom: 12,
-  },
-  buttonContainer: {
+  buttonRow: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 12,
   },
   button: {
     flex: 1,
-    padding: 12,
-    borderRadius: 8,
+    paddingVertical: 14,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  cancelButton: {
+    backgroundColor: '#e4dccb',
+  },
+  cancelButtonText: {
+    color: '#3d342a',
+    fontSize: 16,
+    fontWeight: '600',
   },
   saveButton: {
     backgroundColor: '#5b6f8a',
   },
-  cancelButton: {
-    backgroundColor: '#ddd',
-  },
-  buttonText: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#1e1e1e',
-  },
   saveButtonText: {
+    color: '#f7f3ed',
     fontSize: 16,
-    fontWeight: '500',
-    color: '#fff',
+    fontWeight: '600',
   },
   buttonDisabled: {
     opacity: 0.5,
+  },
+  statusContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logo: {
+    width: 72,
+    height: 72,
+    borderRadius: 16,
+    marginBottom: 20,
+  },
+  statusSpinner: {
+    marginBottom: 12,
+  },
+  statusText: {
+    fontSize: 17,
+    fontWeight: '500',
+    color: '#1e1e1e',
+  },
+  successGlyph: {
+    fontSize: 44,
+    color: '#5b6f8a',
+    marginBottom: 8,
+    fontWeight: '600',
+  },
+  errorText: {
+    color: '#b34040',
+    fontSize: 14,
+    marginTop: 8,
   },
 });
