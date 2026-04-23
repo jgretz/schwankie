@@ -41,6 +41,9 @@ export {promoteRssItem} from './calls/promote-rss-item';
 export {fetchAllFeeds} from './calls/fetch-all-feeds';
 export {bulkUpsertRssItems} from './calls/bulk-upsert-rss-items';
 export {bulkUpsertEmailItems} from './calls/bulk-upsert-email-items';
+export {listEmailItems} from './calls/list-email-items';
+export {markEmailItemRead} from './calls/mark-email-item-read';
+export {promoteEmailItem} from './calls/promote-email-item';
 
 // types
 export type {
@@ -61,4 +64,5 @@ export type {
   CreateFeedInput,
   UpdateFeedInput,
   BulkUpsertRssItemsInput,
+  EmailItemData,
 } from './types';

@@ -2,8 +2,9 @@ import {eq} from 'drizzle-orm';
 import {emailItem} from 'database';
 import {getDb} from '../db';
 import {createLink} from './create-link';
+import type {LinkWithTags} from '../types';
 
-export async function promoteEmailItem(id: string): Promise<number> {
+export async function promoteEmailItem(id: string): Promise<LinkWithTags> {
   const db = getDb();
 
   return db.transaction(async (tx) => {
@@ -31,6 +32,6 @@ export async function promoteEmailItem(id: string): Promise<number> {
       .set({clicked: true})
       .where(eq(emailItem.id, id));
 
-    return link.id;
+    return link;
   });
 }

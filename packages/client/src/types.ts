@@ -127,3 +127,15 @@ export type BulkUpsertRssItemsInput = {
     pubDate?: string;
   }>;
 };
+
+export type EmailItemData = {
+  id: string;
+  emailMessageId: string;
+  emailFrom: string;
+  link: string;
+  title: string | null;
+  description: string | null;
+  read: boolean;
+  clicked: boolean;
+  importedAt: string;
+};
