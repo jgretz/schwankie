@@ -136,9 +136,9 @@ export default function AddLinkScreen() {
           }}
         >
           {isPending ? (
-            <ActivityIndicator color="white" />
+            <ActivityIndicator color={colors.accentForeground} />
           ) : (
-            <Text style={{ color: 'white', fontSize: 16, fontWeight: '600' }}>Add Link</Text>
+            <Text style={{ color: colors.accentForeground, fontSize: 16, fontWeight: '600' }}>Add Link</Text>
           )}
         </TouchableOpacity>
 

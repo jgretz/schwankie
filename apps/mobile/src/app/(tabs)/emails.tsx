@@ -69,7 +69,10 @@ export default function EmailsScreen() {
     );
   }
 
-  const flatData: Array<{ type: 'group' | 'item'; from?: string; item?: EmailItemData; key: string }> = [];
+  const flatData: Array<
+    | { type: 'group'; from: string; key: string }
+    | { type: 'item'; item: EmailItemData; key: string }
+  > = [];
   for (const from of filteredKeys) {
     flatData.push({ type: 'group', from, key: `group-${from}` });
     for (const item of groupedItems[from]) {
@@ -103,7 +106,7 @@ export default function EmailsScreen() {
       );
     }
 
-    const item = dataItem.item!;
+    const item = dataItem.item;
     return (
       <View style={{ backgroundColor: colors.card, borderBottomWidth: 1, borderBottomColor: colors.border }}>
         <View style={{ paddingHorizontal: 16, paddingVertical: 12 }}>

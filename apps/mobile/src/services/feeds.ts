@@ -37,6 +37,14 @@ export function useMarkRssItemRead() {
     onSuccess: (_, { feedId }) => {
       queryClient.invalidateQueries({ queryKey: ['feeds', feedId, 'items'] });
     },
+    onError: (error) => {
+      console.error('[useMarkRssItemRead] Error:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Failed to mark as read',
+        text2: error instanceof Error ? error.message : 'Unknown error',
+      });
+    },
   });
 }
 
@@ -49,6 +57,14 @@ export function usePromoteRssItem() {
     onSuccess: (_, { feedId }) => {
       queryClient.invalidateQueries({ queryKey: ['feeds', feedId, 'items'] });
       queryClient.invalidateQueries({ queryKey: ['links', 'queued'] });
+    },
+    onError: (error) => {
+      console.error('[usePromoteRssItem] Error:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Failed to promote',
+        text2: error instanceof Error ? error.message : 'Unknown error',
+      });
     },
   });
 }

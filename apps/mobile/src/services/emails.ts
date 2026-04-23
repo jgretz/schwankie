@@ -26,6 +26,14 @@ export function useMarkEmailItemRead() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['emails'] });
     },
+    onError: (error) => {
+      console.error('[useMarkEmailItemRead] Error:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Failed to mark as read',
+        text2: error instanceof Error ? error.message : 'Unknown error',
+      });
+    },
   });
 }
 
@@ -37,6 +45,14 @@ export function usePromoteEmailItem() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['emails'] });
       queryClient.invalidateQueries({ queryKey: ['links', 'queued'] });
+    },
+    onError: (error) => {
+      console.error('[usePromoteEmailItem] Error:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Failed to promote',
+        text2: error instanceof Error ? error.message : 'Unknown error',
+      });
     },
   });
 }
