@@ -14,7 +14,7 @@ import {parseIdParam} from '../lib/parse-id-param';
 export const tagsRouter = new Hono();
 const auth = authMiddleware();
 
-tagsRouter.get('/api/tags', async (c) => {
+tagsRouter.get('/api/tags', auth, async (c) => {
   const needs_normalization = c.req.query('needs_normalization') === 'true' ? true : undefined;
   const canonical = c.req.query('canonical') === 'true' ? true : undefined;
   const all = c.req.query('all') === 'true';

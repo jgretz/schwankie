@@ -6,7 +6,7 @@ import {updateSettingSchema} from '../validators/settings';
 export const settingsRouter = new Hono();
 const auth = authMiddleware();
 
-settingsRouter.get('/api/settings/:key', async (c) => {
+settingsRouter.get('/api/settings/:key', auth, async (c) => {
   const key = c.req.param('key');
   const value = await getSetting(key);
 

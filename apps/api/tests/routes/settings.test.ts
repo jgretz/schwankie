@@ -39,7 +39,7 @@ describe('GET /api/settings/:key', function () {
   it('should return 404 when setting not found', async function () {
     mockGetSetting.mockResolvedValue(null);
     const app = makeApp();
-    const res = await app.request('/api/settings/nonexistent');
+    const res = await app.request('/api/settings/nonexistent', {headers: authHeader});
     expect(res.status).toBe(404);
     const body = await res.json();
     expect(body).toEqual({error: 'Setting not found'});
@@ -48,10 +48,16 @@ describe('GET /api/settings/:key', function () {
   it('should return 200 with key and value when found', async function () {
     mockGetSetting.mockResolvedValue('123');
     const app = makeApp();
-    const res = await app.request('/api/settings/tagCountFloor');
+    const res = await app.request('/api/settings/tagCountFloor', {headers: authHeader});
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body).toEqual({key: 'tagCountFloor', value: '123'});
+  });
+
+  it('should return 401 without auth header', async function () {
+    const app = makeApp();
+    const res = await app.request('/api/settings/tagCountFloor');
+    expect(res.status).toBe(401);
   });
 });
 

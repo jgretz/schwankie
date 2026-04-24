@@ -9,7 +9,7 @@ import {parseIdParam} from '../lib/parse-id-param';
 export const linksRoutes = new Hono();
 const auth = authMiddleware();
 
-linksRoutes.get('/api/links', async (c) => {
+linksRoutes.get('/api/links', auth, async (c) => {
   const parsed = listLinksParamsSchema.safeParse({
     limit: c.req.query('limit'),
     offset: c.req.query('offset'),
@@ -38,7 +38,7 @@ linksRoutes.post('/api/links', auth, async (c) => {
   return c.json(result, 201);
 });
 
-linksRoutes.get('/api/links/:id', async (c) => {
+linksRoutes.get('/api/links/:id', auth, async (c) => {
   const id = parseIdParam(c);
   if (id === null) {
     return c.json({error: 'Invalid link ID'}, 400);

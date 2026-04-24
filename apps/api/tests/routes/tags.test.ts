@@ -109,7 +109,7 @@ describe('GET /api/tags', function () {
     mockListTags.mockResolvedValue(result);
     mockGetSetting.mockResolvedValue('1');
     const app = makeApp();
-    const res = await app.request('/api/tags');
+    const res = await app.request('/api/tags', {headers: authHeader});
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body).toEqual(result);
@@ -119,15 +119,21 @@ describe('GET /api/tags', function () {
     mockListTags.mockResolvedValue({tags: [], total: 0});
     mockGetSetting.mockResolvedValue('1');
     const app = makeApp();
-    await app.request('/api/tags');
+    await app.request('/api/tags', {headers: authHeader});
     expect(mockResolveTagMinCount).toHaveBeenCalled();
   });
 
   it('should skip tagCountFloor when needs_normalization=true', async function () {
     mockListTags.mockResolvedValue({tags: [], total: 0});
     const app = makeApp();
-    await app.request('/api/tags?needs_normalization=true');
+    await app.request('/api/tags?needs_normalization=true', {headers: authHeader});
     expect(mockGetSetting).not.toHaveBeenCalled();
+  });
+
+  it('should return 401 without auth header', async function () {
+    const app = makeApp();
+    const res = await app.request('/api/tags');
+    expect(res.status).toBe(401);
   });
 });
 

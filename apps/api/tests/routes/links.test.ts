@@ -76,7 +76,7 @@ describe('GET /api/links/:id', function () {
 
   it('should return 400 when id is not a number', async function () {
     const app = makeApp();
-    const res = await app.request('/api/links/abc');
+    const res = await app.request('/api/links/abc', {headers: authHeader});
     expect(res.status).toBe(400);
     const body = await res.json();
     expect(body).toEqual({error: 'Invalid link ID'});
@@ -86,7 +86,7 @@ describe('GET /api/links/:id', function () {
   it('should return 404 when link not found', async function () {
     mockGetLink.mockResolvedValue(null);
     const app = makeApp();
-    const res = await app.request('/api/links/99999');
+    const res = await app.request('/api/links/99999', {headers: authHeader});
     expect(res.status).toBe(404);
     const body = await res.json();
     expect(body).toEqual({error: 'Link not found'});
@@ -108,12 +108,18 @@ describe('GET /api/links/:id', function () {
     };
     mockGetLink.mockResolvedValue(link);
     const app = makeApp();
-    const res = await app.request('/api/links/1');
+    const res = await app.request('/api/links/1', {headers: authHeader});
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.id).toBe(1);
     expect(body.title).toBe('Test Link');
     expect(body.url).toBe('https://example.com');
+  });
+
+  it('should return 401 without auth header', async function () {
+    const app = makeApp();
+    const res = await app.request('/api/links/1');
+    expect(res.status).toBe(401);
   });
 });
 
@@ -126,7 +132,7 @@ describe('GET /api/links', function () {
     const result = {links: [{id: 1, title: 'Link 1'}], total: 1};
     mockListLinks.mockResolvedValue(result);
     const app = makeApp();
-    const res = await app.request('/api/links');
+    const res = await app.request('/api/links', {headers: authHeader});
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body).toEqual(result);
@@ -134,10 +140,16 @@ describe('GET /api/links', function () {
 
   it('should return 400 on invalid query params', async function () {
     const app = makeApp();
-    const res = await app.request('/api/links?limit=0');
+    const res = await app.request('/api/links?limit=0', {headers: authHeader});
     expect(res.status).toBe(400);
     const body = await res.json();
     expect(body.error).toBe('Invalid query parameters');
+  });
+
+  it('should return 401 without auth header', async function () {
+    const app = makeApp();
+    const res = await app.request('/api/links');
+    expect(res.status).toBe(401);
   });
 });
 

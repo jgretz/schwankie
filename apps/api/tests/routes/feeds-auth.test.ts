@@ -58,9 +58,13 @@ mock.module('@domain', () => ({
   updateFeed: mockUpdateFeed,
   deleteFeed: mockDeleteFeed,
   listRssItems: mockListRssItems,
+  listAllRssItems: mock(async () => ({items: [], total: 0, hasMore: false, nextOffset: 0})),
   markRssItemRead: mockMarkRssItemRead,
+  markAllRssItemsRead: mock(async () => 0),
   promoteRssItem: mockPromoteRssItem,
   bulkUpsertRssItems: mockBulkUpsertRssItems,
+  bulkUpsertEmailItems: mock(async () => 0),
+  markAllEmailItemsRead: mock(async () => 0),
   // Stubs for exports consumed by sibling route files (e.g. gmail.ts).
   // The mock.module registry is global across test files; omitting these
   // causes "Export not found" errors when gmail.test.ts loads after this one.
@@ -96,22 +100,19 @@ describe('Feeds Routes - Auth Enforcement', () => {
     app.route('/', feedsRoutes);
   });
 
-  describe('Public endpoints', () => {
-    it('GET /api/feeds - public, no auth required', async () => {
+  describe('Protected endpoints - missing auth', () => {
+    it('GET /api/feeds - requires auth, rejects without token', async () => {
       const req = new Request('http://localhost/api/feeds', {method: 'GET'});
       const res = await app.fetch(req);
-      // Should not return 401; may return 500 if deps fail, but not auth failure
-      expect(res.status).not.toBe(401);
+      expect(res.status).toBe(401);
     });
 
-    it('GET /api/feeds/:id/items - public, no auth required', async () => {
+    it('GET /api/feeds/:id/items - requires auth, rejects without token', async () => {
       const req = new Request('http://localhost/api/feeds/test-id/items', {method: 'GET'});
       const res = await app.fetch(req);
-      expect(res.status).not.toBe(401);
+      expect(res.status).toBe(401);
     });
-  });
 
-  describe('Protected endpoints - missing auth', () => {
     it('POST /api/feeds - requires auth, rejects without token', async () => {
       const req = new Request('http://localhost/api/feeds', {
         method: 'POST',

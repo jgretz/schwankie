@@ -12,7 +12,7 @@ import {bulkUpsertEmailItemsSchema} from '../validators/emails';
 export const emailsRouter = new Hono();
 const auth = authMiddleware();
 
-emailsRouter.get('/api/emails', async (c) => {
+emailsRouter.get('/api/emails', auth, async (c) => {
   const limit = c.req.query('limit') ? Number(c.req.query('limit')) : 50;
   const offset = c.req.query('offset') ? Number(c.req.query('offset')) : 0;
   const read = c.req.query('read') ? c.req.query('read') === 'true' : undefined;

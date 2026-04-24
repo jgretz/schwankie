@@ -29,7 +29,7 @@ function parseId(idStr: string | undefined): string | null {
 export const feedsRoutes = new Hono();
 const auth = authMiddleware();
 
-feedsRoutes.get('/api/rss-items', async (c) => {
+feedsRoutes.get('/api/rss-items', auth, async (c) => {
   const parsed = listAllRssItemsSchema.safeParse({
     limit: c.req.query('limit'),
     offset: c.req.query('offset'),
@@ -49,7 +49,7 @@ feedsRoutes.post('/api/rss-items/mark-all-read', auth, async (c) => {
   return c.json({count});
 });
 
-feedsRoutes.get('/api/feeds', async (c) => {
+feedsRoutes.get('/api/feeds', auth, async (c) => {
   const result = await listFeeds();
   return c.json(result);
 });
@@ -68,7 +68,7 @@ feedsRoutes.get('/api/feeds/all', auth, async (c) => {
   return c.json(result);
 });
 
-feedsRoutes.get('/api/feeds/:id', async (c) => {
+feedsRoutes.get('/api/feeds/:id', auth, async (c) => {
   const id = parseId(c.req.param('id'));
   if (id === null) {
     return c.json({error: 'Invalid feed ID'}, 400);
@@ -108,7 +108,7 @@ feedsRoutes.delete('/api/feeds/:id', auth, async (c) => {
   return c.json({deleted: true});
 });
 
-feedsRoutes.get('/api/feeds/:feedId/items', async (c) => {
+feedsRoutes.get('/api/feeds/:feedId/items', auth, async (c) => {
   const feedId = parseId(c.req.param('feedId'));
   if (feedId === null) {
     return c.json({error: 'Invalid feed ID'}, 400);
