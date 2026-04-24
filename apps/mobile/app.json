@@ -24,20 +24,22 @@
           "root": "./src/app"
         }
       ],
-      "expo-share-extension",
       "expo-web-browser",
-      "./plugins/withShareExtensionLocalNetworking.js"
+      "@bacons/apple-targets"
     ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.schwankie.app",
-      "appExtensions": [
-        {
-          "name": "SchwankieShareExtension",
-          "bundleIdentifier": "com.schwankie.app.share",
-          "deploymentTarget": "13.0"
-        }
-      ]
+      "appleTeamId": "B8L5W4A275",
+      "entitlements": {
+        "com.apple.security.application-groups": [
+          "group.com.schwankie.app",
+          "group.com.schwankie.app"
+        ]
+      },
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -51,17 +53,14 @@
     },
     "extra": {
       "eas": {
+        "projectId": "6545c080-8c25-4340-b066-c75352fe6bea",
         "build": {
           "experimental": {
             "ios": {
               "appExtensions": [
                 {
-                  "targetName": "SchwankieShareExtension",
-                  "bundleIdentifier": "com.schwankie.app.share"
-                },
-                {
-                  "targetName": "SchwankieShareExtension",
                   "bundleIdentifier": "com.schwankie.app.share",
+                  "targetName": "SchwankieShare",
                   "entitlements": {
                     "com.apple.security.application-groups": [
                       "group.com.schwankie.app"
@@ -71,8 +70,7 @@
               ]
             }
           }
-        },
-        "projectId": "6545c080-8c25-4340-b066-c75352fe6bea"
+        }
       },
       "router": {
         "root": "./src/app"

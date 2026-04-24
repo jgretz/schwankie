@@ -1,23 +1,15 @@
-import * as SecureStore from 'expo-secure-store';
+import {ExtensionStorage} from '@bacons/apple-targets';
 
 const APP_GROUP = 'group.com.schwankie.app';
-const API_URL_KEY = 'schwankie_api_url';
-const API_KEY_KEY = 'schwankie_api_key';
+const API_URL_KEY = 'apiUrl';
+const API_KEY_KEY = 'apiKey';
 
-const options: SecureStore.SecureStoreOptions = {accessGroup: APP_GROUP};
+const storage = new ExtensionStorage(APP_GROUP);
 
-export async function setSharedApiUrl(url: string): Promise<void> {
-  await SecureStore.setItemAsync(API_URL_KEY, url, options);
+export function setSharedApiUrl(url: string): void {
+  storage.set(API_URL_KEY, url);
 }
 
-export async function getSharedApiUrl(): Promise<string | null> {
-  return SecureStore.getItemAsync(API_URL_KEY, options);
-}
-
-export async function setSharedApiKey(key: string): Promise<void> {
-  await SecureStore.setItemAsync(API_KEY_KEY, key, options);
-}
-
-export async function getSharedApiKey(): Promise<string | null> {
-  return SecureStore.getItemAsync(API_KEY_KEY, options);
+export function setSharedApiKey(key: string): void {
+  storage.set(API_KEY_KEY, key);
 }

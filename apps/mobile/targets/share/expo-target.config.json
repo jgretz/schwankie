@@ -1,0 +1,17 @@
+{
+  "type": "share",
+  "name": "SchwankieShare",
+  "bundleIdentifier": ".share",
+  "deploymentTarget": "16.0",
+  "icon": "../../assets/icon.png",
+  "entitlements": {
+    "com.apple.security.application-groups": ["group.com.schwankie.app"]
+  },
+  "frameworks": [
+    "UIKit",
+    "SwiftUI",
+    "Social",
+    "MobileCoreServices",
+    "UniformTypeIdentifiers"
+  ]
+}

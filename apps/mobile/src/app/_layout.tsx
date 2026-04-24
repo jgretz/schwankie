@@ -23,14 +23,8 @@ init({
 
 export default function RootLayout() {
   useEffect(function () {
-    setSharedApiUrl(apiUrl!).catch(function (error) {
-      console.warn('Failed to sync apiUrl to shared storage', error);
-    });
-    if (apiKey) {
-      setSharedApiKey(apiKey).catch(function (error) {
-        console.warn('Failed to sync apiKey to shared storage', error);
-      });
-    }
+    setSharedApiUrl(apiUrl!);
+    if (apiKey) setSharedApiKey(apiKey);
   }, []);
 
   return (
