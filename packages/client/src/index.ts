@@ -13,6 +13,25 @@ export {getLinksNeedingEnrichment} from './calls/get-links-needing-enrichment';
 export {updateLinkContent} from './calls/update-link-content';
 export {getLinksNeedingScoring} from './calls/get-links-needing-scoring';
 export {updateLinkScore} from './calls/update-link-score';
+export {
+  listPendingEmbeddings,
+  type PendingEmbeddingLink,
+  type PendingEmbeddingsResponse,
+} from './calls/list-pending-embeddings';
+export {
+  upsertLinkEmbedding,
+  type UpsertLinkEmbeddingInput,
+} from './calls/upsert-link-embedding';
+export {
+  listQueueSimilarityScores,
+  type QueueSimilarityScoreItem,
+  type QueueSimilarityScoresResponse,
+} from './calls/list-queue-similarity-scores';
+export {
+  getRelatedLinks,
+  type RelatedLinkData,
+  type RelatedLinksResponse,
+} from './calls/get-related-links';
 export {getTagsNeedingNormalization} from './calls/get-tags-needing-normalization';
 export {getCanonicalTags} from './calls/get-canonical-tags';
 export {mergeTag} from './calls/merge-tag';

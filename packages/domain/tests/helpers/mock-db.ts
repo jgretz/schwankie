@@ -95,6 +95,14 @@ type WorkRequestRow = {
   completedAt: Date | null;
 };
 
+type LinkEmbeddingRow = {
+  id: number;
+  linkId: number;
+  embedding: number[];
+  model: string;
+  computedAt: Date;
+};
+
 export const store = {
   links: [] as LinkRow[],
   tags: [] as TagRow[],
@@ -105,7 +113,17 @@ export const store = {
   emailItems: [] as EmailItemRow[],
   settings: [] as SettingRow[],
   workRequests: [] as WorkRequestRow[],
-  nextId: {link: 1, tag: 1, linkTag: 1, tagAlias: 1, emailItem: 1, setting: 1, workRequest: 1},
+  linkEmbeddings: [] as LinkEmbeddingRow[],
+  nextId: {
+    link: 1,
+    tag: 1,
+    linkTag: 1,
+    tagAlias: 1,
+    emailItem: 1,
+    setting: 1,
+    workRequest: 1,
+    linkEmbedding: 1,
+  },
   insertionCounter: 0,
 };
 
@@ -119,7 +137,17 @@ export function resetStore() {
   store.emailItems = [];
   store.settings = [];
   store.workRequests = [];
-  store.nextId = {link: 1, tag: 1, linkTag: 1, tagAlias: 1, emailItem: 1, setting: 1, workRequest: 1};
+  store.linkEmbeddings = [];
+  store.nextId = {
+    link: 1,
+    tag: 1,
+    linkTag: 1,
+    tagAlias: 1,
+    emailItem: 1,
+    setting: 1,
+    workRequest: 1,
+    linkEmbedding: 1,
+  };
   store.insertionCounter = 0;
 }
 
@@ -152,6 +180,8 @@ function getStoreForTable(table: any): any[] {
       return store.settings;
     case 'work_request':
       return store.workRequests;
+    case 'link_embedding':
+      return store.linkEmbeddings;
     default:
       throw new Error(`Unknown table: ${name}`);
   }
@@ -178,6 +208,8 @@ function getNextIdKey(table: any): keyof typeof store.nextId {
       return 'setting';
     case 'work_request':
       return 'workRequest';
+    case 'link_embedding':
+      return 'linkEmbedding';
     default:
       throw new Error(`Unknown table: ${name}`);
   }
@@ -269,6 +301,13 @@ const COLUMN_MAP: Record<string, Record<string, string>> = {
     created_at: 'createdAt',
     started_at: 'startedAt',
     completed_at: 'completedAt',
+  },
+  link_embedding: {
+    id: 'id',
+    link_id: 'linkId',
+    embedding: 'embedding',
+    model: 'model',
+    computed_at: 'computedAt',
   },
 };
 
@@ -541,6 +580,14 @@ function defaultsForTable(table: any, values: any, id: number): any {
         createdAt: values.createdAt ?? values.created_at ?? now,
         startedAt: values.startedAt ?? values.started_at ?? null,
         completedAt: values.completedAt ?? values.completed_at ?? null,
+      };
+    case 'link_embedding':
+      return {
+        id,
+        linkId: values.linkId ?? values.link_id,
+        embedding: values.embedding ?? [],
+        model: values.model ?? '',
+        computedAt: values.computedAt ?? values.computed_at ?? now,
       };
     default:
       return {id, ...values};
@@ -849,7 +896,9 @@ function createInsertBuilder(table: any) {
         if (
           conflictAction === 'nothing' &&
           conflictTargetColumns.length > 0 &&
-          (tableName(table) === 'email_item' || tableName(table) === 'setting')
+          (tableName(table) === 'email_item' ||
+            tableName(table) === 'setting' ||
+            tableName(table) === 'link_embedding')
         ) {
           const dbColNames = conflictTargetColumns.map((col: any) => col.name || col);
           const existing = storeArr.find((row: any) =>
@@ -924,7 +973,9 @@ function createInsertBuilder(table: any) {
         if (
           conflictAction === 'nothing' &&
           conflictTargetColumns.length > 0 &&
-          (tableName(table) === 'email_item' || tableName(table) === 'setting')
+          (tableName(table) === 'email_item' ||
+            tableName(table) === 'setting' ||
+            tableName(table) === 'link_embedding')
         ) {
           const dbColNames = conflictTargetColumns.map((col: any) => col.name || col);
           const existing = storeArr.find((row: any) =>
@@ -1084,6 +1135,9 @@ function replaceStoreArray(table: any, kept: any[]) {
       break;
     case 'work_request':
       store.workRequests = kept;
+      break;
+    case 'link_embedding':
+      store.linkEmbeddings = kept;
       break;
   }
 }

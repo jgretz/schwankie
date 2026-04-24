@@ -71,6 +71,13 @@
       "when": 1776895041649,
       "tag": "0009_add_work_requests",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1777058730237,
+      "tag": "0010_add-link-embedding",
+      "breakpoints": true
     }
   ]
 }

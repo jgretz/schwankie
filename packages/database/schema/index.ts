@@ -8,3 +8,4 @@ export {feed} from './feed.schema';
 export {rssItem} from './rss-item.schema';
 export {emailItem} from './email-item.schema';
 export {workRequest} from './work-request.schema';
+export {linkEmbedding} from './link-embedding.schema';

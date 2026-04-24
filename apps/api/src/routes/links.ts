@@ -8,7 +8,13 @@ import {
   deleteLinks,
   getLink,
   resetEnrichment,
+  getRelatedByTags,
+  getRelatedByVector,
+  listLinksNeedingEmbedding,
+  upsertLinkEmbedding,
+  scoreQueuedBySimilarity,
 } from '@domain';
+import type {RelatedLink} from '@domain';
 import {refetchLink} from '../commands/refetch-link';
 import {suggestTags} from '../commands/suggest-tags';
 import {
@@ -16,6 +22,7 @@ import {
   updateLinkSchema,
   listLinksParamsSchema,
   bulkDeleteLinksSchema,
+  upsertLinkEmbeddingSchema,
 } from '../validators/links';
 import {parseIdParam} from '../lib/parse-id-param';
 
@@ -60,6 +67,24 @@ linksRoutes.post('/api/links/bulk-delete', auth, async (c) => {
   return c.json({deleted});
 });
 
+linksRoutes.get('/api/links/pending-embeddings', auth, async (c) => {
+  const limit = Math.min(Math.max(Number(c.req.query('limit') ?? 10), 1), 100);
+  const model = c.req.query('model');
+  if (!model) {
+    return c.json({error: 'model query parameter required'}, 400);
+  }
+  const items = await listLinksNeedingEmbedding(model, limit);
+  return c.json({items});
+});
+
+linksRoutes.get('/api/links/queue-similarity-scores', auth, async (c) => {
+  const limit = Math.min(Math.max(Number(c.req.query('limit') ?? 100), 1), 500);
+  const k = Math.min(Math.max(Number(c.req.query('k') ?? 10), 1), 50);
+  const minSim = Math.min(Math.max(Number(c.req.query('minSimilarity') ?? 0.5), 0), 1);
+  const items = await scoreQueuedBySimilarity(limit, k, minSim);
+  return c.json({items});
+});
+
 linksRoutes.get('/api/links/:id', auth, async (c) => {
   const id = parseIdParam(c);
   if (id === null) {
@@ -86,6 +111,46 @@ linksRoutes.patch('/api/links/:id', auth, async (c) => {
     return c.json({error: 'Link not found'}, 404);
   }
   return c.json(result);
+});
+
+linksRoutes.get('/api/links/:id/related', auth, async (c) => {
+  const id = parseIdParam(c);
+  if (id === null) {
+    return c.json({error: 'Invalid link ID'}, 400);
+  }
+  const limit = Math.min(Math.max(Number(c.req.query('limit') ?? 10), 1), 50);
+  const [byTag, byVector] = await Promise.all([
+    getRelatedByTags(id, limit),
+    getRelatedByVector(id, limit).catch(() => [] as RelatedLink[]),
+  ]);
+
+  const seen = new Set<number>();
+  const merged: RelatedLink[] = [];
+  for (const item of byTag) {
+    if (seen.has(item.id)) continue;
+    seen.add(item.id);
+    merged.push(item);
+  }
+  for (const item of byVector) {
+    if (seen.has(item.id)) continue;
+    seen.add(item.id);
+    merged.push(item);
+  }
+
+  return c.json({items: merged.slice(0, limit)});
+});
+
+linksRoutes.put('/api/links/:id/embedding', auth, async (c) => {
+  const id = parseIdParam(c);
+  if (id === null) {
+    return c.json({error: 'Invalid link ID'}, 400);
+  }
+  const parsed = upsertLinkEmbeddingSchema.safeParse(await c.req.json());
+  if (!parsed.success) {
+    return c.json({error: 'Invalid request body', details: parsed.error.flatten()}, 400);
+  }
+  await upsertLinkEmbedding({linkId: id, ...parsed.data});
+  return c.json({upserted: true});
 });
 
 linksRoutes.patch('/api/links/:id/reset-enrichment', auth, async (c) => {

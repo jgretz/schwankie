@@ -21,7 +21,12 @@ const mockNormalizeTag = mock(async () => '');
 const mockGetSetting = mock(async () => null as any);
 const mockSetSetting = mock(async () => undefined);
 const mockResolveTagMinCount = mock(async () => 1);
-const mockValidateSettingValue = mock((...args: any[]) => ({success: true}));
+const mockValidateSettingValue = mock(() => ({success: true}));
+const mockGetRelatedByTags = mock(async () => [] as any[]);
+const mockGetRelatedByVector = mock(async () => [] as any[]);
+const mockListLinksNeedingEmbedding = mock(async () => [] as any[]);
+const mockUpsertLinkEmbedding = mock(async () => undefined);
+const mockScoreQueuedBySimilarity = mock(async () => [] as any[]);
 
 mock.module('@domain', () => ({
   getLink: mockGetLink,
@@ -41,6 +46,11 @@ mock.module('@domain', () => ({
   setSetting: mockSetSetting,
   resolveTagMinCount: mockResolveTagMinCount,
   validateSettingValue: mockValidateSettingValue,
+  getRelatedByTags: mockGetRelatedByTags,
+  getRelatedByVector: mockGetRelatedByVector,
+  listLinksNeedingEmbedding: mockListLinksNeedingEmbedding,
+  upsertLinkEmbedding: mockUpsertLinkEmbedding,
+  scoreQueuedBySimilarity: mockScoreQueuedBySimilarity,
 }));
 
 // Mock API commands

@@ -17,6 +17,7 @@ import {
   suggestTagsAction,
   updateLinkAction,
 } from '@www/lib/link-actions';
+import {RelatedRail} from '@www/components/feed/related-rail';
 import {useLinkModal} from './link-modal-context';
 import {StatusToggle} from './status-toggle';
 import {TagChipInput} from './tag-chip-input';
@@ -379,6 +380,15 @@ export function LinkModal() {
             </Field>
 
             {error && <p className="font-sans text-[0.8rem] text-red-600">{error}</p>}
+
+            {mode === 'edit' && editLink && (
+              <div className="border-t border-border pt-3">
+                <p className="mb-2 font-sans text-[0.75rem] font-medium uppercase tracking-wide text-text-faint">
+                  Related
+                </p>
+                <RelatedRail linkId={editLink.id} />
+              </div>
+            )}
 
             <DialogFooter className="flex items-center gap-2 pt-2">
               {mode === 'edit' && (

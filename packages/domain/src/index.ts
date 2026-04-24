@@ -18,7 +18,20 @@ export {getEmailItem} from './queries/get-email-item';
 export {getGmailTokens} from './queries/get-gmail-tokens';
 export {listPendingWorkRequests} from './queries/list-pending-work-requests';
 export {getRelatedByTags} from './queries/get-related-by-tags';
+export {getRelatedByVector} from './queries/get-related-by-vector';
 export {getTagNeighborhood, type TagNeighbor} from './queries/get-tag-neighborhood';
+export {
+  listLinksNeedingEmbedding,
+  type LinkForEmbedding,
+} from './queries/list-links-needing-embedding';
+export {
+  scoreQueuedBySimilarity,
+  type QueueSimilarityScore,
+} from './queries/score-queued-by-similarity';
+export {
+  upsertLinkEmbedding,
+  type UpsertLinkEmbeddingInput,
+} from './commands/upsert-link-embedding';
 
 // commands
 export {createLink} from './commands/create-link';

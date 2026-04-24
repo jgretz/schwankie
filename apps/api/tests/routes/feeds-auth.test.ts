@@ -85,6 +85,12 @@ mock.module('@domain', () => ({
   loadKey: () => Buffer.from(new Uint8Array(32)),
   encryptToken: (x: string) => x,
   decryptToken: (x: string) => x,
+  // Embeddings / similarity stubs consumed by links.ts route file.
+  getRelatedByTags: mock(async () => []),
+  getRelatedByVector: mock(async () => []),
+  listLinksNeedingEmbedding: mock(async () => []),
+  upsertLinkEmbedding: mock(async () => undefined),
+  scoreQueuedBySimilarity: mock(async () => []),
 }));
 
 // Dynamic import after mocks are set up

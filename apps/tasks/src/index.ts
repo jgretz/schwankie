@@ -5,6 +5,7 @@ import {parseEnv} from 'env';
 import {init} from 'client';
 import {enrichContentHandler} from './jobs/enrich-content';
 import {scoreLinksHandler} from './jobs/score-links';
+import {computeEmbeddingsHandler} from './jobs/compute-embeddings';
 import {normalizeTagsHandler} from './jobs/normalize-tags';
 import {importFeedHandler} from './jobs/import-feed';
 import {createScheduleFeedImportsHandler} from './jobs/schedule-feed-imports';
@@ -25,6 +26,7 @@ const envSchema = z.object({
   OLLAMA_MODEL: z.string().default('llama3.2:3b'),
   OLLAMA_SCORE_HIGH: z.coerce.number().default(4),
   OLLAMA_SCORE_LOW: z.coerce.number().default(-2),
+  OLLAMA_EMBED_MODEL: z.string().default('nomic-embed-text'),
 });
 const env = parseEnv(envSchema);
 
@@ -39,6 +41,7 @@ interface JobDefinition {
 
 const jobDefinitions: JobDefinition[] = [
   {queue: 'enrich-content', schedule: '*/1 * * * *'},
+  {queue: 'compute-embeddings', schedule: '*/5 * * * *'},
   {queue: 'score-links', schedule: '*/2 * * * *'},
   {queue: 'normalize-tags', schedule: '*/5 * * * *'},
   {queue: 'import-feed', schedule: '', options: {batchSize: 50}},
@@ -52,6 +55,7 @@ const jobDefinitions: JobDefinition[] = [
 async function setupWorkers(boss: PgBoss): Promise<void> {
   const handlers: Record<string, PgBoss.WorkHandler<unknown>> = {
     'enrich-content': enrichContentHandler,
+    'compute-embeddings': computeEmbeddingsHandler,
     'score-links': scoreLinksHandler,
     'normalize-tags': normalizeTagsHandler,
     'import-feed': importFeedHandler as PgBoss.WorkHandler<unknown>,
