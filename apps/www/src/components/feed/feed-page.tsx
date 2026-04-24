@@ -1,8 +1,13 @@
-import {useEffect, useMemo, useRef} from 'react';
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {useQueryClient} from '@tanstack/react-query';
+import {toast} from 'sonner';
 import type {LinkData, LinkStatus} from 'client';
 import {useLinkModal} from '@www/components/modal/link-modal-context';
+import {deleteLinksAction} from '@www/lib/link-actions';
 import {FilterStrip} from './filter-strip';
 import {LinkItem} from './link-item';
+import {SelectionToolbar} from './selection-toolbar';
+import {BulkDeleteDialog} from './bulk-delete-dialog';
 import {useInfiniteLinks} from '@www/hooks/use-infinite-links';
 import {useTags} from '@www/hooks/use-tags';
 import {parseTagSlugs} from '@www/lib/parse-tag-slugs';
@@ -49,6 +54,7 @@ export function FeedPage({
   onSortChange,
 }: FeedPageProps) {
   const {openEdit} = useLinkModal();
+  const queryClient = useQueryClient();
   const selectedTags = useMemo(() => parseTagSlugs(tagsParam), [tagsParam]);
 
   const {data, hasNextPage, fetchNextPage, isFetchingNextPage, isLoading, isError} =
@@ -63,6 +69,58 @@ export function FeedPage({
 
   const items = useMemo(() => data?.pages.flatMap((page) => page.items) ?? [], [data]);
   const total = data?.pages[0]?.total ?? 0;
+
+  const bulkEnabled = status === 'queued' && isAuthenticated;
+  const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Reset selection when the visible set changes (filter, sort, search, status)
+  useEffect(() => {
+    setSelected(new Set());
+  }, [status, tagsParam, q, sort]);
+
+  const toggleSelect = useCallback((id: number) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const clearSelection = useCallback(() => setSelected(new Set()), []);
+
+  const selectAll = useCallback(() => {
+    setSelected(new Set(items.map((item) => item.id)));
+  }, [items]);
+
+  const handleOpenSelected = useCallback(() => {
+    const urls = items.filter((item) => selected.has(item.id)).map((item) => item.url);
+    // Synchronous loop inside the click handler so popup blockers allow the batch.
+    for (const url of urls) {
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
+  }, [items, selected]);
+
+  const handleConfirmDelete = useCallback(async () => {
+    const ids = Array.from(selected);
+    if (ids.length === 0) return;
+    setIsDeleting(true);
+    try {
+      const result = await deleteLinksAction({data: {ids}});
+      queryClient.invalidateQueries({queryKey: ['links']});
+      queryClient.invalidateQueries({queryKey: ['tags']});
+      toast.success(`Deleted ${result.deleted} link${result.deleted === 1 ? '' : 's'}`);
+      setSelected(new Set());
+      setDeleteDialogOpen(false);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to delete links';
+      toast.error(message);
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [selected, queryClient]);
 
   // Infinite scroll sentinel
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -160,6 +218,17 @@ export function FeedPage({
         onClearSearch={onClearSearch}
       />
 
+      {bulkEnabled && selected.size > 0 && (
+        <SelectionToolbar
+          selectedCount={selected.size}
+          visibleCount={items.length}
+          onSelectAll={selectAll}
+          onOpen={handleOpenSelected}
+          onDelete={() => setDeleteDialogOpen(true)}
+          onClear={clearSelection}
+        />
+      )}
+
       {items.length === 0 ? (
         <div className="py-12 text-center font-sans text-[0.9rem] text-text-muted">
           <p>{buildEmptyMessage(q, selectedTags)}</p>
@@ -194,6 +263,9 @@ export function FeedPage({
               linkData={item as LinkData}
               score={item.score}
               showScore={status === 'queued'}
+              isSelectable={bulkEnabled}
+              isSelected={selected.has(item.id)}
+              onToggleSelect={bulkEnabled ? () => toggleSelect(item.id) : undefined}
             />
           ))}
         </div>
@@ -205,6 +277,16 @@ export function FeedPage({
         <div className="flex justify-center py-6">
           <div className="h-5 w-5 animate-spin rounded-full border-2 border-border border-t-accent" />
         </div>
+      )}
+
+      {bulkEnabled && (
+        <BulkDeleteDialog
+          open={deleteDialogOpen}
+          count={selected.size}
+          isDeleting={isDeleting}
+          onOpenChange={setDeleteDialogOpen}
+          onConfirm={handleConfirmDelete}
+        />
       )}
     </div>
   );

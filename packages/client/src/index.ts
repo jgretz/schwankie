@@ -7,6 +7,7 @@ export {getLink} from './calls/get-link';
 export {createLink} from './calls/create-link';
 export {updateLink} from './calls/update-link';
 export {deleteLink} from './calls/delete-link';
+export {deleteLinks} from './calls/delete-links';
 export {fetchMetadata} from './calls/fetch-metadata';
 export {getLinksNeedingEnrichment} from './calls/get-links-needing-enrichment';
 export {updateLinkContent} from './calls/update-link-content';

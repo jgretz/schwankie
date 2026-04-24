@@ -33,6 +33,7 @@ mock.module('@domain', () => ({
   getEmailItem: mockGetSetting,
   createLink: mockSetSetting,
   deleteLink: mockSetSetting,
+  deleteLinks: mock(async () => 0),
   updateLink: mockSetSetting,
   mergeTag: mockSetSetting,
   renameTag: mockSetSetting,

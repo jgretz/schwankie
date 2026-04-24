@@ -2,6 +2,7 @@ import {memo} from 'react';
 import type {LinkData} from 'client';
 import {cn} from '@www/lib/utils';
 import {selectionBg} from '@www/lib/selection-styles';
+import {Checkbox} from '@www/components/ui/checkbox';
 import {HighlightText} from './highlight-text';
 
 const dateFormatter = new Intl.DateTimeFormat('en-US', {
@@ -24,6 +25,9 @@ type LinkItemProps = {
   searchQuery?: string;
   score?: number | null;
   showScore?: boolean;
+  isSelectable?: boolean;
+  isSelected?: boolean;
+  onToggleSelect?: () => void;
 };
 
 function formatDate(iso: string): string {
@@ -51,9 +55,12 @@ function LinkItemComponent({
   searchQuery,
   score,
   showScore,
+  isSelectable,
+  isSelected,
+  onToggleSelect,
 }: LinkItemProps) {
-  return (
-    <div className="group border-b border-border py-[0.9rem] last:border-b-0">
+  const body = (
+    <div className="min-w-0 flex-1">
       <a
         href={url}
         target="_blank"
@@ -129,6 +136,24 @@ function LinkItemComponent({
           </span>
         )}
       </div>
+    </div>
+  );
+
+  return (
+    <div className="group border-b border-border py-[0.9rem] last:border-b-0">
+      {isSelectable ? (
+        <div className="flex items-start gap-3">
+          <Checkbox
+            className="mt-[0.3rem]"
+            checked={isSelected ?? false}
+            onCheckedChange={() => onToggleSelect?.()}
+            aria-label={`Select "${title}"`}
+          />
+          {body}
+        </div>
+      ) : (
+        body
+      )}
     </div>
   );
 }

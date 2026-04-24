@@ -128,3 +128,14 @@ export const deleteLinkAction = createServerFn({method: 'POST'})
     const {deleteLink} = await import('client');
     return deleteLink(data.id);
   });
+
+const deleteLinksInput = z.object({ids: z.array(z.number().int().positive()).min(1).max(200)});
+
+export const deleteLinksAction = createServerFn({method: 'POST'})
+  .inputValidator(deleteLinksInput)
+  .handler(async ({data}) => {
+    await getClient();
+    await requireAuth();
+    const {deleteLinks} = await import('client');
+    return deleteLinks(data.ids);
+  });

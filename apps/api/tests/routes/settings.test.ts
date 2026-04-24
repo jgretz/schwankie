@@ -13,6 +13,7 @@ mock.module('@domain', () => ({
   getSetting: mockGetSetting,
   setSetting: mockSetSetting,
   validateSettingValue: mockValidateSettingValue,
+  deleteLinks: mock(async () => 0),
 }));
 
 type SettingsModule = typeof import('../../src/routes/settings');

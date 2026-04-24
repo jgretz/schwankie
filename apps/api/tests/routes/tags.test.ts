@@ -45,6 +45,7 @@ mock.module('@domain', () => ({
   createLink: mockCreateLink,
   updateLink: mockUpdateLink,
   deleteLink: mockDeleteLink,
+  deleteLinks: mock(async () => 0),
   resetEnrichment: mockResetEnrichment,
   listTags: mockListTags,
   mergeTag: mockMergeTag,

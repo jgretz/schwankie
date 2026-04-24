@@ -21,6 +21,7 @@ export {listPendingWorkRequests} from './queries/list-pending-work-requests';
 // commands
 export {createLink} from './commands/create-link';
 export {deleteLink} from './commands/delete-link';
+export {deleteLinks} from './commands/delete-links';
 export {updateLink} from './commands/update-link';
 export {mergeTag} from './commands/merge-tag';
 export {renameTag} from './commands/rename-tag';

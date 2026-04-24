@@ -10,6 +10,7 @@ const mockListLinks = mock(async () => ({links: [], total: 0}));
 const mockCreateLink = mock(async () => null as any);
 const mockUpdateLink = mock(async () => null as any);
 const mockDeleteLink = mock(async () => false);
+const mockDeleteLinks = mock(async () => 0);
 const mockResetEnrichment = mock(async () => false);
 const mockListTags = mock(async () => ({tags: [], total: 0}));
 const mockMergeTag = mock(async () => false);
@@ -28,6 +29,7 @@ mock.module('@domain', () => ({
   createLink: mockCreateLink,
   updateLink: mockUpdateLink,
   deleteLink: mockDeleteLink,
+  deleteLinks: mockDeleteLinks,
   resetEnrichment: mockResetEnrichment,
   listTags: mockListTags,
   mergeTag: mockMergeTag,
@@ -303,6 +305,56 @@ describe('DELETE /api/links/:id', function () {
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body).toEqual({deleted: true});
+  });
+});
+
+describe('POST /api/links/bulk-delete', function () {
+  beforeEach(function () {
+    mockDeleteLinks.mockReset();
+  });
+
+  it('should return 401 without auth header', async function () {
+    const app = makeApp();
+    const res = await app.request('/api/links/bulk-delete', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ids: [1, 2]}),
+    });
+    expect(res.status).toBe(401);
+  });
+
+  it('should return 400 on empty ids array', async function () {
+    const app = makeApp();
+    const res = await app.request('/api/links/bulk-delete', {
+      method: 'POST',
+      headers: {...authHeader, 'Content-Type': 'application/json'},
+      body: JSON.stringify({ids: []}),
+    });
+    expect(res.status).toBe(400);
+  });
+
+  it('should return 400 on non-integer ids', async function () {
+    const app = makeApp();
+    const res = await app.request('/api/links/bulk-delete', {
+      method: 'POST',
+      headers: {...authHeader, 'Content-Type': 'application/json'},
+      body: JSON.stringify({ids: ['abc']}),
+    });
+    expect(res.status).toBe(400);
+  });
+
+  it('should return deleted count on success', async function () {
+    mockDeleteLinks.mockResolvedValue(2);
+    const app = makeApp();
+    const res = await app.request('/api/links/bulk-delete', {
+      method: 'POST',
+      headers: {...authHeader, 'Content-Type': 'application/json'},
+      body: JSON.stringify({ids: [1, 2]}),
+    });
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body).toEqual({deleted: 2});
+    expect(mockDeleteLinks).toHaveBeenCalledWith([1, 2]);
   });
 });
 

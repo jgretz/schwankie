@@ -1,9 +1,22 @@
 import {Hono} from 'hono';
 import {authMiddleware} from '../middleware/auth';
-import {listLinks, createLink, updateLink, deleteLink, getLink, resetEnrichment} from '@domain';
+import {
+  listLinks,
+  createLink,
+  updateLink,
+  deleteLink,
+  deleteLinks,
+  getLink,
+  resetEnrichment,
+} from '@domain';
 import {refetchLink} from '../commands/refetch-link';
 import {suggestTags} from '../commands/suggest-tags';
-import {createLinkSchema, updateLinkSchema, listLinksParamsSchema} from '../validators/links';
+import {
+  createLinkSchema,
+  updateLinkSchema,
+  listLinksParamsSchema,
+  bulkDeleteLinksSchema,
+} from '../validators/links';
 import {parseIdParam} from '../lib/parse-id-param';
 
 export const linksRoutes = new Hono();
@@ -36,6 +49,15 @@ linksRoutes.post('/api/links', auth, async (c) => {
   }
   const result = await createLink(parsed.data);
   return c.json(result, 201);
+});
+
+linksRoutes.post('/api/links/bulk-delete', auth, async (c) => {
+  const parsed = bulkDeleteLinksSchema.safeParse(await c.req.json());
+  if (!parsed.success) {
+    return c.json({error: 'Invalid request body', details: parsed.error.flatten()}, 400);
+  }
+  const deleted = await deleteLinks(parsed.data.ids);
+  return c.json({deleted});
 });
 
 linksRoutes.get('/api/links/:id', auth, async (c) => {
