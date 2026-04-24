@@ -69,8 +69,8 @@ export async function listLinks(params: ListLinksParams): Promise<ListLinksResul
 
   const orderByClause =
     sort === 'score'
-      ? [sql`${link.score} DESC NULLS LAST`, desc(link.createDate)]
-      : [desc(link.createDate)];
+      ? [sql`${link.score} DESC NULLS LAST`, desc(link.createDate), desc(link.id)]
+      : [desc(link.createDate), desc(link.id)];
 
   const [items, totalResult] = await Promise.all([
     db
