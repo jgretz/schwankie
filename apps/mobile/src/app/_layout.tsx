@@ -24,7 +24,16 @@ init({
 export default function RootLayout() {
   useEffect(function () {
     setSharedApiUrl(apiUrl!);
-    if (apiKey) setSharedApiKey(apiKey);
+    if (apiKey) {
+      setSharedApiKey(apiKey);
+    } else {
+      Toast.show({
+        type: 'error',
+        text1: 'API key missing',
+        text2: 'Saving links will fail until EXPO_PUBLIC_API_KEY is set.',
+        visibilityTime: 6000,
+      });
+    }
   }, []);
 
   return (
