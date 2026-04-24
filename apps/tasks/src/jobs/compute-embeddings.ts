@@ -3,7 +3,10 @@ import {listPendingEmbeddings, upsertLinkEmbedding} from 'client';
 import {embeddings} from '../lib/ollama';
 
 const EMBED_MODEL = process.env.OLLAMA_EMBED_MODEL || 'nomic-embed-text';
-const MAX_INPUT_CHARS = 8000;
+// nomic-embed-text has a 2048-token context; ~4 chars/token leaves
+// headroom for tokenizer variance. Ollama also truncates server-side
+// (truncate: true in the embed request) as a belt-and-suspenders.
+const MAX_INPUT_CHARS = 6000;
 const BATCH_SIZE = 10;
 
 export function buildInput(link: {

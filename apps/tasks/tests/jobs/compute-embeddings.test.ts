@@ -15,10 +15,10 @@ describe('buildInput', function () {
     expect(buildInput({title: 'Only title', description: null, content: null})).toBe('Only title');
   });
 
-  it('truncates to the 8000-char nomic-embed-text ceiling', function () {
+  it('truncates to the nomic-embed-text context ceiling', function () {
     const long = 'a'.repeat(10_000);
     const input = buildInput({title: 'T', description: null, content: long});
-    expect(input.length).toBe(8000);
+    expect(input.length).toBe(6000);
     expect(input.startsWith('T\n\n')).toBe(true);
   });
 });

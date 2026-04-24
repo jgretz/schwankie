@@ -45,12 +45,16 @@ export async function embeddings(opts: EmbeddingsOptions): Promise<number[]> {
     body: JSON.stringify({
       model: opts.model,
       input: opts.input,
+      truncate: true,
     }),
     signal: AbortSignal.timeout(opts.timeout ?? 60_000),
   });
 
   if (!response.ok) {
-    throw new Error(`Ollama HTTP ${response.status}`);
+    const detail = await response.text().catch(() => '');
+    throw new Error(
+      `Ollama HTTP ${response.status} at /api/embed (model=${opts.model}, inputLen=${opts.input.length}): ${detail.slice(0, 500)}`,
+    );
   }
 
   const body = (await response.json()) as OllamaEmbeddingsResponse;
