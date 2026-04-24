@@ -25,7 +25,8 @@
       ],
       "expo-web-browser",
       "@bacons/apple-targets",
-      "expo-font"
+      "expo-font",
+      "./plugins/with-sync-extension-version"
     ],
     "ios": {
       "supportsTablet": true,
