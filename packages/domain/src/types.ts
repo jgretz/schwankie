@@ -35,6 +35,11 @@ export type LinkWithTags = typeof link.$inferSelect & {
   tags: Array<{id: number; text: string}>;
 };
 
+export type RelatedLink = LinkWithTags & {
+  overlap: number | null;
+  similarity: number | null;
+};
+
 export type ListLinksParams = {
   limit: number;
   offset: number;

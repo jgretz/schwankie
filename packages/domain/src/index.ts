@@ -17,6 +17,8 @@ export {getStatus} from './queries/get-status';
 export {getEmailItem} from './queries/get-email-item';
 export {getGmailTokens} from './queries/get-gmail-tokens';
 export {listPendingWorkRequests} from './queries/list-pending-work-requests';
+export {getRelatedByTags} from './queries/get-related-by-tags';
+export {getTagNeighborhood, type TagNeighbor} from './queries/get-tag-neighborhood';
 
 // commands
 export {createLink} from './commands/create-link';
@@ -62,6 +64,7 @@ export type {
   ListLinksResult,
   ListTagsParams,
   ListTagsResult,
+  RelatedLink,
   TagWithCount,
   TagSimple,
   CreateLinkInput,
