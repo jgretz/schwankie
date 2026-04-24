@@ -34,7 +34,7 @@ while IFS= read -r line || [ -n "$line" ]; do
     --value "$value" \
     --visibility "$visibility" \
     --force \
-    --non-interactive
+    --non-interactive </dev/null
 done < "$ENV_FILE"
 
 echo "Done."
