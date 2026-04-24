@@ -54,6 +54,7 @@ export {failWorkRequest} from './calls/fail-work-request';
 export {triggerRefreshAllFeeds} from './calls/trigger-refresh-all-feeds';
 export {triggerRefreshEmails} from './calls/trigger-refresh-emails';
 export {cleanupWorkRequests} from './calls/cleanup-work-requests';
+export {getStatus} from './calls/get-status';
 
 // types
 export type {
@@ -77,4 +78,7 @@ export type {
   WorkRequestData,
   WorkRequestResponse,
   EmailItemData,
+  StatusResponse,
+  StatusBucket,
+  StatusFailingFeed,
 } from './types';

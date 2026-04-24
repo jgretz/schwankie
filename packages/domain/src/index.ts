@@ -13,6 +13,7 @@ export {listAllRssItems} from './queries/list-all-rss-items';
 export {markAllRssItemsRead} from './commands/mark-all-rss-items-read';
 export {listEmailItems} from './queries/list-email-items';
 export {countRecentEmailItems} from './queries/count-recent-email-items';
+export {getStatus} from './queries/get-status';
 export {getEmailItem} from './queries/get-email-item';
 export {getGmailTokens} from './queries/get-gmail-tokens';
 export {listPendingWorkRequests} from './queries/list-pending-work-requests';
@@ -87,3 +88,4 @@ export type {
   CreateWorkRequestInput,
 } from './types';
 export type {LinkStatus} from './queries/get-tags-with-count';
+export type {StatusSummary, StatusBucket, FailingFeed} from './queries/get-status';

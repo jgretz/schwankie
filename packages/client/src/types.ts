@@ -155,3 +155,31 @@ export type EmailItemData = {
   clicked: boolean;
   importedAt: string;
 };
+
+export type StatusBucket = {hour: string; count: number};
+
+export type StatusFailingFeed = {
+  id: string;
+  name: string;
+  errorCount: number;
+  lastError: string | null;
+};
+
+export type StatusResponse = {
+  fetchedAt: string;
+  heartbeat: {lastAt: string | null};
+  email: {
+    lastImportedAt: string | null;
+    recentCount: number;
+    hourly: StatusBucket[];
+  };
+  feeds: {
+    lastScheduledAt: string | null;
+    enabledCount: number;
+    disabledCount: number;
+    failingCount: number;
+    failing: StatusFailingFeed[];
+    recentCount: number;
+    hourly: StatusBucket[];
+  };
+};
