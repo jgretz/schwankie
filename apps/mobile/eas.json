@@ -6,25 +6,12 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal",
-      "env": {
-        "EXPO_PUBLIC_API_URL": "https://api.schwankie.com",
-        "EXPO_PUBLIC_API_KEY": "@EXPO_PUBLIC_API_KEY"
-      }
+      "distribution": "internal"
     },
     "preview": {
-      "distribution": "internal",
-      "env": {
-        "EXPO_PUBLIC_API_URL": "https://api.schwankie.com",
-        "EXPO_PUBLIC_API_KEY": "@EXPO_PUBLIC_API_KEY"
-      }
+      "distribution": "internal"
     },
-    "production": {
-      "env": {
-        "EXPO_PUBLIC_API_URL": "https://api.schwankie.com",
-        "EXPO_PUBLIC_API_KEY": "@EXPO_PUBLIC_API_KEY"
-      }
-    }
+    "production": {}
   },
   "submit": {
     "production": {}
