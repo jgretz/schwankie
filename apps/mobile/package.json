@@ -20,6 +20,7 @@
     "expo-dev-client": "~55.0.28",
     "expo-haptics": "^55.0.14",
     "expo-router": "~55.0.3",
+    "expo-secure-store": "~15.0.7",
     "expo-share-extension": "^5.0.6",
     "expo-status-bar": "~55.0.4",
     "expo-web-browser": "~55.0.14",
@@ -31,6 +32,8 @@
   },
   "devDependencies": {
     "@expo/cli": "~55.0.14",
+    "@expo/config-plugins": "~55.0.8",
+    "@expo/plist": "~0.5.2",
     "@types/react": "~19.2.10",
     "typescript": "~5.9.2"
   },

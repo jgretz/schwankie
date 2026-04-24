@@ -10,8 +10,8 @@ import {
   View,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import {createLink} from 'client';
-import {ensureClientInit} from '../services/shared-config';
+import {createLink, init as initClient} from 'client';
+import {getSharedApiKey, getSharedApiUrl} from '../services/shared-storage';
 
 const schwankieLogo = require('../../assets/icon.png');
 
@@ -29,6 +29,21 @@ interface ShareExtensionProps {
 }
 
 type Status = 'idle' | 'saving' | 'success' | 'error';
+
+let clientReady = false;
+
+async function ensureSharedClient(): Promise<void> {
+  if (clientReady) return;
+
+  const apiUrl = await getSharedApiUrl();
+  if (!apiUrl) {
+    throw new Error('API not configured. Open the Schwankie app at least once.');
+  }
+
+  const apiKey = await getSharedApiKey();
+  initClient({apiUrl, apiKey: apiKey ?? undefined});
+  clientReady = true;
+}
 
 const URL_REGEX = /https?:\/\/[^\s]+/;
 
@@ -96,7 +111,7 @@ export default function ShareExtension(props: ShareExtensionProps) {
     setErrorMessage('');
 
     try {
-      await ensureClientInit();
+      await ensureSharedClient();
       await createLink({url: normalized, title: titleFromUrl(normalized)});
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       setStatus('success');

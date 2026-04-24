@@ -1,9 +1,11 @@
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import {useEffect} from 'react';
+import {Stack} from 'expo-router';
+import {StatusBar} from 'expo-status-bar';
+import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
-import { init } from 'client';
+import {init} from 'client';
+import {setSharedApiKey, setSharedApiUrl} from '../services/shared-storage';
 
 const queryClient = new QueryClient();
 
@@ -20,10 +22,21 @@ init({
 });
 
 export default function RootLayout() {
+  useEffect(function () {
+    setSharedApiUrl(apiUrl!).catch(function (error) {
+      console.warn('Failed to sync apiUrl to shared storage', error);
+    });
+    if (apiKey) {
+      setSharedApiKey(apiKey).catch(function (error) {
+        console.warn('Failed to sync apiKey to shared storage', error);
+      });
+    }
+  }, []);
+
   return (
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
-        <Stack screenOptions={{ headerShown: false }} />
+        <Stack screenOptions={{headerShown: false}} />
         <StatusBar style="auto" />
         <Toast />
       </QueryClientProvider>

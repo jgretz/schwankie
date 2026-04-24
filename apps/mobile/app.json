@@ -25,7 +25,8 @@
         }
       ],
       "expo-share-extension",
-      "expo-web-browser"
+      "expo-web-browser",
+      "./plugins/withShareExtensionLocalNetworking.js"
     ],
     "ios": {
       "supportsTablet": true,
