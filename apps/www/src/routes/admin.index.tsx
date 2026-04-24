@@ -7,6 +7,12 @@ export const Route = createFileRoute('/admin/')({
 function AdminHub() {
   const cards = [
     {
+      to: '/admin/status',
+      label: 'Status',
+      description: 'Health of the task runner and imports',
+      icon: '📡',
+    },
+    {
       to: '/admin/feeds',
       label: 'Feeds',
       description: 'Manage your RSS feed subscriptions',

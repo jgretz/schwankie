@@ -22,6 +22,7 @@ import { Route as FeedsFeedIdRouteImport } from './routes/feeds.$feedId'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
 import { Route as AuthCallbackRouteImport } from './routes/auth/callback'
 import { Route as AdminTagsRouteImport } from './routes/admin.tags'
+import { Route as AdminStatusRouteImport } from './routes/admin.status'
 import { Route as AdminGmailRouteImport } from './routes/admin.gmail'
 import { Route as AdminGeneralRouteImport } from './routes/admin.general'
 import { Route as AdminFeedsRouteImport } from './routes/admin.feeds'
@@ -92,6 +93,11 @@ const AdminTagsRoute = AdminTagsRouteImport.update({
   path: '/tags',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminStatusRoute = AdminStatusRouteImport.update({
+  id: '/status',
+  path: '/status',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminGmailRoute = AdminGmailRouteImport.update({
   id: '/gmail',
   path: '/gmail',
@@ -123,6 +129,7 @@ export interface FileRoutesByFullPath {
   '/admin/feeds': typeof AdminFeedsRoute
   '/admin/general': typeof AdminGeneralRoute
   '/admin/gmail': typeof AdminGmailRoute
+  '/admin/status': typeof AdminStatusRoute
   '/admin/tags': typeof AdminTagsRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/login': typeof AuthLoginRoute
@@ -140,6 +147,7 @@ export interface FileRoutesByTo {
   '/admin/feeds': typeof AdminFeedsRoute
   '/admin/general': typeof AdminGeneralRoute
   '/admin/gmail': typeof AdminGmailRoute
+  '/admin/status': typeof AdminStatusRoute
   '/admin/tags': typeof AdminTagsRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/login': typeof AuthLoginRoute
@@ -160,6 +168,7 @@ export interface FileRoutesById {
   '/admin/feeds': typeof AdminFeedsRoute
   '/admin/general': typeof AdminGeneralRoute
   '/admin/gmail': typeof AdminGmailRoute
+  '/admin/status': typeof AdminStatusRoute
   '/admin/tags': typeof AdminTagsRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/login': typeof AuthLoginRoute
@@ -181,6 +190,7 @@ export interface FileRouteTypes {
     | '/admin/feeds'
     | '/admin/general'
     | '/admin/gmail'
+    | '/admin/status'
     | '/admin/tags'
     | '/auth/callback'
     | '/auth/login'
@@ -198,6 +208,7 @@ export interface FileRouteTypes {
     | '/admin/feeds'
     | '/admin/general'
     | '/admin/gmail'
+    | '/admin/status'
     | '/admin/tags'
     | '/auth/callback'
     | '/auth/login'
@@ -217,6 +228,7 @@ export interface FileRouteTypes {
     | '/admin/feeds'
     | '/admin/general'
     | '/admin/gmail'
+    | '/admin/status'
     | '/admin/tags'
     | '/auth/callback'
     | '/auth/login'
@@ -332,6 +344,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminTagsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/status': {
+      id: '/admin/status'
+      path: '/status'
+      fullPath: '/admin/status'
+      preLoaderRoute: typeof AdminStatusRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/gmail': {
       id: '/admin/gmail'
       path: '/gmail'
@@ -368,6 +387,7 @@ interface AdminRouteChildren {
   AdminFeedsRoute: typeof AdminFeedsRoute
   AdminGeneralRoute: typeof AdminGeneralRoute
   AdminGmailRoute: typeof AdminGmailRoute
+  AdminStatusRoute: typeof AdminStatusRoute
   AdminTagsRoute: typeof AdminTagsRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
@@ -377,6 +397,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminFeedsRoute: AdminFeedsRoute,
   AdminGeneralRoute: AdminGeneralRoute,
   AdminGmailRoute: AdminGmailRoute,
+  AdminStatusRoute: AdminStatusRoute,
   AdminTagsRoute: AdminTagsRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
