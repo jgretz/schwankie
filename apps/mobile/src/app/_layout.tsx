@@ -30,7 +30,16 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
-        <Stack screenOptions={{headerShown: false}} />
+        <Stack screenOptions={{headerShown: false}}>
+          <Stack.Screen
+            name="add"
+            options={{
+              headerShown: true,
+              title: 'Add Link',
+              presentation: 'modal',
+            }}
+          />
+        </Stack>
         <StatusBar style="auto" />
         <Toast />
       </QueryClientProvider>
