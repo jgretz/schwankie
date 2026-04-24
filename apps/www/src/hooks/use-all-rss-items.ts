@@ -1,13 +1,10 @@
 import {useInfiniteQuery, useMutation, useQueryClient} from '@tanstack/react-query';
-import {listAllRssItems} from 'client';
-import {initClient} from '@www/lib/init-client';
 import {
+  listAllRssItemsAction,
   markAllRssItemsReadAction,
   markRssItemReadAction,
   promoteRssItemAction,
 } from '@www/lib/feed-actions';
-
-initClient();
 
 type Options = {
   unread?: boolean;
@@ -22,11 +19,13 @@ export function useAllRssItems(options: Options = {}) {
   const query = useInfiniteQuery({
     queryKey: ['all-rss-items', options],
     queryFn: ({pageParam = 0}) =>
-      listAllRssItems({
-        limit: PAGE_SIZE,
-        offset: pageParam,
-        read: options.unread !== undefined ? !options.unread : undefined,
-        feedId: options.feedId,
+      listAllRssItemsAction({
+        data: {
+          limit: PAGE_SIZE,
+          offset: pageParam,
+          read: options.unread !== undefined ? !options.unread : undefined,
+          feedId: options.feedId,
+        },
       }),
     initialPageParam: 0,
     getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.nextOffset : undefined),

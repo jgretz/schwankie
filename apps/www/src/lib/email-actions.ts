@@ -2,6 +2,22 @@ import {createServerFn} from '@tanstack/react-start';
 import {z} from 'zod';
 import {requireAuth, getClient} from './server-helpers';
 
+const listEmailItemsInput = z.object({
+  limit: z.number().optional(),
+  offset: z.number().optional(),
+  read: z.boolean().optional(),
+  from: z.string().optional(),
+});
+
+export const listEmailItemsAction = createServerFn({method: 'GET'})
+  .inputValidator(listEmailItemsInput)
+  .handler(async ({data}) => {
+    await getClient();
+    await requireAuth();
+    const {listEmailItems} = await import('client');
+    return listEmailItems(data);
+  });
+
 const markEmailItemReadInput = z.object({
   id: z.string(),
 });

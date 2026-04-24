@@ -1,16 +1,17 @@
 import {useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
-import {fetchFeeds} from 'client';
-import {initClient} from '@www/lib/init-client';
-import {createFeedAction, updateFeedAction, deleteFeedAction} from '@www/lib/feed-actions';
-
-initClient();
+import {
+  createFeedAction,
+  deleteFeedAction,
+  fetchFeedsAction,
+  updateFeedAction,
+} from '@www/lib/feed-actions';
 
 export function useFeeds() {
   const queryClient = useQueryClient();
 
   const query = useQuery({
     queryKey: ['feeds'],
-    queryFn: () => fetchFeeds(),
+    queryFn: () => fetchFeedsAction(),
   });
 
   const createMutation = useMutation({

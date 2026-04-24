@@ -1,16 +1,12 @@
 import {useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
-import {fetchTags} from 'client';
-import {initClient} from '@www/lib/init-client';
-import {renameTagAction, mergeTagAction, deleteTagAction} from '@www/lib/tag-actions';
-
-initClient();
+import {deleteTagAction, fetchTagsAction, mergeTagAction, renameTagAction} from '@www/lib/tag-actions';
 
 export function useAdminTags() {
   const queryClient = useQueryClient();
 
   const query = useQuery({
     queryKey: ['admin-tags'],
-    queryFn: () => fetchTags({all: true}),
+    queryFn: () => fetchTagsAction({data: {all: true}}),
   });
 
   const renameMutation = useMutation({

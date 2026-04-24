@@ -1,6 +1,6 @@
 import {useInfiniteQuery, useMutation, useQueryClient} from '@tanstack/react-query';
-import {listEmailItems} from 'client';
 import {
+  listEmailItemsAction,
   markAllEmailItemsReadAction,
   markEmailItemReadAction,
   promoteEmailItemAction,
@@ -17,11 +17,13 @@ export function useEmailItems(options: UseEmailItemsOptions = {}) {
   return useInfiniteQuery({
     queryKey: ['email-items', options],
     queryFn: ({pageParam = 0}) =>
-      listEmailItems({
-        limit: PAGE_SIZE,
-        offset: pageParam,
-        read: options.unread !== undefined ? !options.unread : undefined,
-        from: options.from,
+      listEmailItemsAction({
+        data: {
+          limit: PAGE_SIZE,
+          offset: pageParam,
+          read: options.unread !== undefined ? !options.unread : undefined,
+          from: options.from,
+        },
       }),
     initialPageParam: 0,
     getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.nextOffset : undefined),

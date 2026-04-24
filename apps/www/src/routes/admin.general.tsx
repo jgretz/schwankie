@@ -1,12 +1,8 @@
 import {createFileRoute} from '@tanstack/react-router';
 import {useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
 import {Button} from '@www/components/ui/button';
-import {getSetting} from 'client';
-import {setSettingAction} from '@www/lib/settings-actions';
-import {initClient} from '@www/lib/init-client';
+import {getSettingAction, setSettingAction} from '@www/lib/settings-actions';
 import {useState, useEffect} from 'react';
-
-initClient();
 
 export const Route = createFileRoute('/admin/general')({
   component: AdminGeneralPage,
@@ -22,7 +18,7 @@ function AdminGeneralPage() {
     queryKey: ['setting', 'tagCountFloor'],
     queryFn: async () => {
       try {
-        return await getSetting('tagCountFloor');
+        return await getSettingAction({data: {key: 'tagCountFloor'}});
       } catch (error) {
         if (error instanceof Error && error.message.includes('404')) {
           return {key: 'tagCountFloor', value: '1'};

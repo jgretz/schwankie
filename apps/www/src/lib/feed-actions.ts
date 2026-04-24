@@ -2,6 +2,47 @@ import {createServerFn} from '@tanstack/react-start';
 import {z} from 'zod';
 import {getClient, requireAuth} from './server-helpers';
 
+export const fetchFeedsAction = createServerFn({method: 'GET'}).handler(async () => {
+  await getClient();
+  await requireAuth();
+  const {fetchFeeds} = await import('client');
+  return fetchFeeds();
+});
+
+const fetchFeedItemsInput = z.object({
+  feedId: z.string(),
+  limit: z.number().optional(),
+  offset: z.number().optional(),
+  read: z.boolean().optional(),
+  clicked: z.boolean().optional(),
+  q: z.string().optional(),
+});
+
+export const fetchFeedItemsAction = createServerFn({method: 'GET'})
+  .inputValidator(fetchFeedItemsInput)
+  .handler(async ({data}) => {
+    await getClient();
+    await requireAuth();
+    const {fetchFeedItems} = await import('client');
+    return fetchFeedItems(data);
+  });
+
+const listAllRssItemsInput = z.object({
+  limit: z.number().optional(),
+  offset: z.number().optional(),
+  read: z.boolean().optional(),
+  feedId: z.string().optional(),
+});
+
+export const listAllRssItemsAction = createServerFn({method: 'GET'})
+  .inputValidator(listAllRssItemsInput)
+  .handler(async ({data}) => {
+    await getClient();
+    await requireAuth();
+    const {listAllRssItems} = await import('client');
+    return listAllRssItems(data);
+  });
+
 const createFeedInput = z.object({
   name: z.string().min(1),
   sourceUrl: z.string().url(),

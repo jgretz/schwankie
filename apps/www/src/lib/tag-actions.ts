@@ -2,6 +2,20 @@ import {createServerFn} from '@tanstack/react-start';
 import {z} from 'zod';
 import {getClient, requireAuth} from './server-helpers';
 
+const fetchTagsInput = z.object({
+  status: z.enum(['queued', 'saved', 'archived']).optional(),
+  all: z.boolean().optional(),
+});
+
+export const fetchTagsAction = createServerFn({method: 'GET'})
+  .inputValidator(fetchTagsInput)
+  .handler(async ({data}) => {
+    await getClient();
+    await requireAuth();
+    const {fetchTags} = await import('client');
+    return fetchTags(data);
+  });
+
 const renameTagInput = z.object({id: z.number(), text: z.string()});
 
 export const renameTagAction = createServerFn({method: 'POST'})

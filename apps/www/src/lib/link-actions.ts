@@ -2,6 +2,40 @@ import {createServerFn} from '@tanstack/react-start';
 import {z} from 'zod';
 import {getClient, requireAuth} from './server-helpers';
 
+const fetchLinksInput = z.object({
+  limit: z.number().optional(),
+  offset: z.number().optional(),
+  status: z.enum(['queued', 'saved', 'archived']).optional(),
+  tags: z.string().optional(),
+  q: z.string().optional(),
+  ids: z.string().optional(),
+  sort: z.enum(['date', 'score']).optional(),
+  needs_scoring: z.boolean().optional(),
+});
+
+export const fetchLinksAction = createServerFn({method: 'GET'})
+  .inputValidator(fetchLinksInput)
+  .handler(async ({data}) => {
+    await getClient();
+    await requireAuth();
+    const {fetchLinks} = await import('client');
+    return fetchLinks(data);
+  });
+
+const fetchDeadLinksInput = z.object({
+  limit: z.number().optional(),
+  offset: z.number().optional(),
+});
+
+export const fetchDeadLinksAction = createServerFn({method: 'GET'})
+  .inputValidator(fetchDeadLinksInput)
+  .handler(async ({data}) => {
+    await getClient();
+    await requireAuth();
+    const {fetchDeadLinks} = await import('client');
+    return fetchDeadLinks(data.limit, data.offset);
+  });
+
 const fetchMetadataInput = z.object({url: z.string().url()});
 
 export const fetchMetadataAction = createServerFn({method: 'POST'})
