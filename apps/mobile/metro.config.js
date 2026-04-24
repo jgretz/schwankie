@@ -6,7 +6,10 @@ const repoRoot = path.resolve(projectRoot, '../..');
 
 const config = getDefaultConfig(projectRoot);
 
-config.watchFolders = [repoRoot];
-config.resolver.nodeModulesPaths = [path.resolve(repoRoot, 'node_modules')];
+config.watchFolders = [...(config.watchFolders ?? []), repoRoot];
+config.resolver.nodeModulesPaths = [
+  ...(config.resolver.nodeModulesPaths ?? []),
+  path.resolve(repoRoot, 'node_modules'),
+];
 
 module.exports = config;

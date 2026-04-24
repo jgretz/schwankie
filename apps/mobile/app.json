@@ -6,7 +6,6 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "scheme": "schwankie",
     "splash": {
       "image": "./assets/splash-icon.png",
@@ -25,7 +24,8 @@
         }
       ],
       "expo-web-browser",
-      "@bacons/apple-targets"
+      "@bacons/apple-targets",
+      "expo-font"
     ],
     "ios": {
       "supportsTablet": true,
@@ -33,7 +33,6 @@
       "appleTeamId": "B8L5W4A275",
       "entitlements": {
         "com.apple.security.application-groups": [
-          "group.com.schwankie.app",
           "group.com.schwankie.app"
         ]
       },

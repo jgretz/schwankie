@@ -16,6 +16,10 @@
     "apps/**",
     "packages/**"
   ],
+  "overrides": {
+    "react": "19.2.0",
+    "react-dom": "19.2.0"
+  },
   "scripts": {
     "dev": "concurrently bun:dev:api bun:dev:www",
     "dev:api": "bun run --cwd apps/api dev",

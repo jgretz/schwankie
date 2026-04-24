@@ -1,1 +1,4 @@
+[install]
+linker = "hoisted"
+
 [test]
