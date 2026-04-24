@@ -11,6 +11,7 @@ import {createScheduleFeedImportsHandler} from './jobs/schedule-feed-imports';
 import {importEmailsHandler} from './jobs/import-emails';
 import {createProcessWorkRequestsHandler} from './jobs/process-work-requests';
 import {cleanupWorkRequestsHandler} from './jobs/cleanup-work-requests';
+import {heartbeatHandler} from './jobs/heartbeat';
 import {startHealthServer} from './healthCheck';
 import {runWithAutoRecovery} from './connectionManager';
 
@@ -45,6 +46,7 @@ const jobDefinitions: JobDefinition[] = [
   {queue: 'import-emails', schedule: '0 * * * *'},
   {queue: 'process-work-requests', schedule: '*/5 * * * *', runOnBoot: true},
   {queue: 'cleanup-work-requests', schedule: '0 4 * * *'},
+  {queue: 'heartbeat', schedule: '*/5 * * * *', runOnBoot: true},
 ];
 
 async function setupWorkers(boss: PgBoss): Promise<void> {
@@ -57,6 +59,7 @@ async function setupWorkers(boss: PgBoss): Promise<void> {
     'import-emails': importEmailsHandler as PgBoss.WorkHandler<unknown>,
     'process-work-requests': createProcessWorkRequestsHandler(boss),
     'cleanup-work-requests': cleanupWorkRequestsHandler,
+    heartbeat: heartbeatHandler,
   };
 
   for (const {queue, schedule, options} of jobDefinitions) {

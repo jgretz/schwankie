@@ -1,5 +1,5 @@
 import type PgBoss from 'pg-boss';
-import {fetchAllFeeds} from 'client';
+import {fetchAllFeeds, setSetting} from 'client';
 
 const BATCH_SIZE = 50;
 
@@ -19,6 +19,8 @@ export function createScheduleFeedImportsHandler(boss: PgBoss): PgBoss.WorkHandl
         const batch = jobs.slice(i, i + BATCH_SIZE);
         await boss.insert(batch);
       }
+
+      await setSetting('tasks_feed_schedule_last_at', new Date().toISOString());
     } catch (error) {
       console.error('[schedule-feed-imports] Failed:', error);
       throw error;
