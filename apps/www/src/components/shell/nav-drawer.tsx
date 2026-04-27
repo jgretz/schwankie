@@ -136,6 +136,24 @@ export function NavDrawer({
               <TagList tags={tags} selectedTags={selectedTags} onTagToggle={onTagToggle} />
             </div>
           )}
+
+          <div
+            className={cn(
+              (isAuthenticated || showTags) && 'mt-5 border-t border-border pt-5',
+            )}
+          >
+            <Link
+              to="/about"
+              onClick={onClose}
+              className="block rounded-[5px] px-2 py-[7px] text-sm font-medium text-text-muted transition-colors hover:bg-bg-subtle hover:text-text"
+              activeProps={{
+                className:
+                  'block rounded-[5px] border-l-2 border-accent bg-bg-subtle px-2 py-[7px] text-sm font-medium text-accent',
+              }}
+            >
+              About
+            </Link>
+          </div>
         </div>
       </div>
     </>

@@ -76,7 +76,14 @@ export function Topbar({
           />
         </div>
 
-        <div className="ml-auto hidden md:block">
+        <div className="ml-auto hidden items-center gap-2 md:flex">
+          <Link
+            to="/about"
+            className="rounded-md px-2 py-1 font-sans text-sm text-text-muted no-underline transition-colors hover:bg-bg-subtle hover:text-text"
+            activeProps={{className: 'rounded-md bg-bg-subtle px-2 py-1 font-sans text-sm text-text no-underline'}}
+          >
+            About
+          </Link>
           <ThemeToggle />
         </div>
 
