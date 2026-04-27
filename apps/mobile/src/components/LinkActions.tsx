@@ -1,7 +1,6 @@
 import {View, TouchableOpacity, Text, ActivityIndicator, Alert} from 'react-native';
 import {MaterialIcons} from '@expo/vector-icons';
-import Toast from 'react-native-toast-message';
-import * as WebBrowser from 'expo-web-browser';
+import {openLink} from '../services/open-link';
 
 type LinkActionsProps = {
   url: string;
@@ -11,6 +10,7 @@ type LinkActionsProps = {
   isDeleting?: boolean;
   colors: {
     accent: string;
+    bg: string;
     error: string;
     textMuted: string;
   };
@@ -24,18 +24,7 @@ export function LinkActions({
   isDeleting,
   colors,
 }: LinkActionsProps) {
-  const handleOpen = async () => {
-    try {
-      await WebBrowser.openBrowserAsync(url);
-    } catch (error) {
-      console.error('[LinkActions] Failed to open URL:', error);
-      Toast.show({
-        type: 'error',
-        text1: 'Failed to open link',
-        text2: error instanceof Error ? error.message : 'Unknown error',
-      });
-    }
-  };
+  const handleOpen = () => openLink({url, colors, source: 'LinkActions'});
 
   const handleDelete = () => {
     Alert.alert('Delete link?', 'This cannot be undone.', [

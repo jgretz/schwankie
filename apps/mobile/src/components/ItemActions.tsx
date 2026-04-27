@@ -1,7 +1,6 @@
 import { View, TouchableOpacity, Text, ActivityIndicator } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import Toast from 'react-native-toast-message';
-import * as WebBrowser from 'expo-web-browser';
+import { openLink } from '../services/open-link';
 
 type ItemActionsProps = {
   url: string;
@@ -12,6 +11,7 @@ type ItemActionsProps = {
   colors: {
     text: string;
     accent: string;
+    bg: string;
     textMuted: string;
   };
 };
@@ -24,18 +24,7 @@ export function ItemActions({
   isPromoting,
   colors,
 }: ItemActionsProps) {
-  const handleOpen = async () => {
-    try {
-      await WebBrowser.openBrowserAsync(url);
-    } catch (error) {
-      console.error('[ItemActions] Failed to open URL:', error);
-      Toast.show({
-        type: 'error',
-        text1: 'Failed to open link',
-        text2: error instanceof Error ? error.message : 'Unknown error',
-      });
-    }
-  };
+  const handleOpen = () => openLink({ url, colors, source: 'ItemActions' });
 
   return (
     <View
