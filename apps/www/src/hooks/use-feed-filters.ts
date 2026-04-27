@@ -25,7 +25,9 @@ export function useFeedFilters(): {
         ? 'feeds'
         : pathname.startsWith('/email')
           ? 'emails'
-          : 'public';
+          : pathname === '/about'
+            ? 'about'
+            : 'public';
 
   const status = pathname === '/queue' ? 'queued' : 'saved';
   const currentPath = pathname === '/queue' ? '/queue' : '/';

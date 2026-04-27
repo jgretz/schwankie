@@ -1,4 +1,4 @@
-export type CurrentSection = 'queue' | 'feeds' | 'emails' | 'admin' | 'public';
+export type CurrentSection = 'queue' | 'feeds' | 'emails' | 'admin' | 'public' | 'about';
 
 export type Tag = {
   id: number;
