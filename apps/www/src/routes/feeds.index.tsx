@@ -164,26 +164,33 @@ function RssPage() {
   const showGrouped = search.group && !search.feedId;
 
   return (
-    <div className="space-y-6 px-6 py-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="font-serif text-3xl text-text mb-1">RSS</h1>
-          <p className="text-text-muted font-sans text-[0.9rem]">
-            {visibleItems.length} of {total} {search.unread ? 'unread' : ''} item
-            {total !== 1 ? 's' : ''}
-            {feedOptions.length > 0 && ` across ${feedOptions.length} feeds`}
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={handleMarkAllRead} disabled={markAllReadMutation.isPending}>
-            {markAllReadMutation.isPending ? 'Marking…' : 'Mark all read'}
-          </Button>
-          <Button variant="outline" onClick={handleRefresh} disabled={isRefreshing}>
-            {isRefreshing ? 'Refreshing…' : 'Refresh'}
-          </Button>
+    <div>
+      <div className="sticky top-14 z-40 border-b border-border bg-bg px-6 py-4">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h1 className="font-serif text-3xl text-text mb-1">RSS</h1>
+            <p className="text-text-muted font-sans text-[0.9rem]">
+              {visibleItems.length} of {total} {search.unread ? 'unread' : ''} item
+              {total !== 1 ? 's' : ''}
+              {feedOptions.length > 0 && ` across ${feedOptions.length} feeds`}
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={handleMarkAllRead}
+              disabled={markAllReadMutation.isPending}
+            >
+              {markAllReadMutation.isPending ? 'Marking…' : 'Mark all read'}
+            </Button>
+            <Button variant="outline" onClick={handleRefresh} disabled={isRefreshing}>
+              {isRefreshing ? 'Refreshing…' : 'Refresh'}
+            </Button>
+          </div>
         </div>
       </div>
 
+      <div className="space-y-6 px-6 py-6">
       <div className="flex flex-wrap items-center gap-2">
         <button
           type="button"
@@ -280,6 +287,7 @@ function RssPage() {
           <div className="h-5 w-5 animate-spin rounded-full border-2 border-border border-t-accent" />
         </div>
       )}
+      </div>
     </div>
   );
 }
