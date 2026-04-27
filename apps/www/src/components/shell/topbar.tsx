@@ -79,27 +79,41 @@ export function Topbar({
         <div className="ml-auto hidden items-center gap-2 md:flex">
           <Link
             to="/about"
-            className="rounded-md px-2 py-1 font-sans text-sm text-text-muted no-underline transition-colors hover:bg-bg-subtle hover:text-text"
-            activeProps={{className: 'rounded-md bg-bg-subtle px-2 py-1 font-sans text-sm text-text no-underline'}}
+            aria-label="About"
+            className="flex h-[30px] w-[30px] items-center justify-center rounded-md border-[1.5px] border-border text-text-muted no-underline transition-colors hover:border-accent hover:bg-bg-subtle hover:text-accent"
+            activeProps={{
+              className:
+                'flex h-[30px] w-[30px] items-center justify-center rounded-md border-[1.5px] border-accent bg-bg-subtle text-accent no-underline',
+            }}
           >
-            About
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="16" x2="12" y2="12" />
+              <line x1="12" y1="8" x2="12.01" y2="8" />
+            </svg>
           </Link>
           <ThemeToggle />
+          {showAddButton && (
+            <button
+              type="button"
+              onClick={onAddClick}
+              className="flex h-[30px] w-[30px] items-center justify-center rounded-md border-[1.5px] border-border text-text-muted transition-colors hover:border-accent hover:bg-bg-subtle hover:text-accent"
+              aria-label="Add link"
+            >
+              +
+            </button>
+          )}
         </div>
-
-        {showAddButton && (
-          <button
-            type="button"
-            onClick={onAddClick}
-            className={cn(
-              'ml-1 hidden h-[30px] w-[30px] items-center justify-center rounded-md border-[1.5px] border-border text-text-muted transition-colors md:flex',
-              'hover:border-accent hover:bg-bg-subtle hover:text-accent',
-            )}
-            aria-label="Add link"
-          >
-            +
-          </button>
-        )}
 
         <div className="flex items-center gap-1 md:hidden">
           <ThemeToggle />
