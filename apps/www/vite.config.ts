@@ -9,6 +9,7 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/rss': {target: API_URL, changeOrigin: true, rewrite: () => '/api/rss'},
+      '/atom': {target: API_URL, changeOrigin: true, rewrite: () => '/api/atom'},
     },
   },
   resolve: {tsconfigPaths: true},

@@ -4,6 +4,22 @@ const SERVER_PORT = Number(process.env.PORT ?? 3000);
 const CLIENT_DIRECTORY = './dist/client';
 const SERVER_ENTRY_POINT = './dist/server/server.js';
 const API_URL = process.env.VITE_API_URL ?? 'http://localhost:3001';
+const FORWARDED_REQUEST_HEADERS = ['if-none-match', 'if-modified-since', 'accept', 'accept-encoding'];
+
+async function proxyFeed(req: Request, upstreamPath: string): Promise<Response> {
+  const headers = new Headers();
+  for (const name of FORWARDED_REQUEST_HEADERS) {
+    const value = req.headers.get(name);
+    if (value) headers.set(name, value);
+  }
+
+  try {
+    return await fetch(`${API_URL}${upstreamPath}`, {headers});
+  } catch (error) {
+    console.error(`Feed proxy error (${upstreamPath}): ${String(error)}`);
+    return new Response('Internal Server Error', {status: 500});
+  }
+}
 
 async function initializeServer() {
   console.log('Starting production server...');
@@ -17,14 +33,8 @@ async function initializeServer() {
     port: SERVER_PORT,
 
     routes: {
-      '/rss': async () => {
-        try {
-          return await fetch(`${API_URL}/api/rss`);
-        } catch (error) {
-          console.error(`RSS proxy error: ${String(error)}`);
-          return new Response('Internal Server Error', {status: 500});
-        }
-      },
+      '/rss': (req: Request) => proxyFeed(req, '/api/rss'),
+      '/atom': (req: Request) => proxyFeed(req, '/api/atom'),
 
       '/*': async (req: Request) => {
         const url = new URL(req.url);
