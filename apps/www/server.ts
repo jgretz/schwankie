@@ -3,6 +3,7 @@ import path from 'node:path';
 const SERVER_PORT = Number(process.env.PORT ?? 3000);
 const CLIENT_DIRECTORY = './dist/client';
 const SERVER_ENTRY_POINT = './dist/server/server.js';
+const API_URL = process.env.VITE_API_URL ?? 'http://localhost:3001';
 
 async function initializeServer() {
   console.log('Starting production server...');
@@ -16,6 +17,15 @@ async function initializeServer() {
     port: SERVER_PORT,
 
     routes: {
+      '/rss': async () => {
+        try {
+          return await fetch(`${API_URL}/api/rss`);
+        } catch (error) {
+          console.error(`RSS proxy error: ${String(error)}`);
+          return new Response('Internal Server Error', {status: 500});
+        }
+      },
+
       '/*': async (req: Request) => {
         const url = new URL(req.url);
         const file = Bun.file(path.join(CLIENT_DIRECTORY, url.pathname));

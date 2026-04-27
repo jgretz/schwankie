@@ -13,6 +13,7 @@ import {feedsRoutes} from './routes/feeds';
 import {emailsRouter} from './routes/emails';
 import {workRoutes} from './routes/work';
 import {statusRoutes} from './routes/status';
+import {rssRoutes} from './routes/rss';
 
 const envSchema = z.object({
   PORT: z.string().default('3001'),
@@ -39,6 +40,7 @@ app.route('/', feedsRoutes);
 app.route('/', emailsRouter);
 app.route('/', workRoutes);
 app.route('/', statusRoutes);
+app.route('/', rssRoutes);
 app.route('/api/metadata', metadataRoutes);
 
 app.onError((err, c) => {

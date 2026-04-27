@@ -25,6 +25,7 @@ import {
   upsertLinkEmbeddingSchema,
 } from '../validators/links';
 import {parseIdParam} from '../lib/parse-id-param';
+import {bumpLinksVersion} from '../lib/links-version';
 
 export const linksRoutes = new Hono();
 const auth = authMiddleware();
@@ -55,6 +56,7 @@ linksRoutes.post('/api/links', auth, async (c) => {
     return c.json({error: 'Invalid request body', details: parsed.error.flatten()}, 400);
   }
   const result = await createLink(parsed.data);
+  bumpLinksVersion();
   return c.json(result, 201);
 });
 
@@ -64,6 +66,7 @@ linksRoutes.post('/api/links/bulk-delete', auth, async (c) => {
     return c.json({error: 'Invalid request body', details: parsed.error.flatten()}, 400);
   }
   const deleted = await deleteLinks(parsed.data.ids);
+  if (deleted > 0) bumpLinksVersion();
   return c.json({deleted});
 });
 
@@ -110,6 +113,7 @@ linksRoutes.patch('/api/links/:id', auth, async (c) => {
   if (!result) {
     return c.json({error: 'Link not found'}, 404);
   }
+  bumpLinksVersion();
   return c.json(result);
 });
 
@@ -162,6 +166,7 @@ linksRoutes.patch('/api/links/:id/reset-enrichment', auth, async (c) => {
   if (!result) {
     return c.json({error: 'Link not found'}, 404);
   }
+  bumpLinksVersion();
   return c.json({reset: true});
 });
 
@@ -174,6 +179,7 @@ linksRoutes.post('/api/links/:id/refetch', auth, async (c) => {
   if (!result) {
     return c.json({error: 'Link not found'}, 404);
   }
+  bumpLinksVersion();
   return c.json(result);
 });
 
@@ -186,6 +192,7 @@ linksRoutes.post('/api/links/:id/suggest-tags', auth, async (c) => {
   if (!result) {
     return c.json({error: 'Link not found'}, 404);
   }
+  bumpLinksVersion();
   return c.json(result);
 });
 
@@ -198,5 +205,6 @@ linksRoutes.delete('/api/links/:id', auth, async (c) => {
   if (!deleted) {
     return c.json({error: 'Link not found'}, 404);
   }
+  bumpLinksVersion();
   return c.json({deleted: true});
 });
