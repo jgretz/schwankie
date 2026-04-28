@@ -1,5 +1,5 @@
 import {link, linkEmbedding} from 'database';
-import {and, inArray, isNotNull, sql} from 'drizzle-orm';
+import {and, asc, inArray, isNotNull, sql} from 'drizzle-orm';
 import {getDb} from '../db';
 
 export type LinkForEmbedding = {
@@ -34,5 +34,6 @@ export async function listLinksNeedingEmbedding(
         )`,
       ),
     )
+    .orderBy(asc(link.id))
     .limit(limit);
 }

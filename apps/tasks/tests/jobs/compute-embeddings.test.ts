@@ -18,7 +18,7 @@ describe('buildInput', function () {
   it('truncates to the nomic-embed-text context ceiling', function () {
     const long = 'a'.repeat(10_000);
     const input = buildInput({title: 'T', description: null, content: long});
-    expect(input.length).toBe(6000);
+    expect(input.length).toBe(4000);
     expect(input.startsWith('T\n\n')).toBe(true);
   });
 });
