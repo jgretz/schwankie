@@ -3,10 +3,13 @@ import {listPendingEmbeddings, upsertLinkEmbedding} from 'client';
 import {embeddings} from '../lib/ollama';
 
 const EMBED_MODEL = process.env.OLLAMA_EMBED_MODEL || 'nomic-embed-text';
-// nomic-embed-text has a 2048-token context. Code/markdown/URL-heavy text
-// runs ~2.5 chars/token (not 4), so cap input client-side. Ollama's
-// truncate:true is unreliable across versions, so don't rely on it.
+// nomic-embed-text has a 2048-token context. Most text fits at 4000 chars
+// (~2.5 chars/token), but token-dense input (CJK, base64 data URIs, dense
+// markdown) can exceed 2048 tokens at well under 4000 chars. Ollama's
+// truncate:true is silently ignored on some versions, so we retry with
+// halved input on context-length errors instead of relying on a single cap.
 const MAX_INPUT_CHARS = 4000;
+const MIN_INPUT_CHARS = 500;
 const BATCH_SIZE = 10;
 
 export function buildInput(link: {
@@ -18,6 +21,30 @@ export function buildInput(link: {
   if (link.description) parts.push(link.description);
   if (link.content) parts.push(link.content);
   return parts.join('\n\n').slice(0, MAX_INPUT_CHARS);
+}
+
+function isContextLengthError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+  return error.message.includes('context length') || error.message.includes('exceeds');
+}
+
+async function embedWithBackoff(
+  ollamaUrl: string,
+  model: string,
+  initialInput: string,
+): Promise<number[]> {
+  let input = initialInput;
+  let lastError: unknown;
+  while (input.length >= MIN_INPUT_CHARS) {
+    try {
+      return await embeddings({url: ollamaUrl, model, input});
+    } catch (error) {
+      lastError = error;
+      if (!isContextLengthError(error)) throw error;
+      input = input.slice(0, Math.floor(input.length / 2));
+    }
+  }
+  throw lastError;
 }
 
 export const computeEmbeddingsHandler: PgBoss.WorkHandler<unknown> = async () => {
@@ -36,9 +63,9 @@ export async function computeEmbeddings(ollamaUrl: string, model: string): Promi
     items.map(async (item) => {
       const input = buildInput(item);
       if (!input.trim()) throw new Error('empty input');
-      const vec = await embeddings({url: ollamaUrl, model, input});
+      const vec = await embedWithBackoff(ollamaUrl, model, input);
       await upsertLinkEmbedding(item.id, {embedding: vec, model});
-      return item.id;
+      return vec.length;
     }),
   );
 
