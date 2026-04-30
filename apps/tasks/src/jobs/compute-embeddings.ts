@@ -10,7 +10,7 @@ const EMBED_MODEL = process.env.OLLAMA_EMBED_MODEL || 'nomic-embed-text';
 // halved input on context-length errors instead of relying on a single cap.
 const MAX_INPUT_CHARS = 4000;
 const MIN_INPUT_CHARS = 500;
-const BATCH_SIZE = 10;
+const BATCH_SIZE = 50;
 
 export function buildInput(link: {
   title: string;

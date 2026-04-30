@@ -41,7 +41,7 @@ interface JobDefinition {
 
 const jobDefinitions: JobDefinition[] = [
   {queue: 'enrich-content', schedule: '*/1 * * * *'},
-  {queue: 'compute-embeddings', schedule: '*/5 * * * *'},
+  {queue: 'compute-embeddings', schedule: '*/15 * * * *'},
   {queue: 'score-links', schedule: '*/2 * * * *'},
   {queue: 'normalize-tags', schedule: '*/5 * * * *'},
   {queue: 'import-feed', schedule: '', options: {batchSize: 50}},
