@@ -10,17 +10,9 @@ import {useFeeds} from '@www/hooks/use-feeds';
 import {triggerRefreshAllFeedsAction} from '@www/lib/work-request-actions';
 
 const searchSchema = z.object({
-  unread: z
-    .enum(['true', 'false'])
-    .optional()
-    .catch('true')
-    .transform((v) => v !== 'false'),
+  unread: z.boolean().default(true).catch(true),
   feedId: z.string().optional(),
-  group: z
-    .enum(['true', 'false'])
-    .optional()
-    .catch('false')
-    .transform((v) => v === 'true'),
+  group: z.boolean().default(false).catch(false),
 });
 
 type RssSearch = z.infer<typeof searchSchema>;
@@ -102,9 +94,9 @@ function RssPage() {
 
   const toSearch = useCallback(
     (next: Partial<{unread: boolean; feedId: string | undefined; group: boolean}>) => ({
-      unread: (next.unread ?? search.unread) ? 'true' : 'false',
+      unread: next.unread ?? search.unread,
       feedId: next.feedId !== undefined ? next.feedId : search.feedId,
-      group: (next.group ?? search.group) ? 'true' : 'false',
+      group: next.group ?? search.group,
     }),
     [search.unread, search.feedId, search.group],
   );

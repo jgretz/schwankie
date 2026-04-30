@@ -13,17 +13,9 @@ import {
 import {triggerRefreshEmailsAction} from '@www/lib/work-request-actions';
 
 const searchSchema = z.object({
-  unread: z
-    .enum(['true', 'false'])
-    .optional()
-    .catch('true')
-    .transform((v) => v !== 'false'),
+  unread: z.boolean().default(true).catch(true),
   from: z.string().optional(),
-  group: z
-    .enum(['true', 'false'])
-    .optional()
-    .catch('false')
-    .transform((v) => v === 'true'),
+  group: z.boolean().default(false).catch(false),
 });
 
 type EmailSearch = z.infer<typeof searchSchema>;
@@ -104,9 +96,9 @@ function EmailsPage() {
 
   const toSearch = useCallback(
     (next: Partial<{unread: boolean; from: string | undefined; group: boolean}>) => ({
-      unread: (next.unread ?? search.unread) ? 'true' : 'false',
+      unread: next.unread ?? search.unread,
       from: next.from !== undefined ? next.from : search.from,
-      group: (next.group ?? search.group) ? 'true' : 'false',
+      group: next.group ?? search.group,
     }),
     [search.unread, search.from, search.group],
   );
