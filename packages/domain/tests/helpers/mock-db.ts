@@ -12,6 +12,8 @@ type LinkRow = {
   content: string | null;
   enrichmentFailCount: number;
   enrichmentLastError: string | null;
+  embeddingFailCount: number;
+  embeddingLastError: string | null;
   score: number | null;
   createDate: Date;
   updateDate: Date;
@@ -228,6 +230,8 @@ const COLUMN_MAP: Record<string, Record<string, string>> = {
     content: 'content',
     enrichment_fail_count: 'enrichmentFailCount',
     enrichment_last_error: 'enrichmentLastError',
+    embedding_fail_count: 'embeddingFailCount',
+    embedding_last_error: 'embeddingLastError',
     score: 'score',
     create_date: 'createDate',
     update_date: 'updateDate',
@@ -495,6 +499,8 @@ function defaultsForTable(table: any, values: any, id: number): any {
         content: values.content ?? null,
         enrichmentFailCount: values.enrichmentFailCount ?? values.enrichment_fail_count ?? 0,
         enrichmentLastError: values.enrichmentLastError ?? values.enrichment_last_error ?? null,
+        embeddingFailCount: values.embeddingFailCount ?? values.embedding_fail_count ?? 0,
+        embeddingLastError: values.embeddingLastError ?? values.embedding_last_error ?? null,
         score: values.score ?? null,
         createDate: values.createDate ?? now,
         updateDate: values.updateDate ?? now,

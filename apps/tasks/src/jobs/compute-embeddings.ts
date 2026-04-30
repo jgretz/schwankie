@@ -1,5 +1,5 @@
 import type PgBoss from 'pg-boss';
-import {listPendingEmbeddings, upsertLinkEmbedding} from 'client';
+import {listPendingEmbeddings, reportEmbeddingFailure, upsertLinkEmbedding} from 'client';
 import {embeddings} from '../lib/ollama';
 
 const EMBED_MODEL = process.env.OLLAMA_EMBED_MODEL || 'nomic-embed-text';
@@ -74,8 +74,15 @@ export async function computeEmbeddings(ollamaUrl: string, model: string): Promi
     const item = items[i]!;
     if (result.status === 'fulfilled') {
       console.log(`[embed] link ${item.id}: embedded (dim=${result.value})`);
-    } else {
-      console.warn(`[embed] link ${item.id}: failed`, result.reason);
+      continue;
     }
+    const failCount = (item.embeddingFailCount ?? 0) + 1;
+    const reason = result.reason instanceof Error ? result.reason.message : String(result.reason);
+    try {
+      await reportEmbeddingFailure(item.id, failCount, reason.slice(0, 500));
+    } catch (reportError) {
+      console.warn(`[embed] link ${item.id}: failed to record failure`, reportError);
+    }
+    console.warn(`[embed] link ${item.id}: failed ${failCount}/3`, result.reason);
   }
 }

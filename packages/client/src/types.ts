@@ -10,6 +10,8 @@ export type LinkData = {
   content: string | null;
   enrichmentFailCount: number;
   enrichmentLastError: string | null;
+  embeddingFailCount: number;
+  embeddingLastError: string | null;
   score: number | null;
   createDate: string;
   updateDate: string;
@@ -51,6 +53,8 @@ export type UpdateLinkInput = {
   status?: 'saved' | 'queued' | 'archived';
   enrichmentFailCount?: number;
   enrichmentLastError?: string | null;
+  embeddingFailCount?: number;
+  embeddingLastError?: string | null;
   score?: number | null;
   tags?: string[];
 };

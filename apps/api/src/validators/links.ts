@@ -18,6 +18,8 @@ export const updateLinkSchema = z.object({
   status: z.enum(['saved', 'queued', 'archived']).optional(),
   enrichmentFailCount: z.coerce.number().optional(),
   enrichmentLastError: z.string().nullable().optional(),
+  embeddingFailCount: z.coerce.number().optional(),
+  embeddingLastError: z.string().nullable().optional(),
   score: z.coerce.number().min(0).max(100).nullable().optional(),
   tags: z.array(z.string()).optional(),
 });

@@ -14,6 +14,8 @@ export const link = pgTable(
     content: text('content'),
     enrichmentFailCount: integer('enrichment_fail_count').notNull().default(0),
     enrichmentLastError: varchar('enrichment_last_error', {length: 500}),
+    embeddingFailCount: integer('embedding_fail_count').notNull().default(0),
+    embeddingLastError: varchar('embedding_last_error', {length: 500}),
     score: integer('score'),
     ...dates,
   },

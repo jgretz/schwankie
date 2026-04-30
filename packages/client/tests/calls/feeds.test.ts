@@ -171,7 +171,7 @@ describe('Feeds Client Calls', () => {
 
   describe('promoteRssItem', () => {
     it('should promote item to link on success', async () => {
-      const mockLink = {id: 1, title: 'Article', url: 'https://example.com/article', description: null, imageUrl: null, status: 'unread' as const, content: null, enrichmentFailCount: 0, enrichmentLastError: null, score: null, tags: []};
+      const mockLink = {id: 1, title: 'Article', url: 'https://example.com/article', description: null, imageUrl: null, status: 'unread' as const, content: null, enrichmentFailCount: 0, enrichmentLastError: null, embeddingFailCount: 0, embeddingLastError: null, score: null, tags: []};
       global.fetch = (async () =>
         new Response(JSON.stringify(mockLink), {status: 201, headers: {'Content-Type': 'application/json'}})) as any;
 

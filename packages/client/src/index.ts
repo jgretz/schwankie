@@ -39,6 +39,7 @@ export {renameTag} from './calls/rename-tag';
 export {deleteTag} from './calls/delete-tag';
 export {markTagNormalized} from './calls/mark-tag-normalized';
 export {reportEnrichmentFailure} from './calls/report-enrichment-failure';
+export {reportEmbeddingFailure} from './calls/report-embedding-failure';
 export {resetEnrichment} from './calls/reset-enrichment';
 export {fetchDeadLinks} from './calls/fetch-dead-links';
 export {refetchLink} from './calls/refetch-link';

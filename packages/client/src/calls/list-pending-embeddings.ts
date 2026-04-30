@@ -5,6 +5,7 @@ export type PendingEmbeddingLink = {
   title: string;
   description: string | null;
   content: string | null;
+  embeddingFailCount: number;
 };
 
 export type PendingEmbeddingsResponse = {items: PendingEmbeddingLink[]};

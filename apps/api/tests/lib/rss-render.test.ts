@@ -13,6 +13,8 @@ function makeLink(overrides: Partial<LinkWithTags> = {}): LinkWithTags {
     content: null,
     enrichmentFailCount: 0,
     enrichmentLastError: null,
+    embeddingFailCount: 0,
+    embeddingLastError: null,
     score: null,
     createDate: new Date('2026-04-01T12:00:00.000Z'),
     updateDate: new Date('2026-04-01T12:00:00.000Z'),
