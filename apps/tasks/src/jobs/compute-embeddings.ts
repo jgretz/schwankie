@@ -34,17 +34,16 @@ async function embedWithBackoff(
   initialInput: string,
 ): Promise<number[]> {
   let input = initialInput;
-  let lastError: unknown;
-  while (input.length >= MIN_INPUT_CHARS) {
+  while (true) {
     try {
       return await embeddings({url: ollamaUrl, model, input});
     } catch (error) {
-      lastError = error;
       if (!isContextLengthError(error)) throw error;
-      input = input.slice(0, Math.floor(input.length / 2));
+      const next = Math.floor(input.length / 2);
+      if (next < MIN_INPUT_CHARS) throw error;
+      input = input.slice(0, next);
     }
   }
-  throw lastError;
 }
 
 export const computeEmbeddingsHandler: PgBoss.WorkHandler<unknown> = async () => {
