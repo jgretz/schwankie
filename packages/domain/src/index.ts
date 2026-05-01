@@ -28,10 +28,7 @@ export {
   scoreQueuedBySimilarity,
   type QueueSimilarityScore,
 } from './queries/score-queued-by-similarity';
-export {
-  upsertLinkEmbedding,
-  type UpsertLinkEmbeddingInput,
-} from './commands/upsert-link-embedding';
+export {upsertLinkEmbedding, type UpsertLinkEmbeddingInput} from './commands/upsert-link-embedding';
 
 // commands
 export {createLink} from './commands/create-link';
@@ -64,6 +61,11 @@ export {markWorkRequestProcessing} from './commands/mark-work-request-processing
 export {markWorkRequestCompleted} from './commands/mark-work-request-completed';
 export {markWorkRequestFailed} from './commands/mark-work-request-failed';
 export {cleanupOldWorkRequests} from './commands/cleanup-old-work-requests';
+export {upsertRunner} from './commands/upsert-runner';
+export {recordHeartbeat} from './commands/record-heartbeat';
+export {deleteRunner} from './commands/delete-runner';
+export {cleanupStaleRunners} from './commands/cleanup-stale-runners';
+export {listRunners} from './queries/list-runners';
 
 // lib
 export {normalizeTag} from './lib/normalize-tag';
@@ -103,6 +105,8 @@ export type {
   WorkRequest,
   WorkRequestType,
   CreateWorkRequestInput,
+  RunnerRow,
+  UpsertRunnerInput,
 } from './types';
 export type {LinkStatus} from './queries/get-tags-with-count';
 export type {StatusSummary, StatusBucket, FailingFeed} from './queries/get-status';

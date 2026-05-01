@@ -1,14 +1,16 @@
 import {createFileRoute, Link} from '@tanstack/react-router';
 import {useMemo} from 'react';
+import {useMutation, useQueryClient} from '@tanstack/react-query';
 import {useStatus} from '@www/hooks/use-status';
-import type {StatusBucket} from 'client';
+import {useRunners} from '@www/hooks/use-runners';
+import {deleteRunnerAction} from '@www/lib/status-actions';
+import type {RunnerData, RunnerStatus, StatusBucket} from 'client';
 
 export const Route = createFileRoute('/admin/status')({
   head: () => ({meta: [{title: 'Status — schwankie'}]}),
   component: AdminStatusPage,
 });
 
-const HEARTBEAT_INTERVAL_MIN = 5;
 const EMAIL_INTERVAL_MIN = 60;
 const FEED_SCHEDULE_INTERVAL_MIN = 30;
 
@@ -38,6 +40,29 @@ function formatAge(ageMin: number | null): string {
   return `${days}d ${hours % 24}h ago`;
 }
 
+function formatSeconds(s: number): string {
+  if (s < 60) return `${s}s ago`;
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ${m % 60}m ago`;
+  const d = Math.floor(h / 24);
+  return `${d}d ${h % 24}h ago`;
+}
+
+function formatUptime(startedAt: string, now: number): string {
+  const ms = now - new Date(startedAt).getTime();
+  if (Number.isNaN(ms) || ms < 0) return 'just started';
+  const totalS = Math.floor(ms / 1000);
+  if (totalS < 60) return `${totalS}s`;
+  const m = Math.floor(totalS / 60);
+  if (m < 60) return `${m}m`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ${m % 60}m`;
+  const d = Math.floor(h / 24);
+  return `${d}d ${h % 24}h`;
+}
+
 const DOT_COLOR: Record<Health, string> = {
   green: 'bg-green-500',
   yellow: 'bg-yellow-500',
@@ -50,6 +75,12 @@ const HEALTH_LABEL: Record<Health, string> = {
   yellow: 'Delayed',
   red: 'Stale',
   gray: 'Unknown',
+};
+
+const RUNNER_HEALTH: Record<RunnerStatus, Health> = {
+  healthy: 'green',
+  stale: 'yellow',
+  dead: 'red',
 };
 
 function HealthDot({health}: {health: Health}) {
@@ -138,6 +169,101 @@ function StatusCard({
   );
 }
 
+function RunnerCard({runner, now}: {runner: RunnerData; now: number}) {
+  const queryClient = useQueryClient();
+  const removable = runner.status !== 'healthy';
+  const health = RUNNER_HEALTH[runner.status];
+  const shortId = runner.workerId.slice(0, 8);
+  const shortVersion = runner.version ? runner.version.slice(0, 7) : null;
+
+  const remove = useMutation({
+    mutationFn: () => deleteRunnerAction({data: {workerId: runner.workerId}}),
+    onSuccess: () => queryClient.invalidateQueries({queryKey: ['runners']}),
+  });
+
+  return (
+    <div className="border border-border rounded-lg p-5 space-y-3">
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <h3 className="font-serif text-lg text-text">
+            <span className="font-mono text-base" title={runner.workerId}>
+              {shortId}
+            </span>
+          </h3>
+          <p className="font-sans text-[0.85rem] text-text-muted mt-1">
+            <span className="text-text">{runner.hostname}</span>
+            <span className="text-text-faint"> · pid {runner.pid}</span>
+            {shortVersion && <span className="text-text-faint"> · {shortVersion}</span>}
+          </p>
+        </div>
+        <HealthDot health={health} />
+      </div>
+      <div className="font-sans text-[0.85rem] text-text-muted">
+        <p>
+          Up <span className="text-text">{formatUptime(runner.startedAt, now)}</span>
+        </p>
+        <p>
+          Heartbeat <span className="text-text">{formatSeconds(runner.ageSeconds)}</span>
+        </p>
+      </div>
+      {removable && (
+        <button
+          type="button"
+          onClick={() => remove.mutate()}
+          disabled={remove.isPending}
+          className="font-sans text-[0.8rem] text-text-muted hover:text-red-600 disabled:opacity-50 underline"
+        >
+          {remove.isPending ? 'Removing…' : 'Remove'}
+        </button>
+      )}
+    </div>
+  );
+}
+
+function RunnersSection() {
+  const {data: runners, isLoading, error} = useRunners();
+  const now = Date.now();
+
+  if (isLoading) {
+    return (
+      <div className="mb-6">
+        <h3 className="font-serif text-[1.1rem] font-semibold text-text mb-3">Runners</h3>
+        <p className="font-sans text-[0.85rem] text-text-muted">Loading…</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="mb-6">
+        <h3 className="font-serif text-[1.1rem] font-semibold text-text mb-3">Runners</h3>
+        <p className="font-sans text-[0.85rem] text-red-600">Failed to load runners</p>
+      </div>
+    );
+  }
+
+  const list = runners ?? [];
+
+  return (
+    <div className="mb-6">
+      <h3 className="font-serif text-[1.1rem] font-semibold text-text mb-3">
+        Runners ({list.length})
+      </h3>
+      {list.length === 0 ? (
+        <p className="font-sans text-[0.85rem] text-text-muted">
+          No runners registered. Start a tasks runner to see it here.
+        </p>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {list.map((runner) => (
+            <RunnerCard key={runner.workerId} runner={runner} now={now} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function AdminStatusPage() {
   const {data, isLoading, error, dataUpdatedAt} = useStatus();
 
@@ -158,8 +284,6 @@ function AdminStatusPage() {
   }
 
   const now = Date.now();
-  const heartbeatAge = ageMinutes(data.heartbeat.lastAt, now);
-  const heartbeatHealth = classifyAge(heartbeatAge, HEARTBEAT_INTERVAL_MIN);
   const emailAge = ageMinutes(data.email.lastImportedAt, now);
   const emailHealth = classifyAge(emailAge, EMAIL_INTERVAL_MIN);
   const feedScheduleAge = ageMinutes(data.feeds.lastScheduledAt, now);
@@ -178,18 +302,9 @@ function AdminStatusPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <StatusCard
-          title="Task runner"
-          health={heartbeatHealth}
-          ageText={formatAge(heartbeatAge)}
-          lastAt={data.heartbeat.lastAt}
-        >
-          <p className="font-sans text-[0.85rem] text-text-muted">
-            Heartbeat every {HEARTBEAT_INTERVAL_MIN} min. If stale, the Mac mini is probably down.
-          </p>
-        </StatusCard>
+      <RunnersSection />
 
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <StatusCard
           title="Email import"
           health={emailHealth}
@@ -215,17 +330,21 @@ function AdminStatusPage() {
             <p className="font-sans text-[0.85rem] text-text-muted">
               Scheduled every {FEED_SCHEDULE_INTERVAL_MIN} min.{' '}
               <span className="text-text font-semibold">{data.feeds.enabledCount}</span> active
-              {data.feeds.disabledCount > 0 && (
-                <> · {data.feeds.disabledCount} disabled</>
-              )}
+              {data.feeds.disabledCount > 0 && <> · {data.feeds.disabledCount} disabled</>}
               {data.feeds.failingCount > 0 && (
-                <> · <span className="text-red-600 font-semibold">{data.feeds.failingCount} failing</span></>
+                <>
+                  {' '}
+                  ·{' '}
+                  <span className="text-red-600 font-semibold">
+                    {data.feeds.failingCount} failing
+                  </span>
+                </>
               )}
               .
             </p>
             <p className="font-sans text-[0.85rem] text-text-muted">
-              <span className="text-text font-semibold">{data.feeds.recentCount}</span> items imported
-              in last 24h.
+              <span className="text-text font-semibold">{data.feeds.recentCount}</span> items
+              imported in last 24h.
             </p>
             <Sparkline buckets={data.feeds.hourly} />
           </div>
@@ -250,7 +369,10 @@ function AdminStatusPage() {
                 <div className="min-w-0 flex-1">
                   <p className="font-sans text-[0.9rem] text-text">{f.name}</p>
                   {f.lastError && (
-                    <p className="font-sans text-[0.8rem] text-text-muted truncate" title={f.lastError}>
+                    <p
+                      className="font-sans text-[0.8rem] text-text-muted truncate"
+                      title={f.lastError}
+                    >
                       {f.lastError}
                     </p>
                   )}

@@ -171,7 +171,6 @@ export type StatusFailingFeed = {
 
 export type StatusResponse = {
   fetchedAt: string;
-  heartbeat: {lastAt: string | null};
   email: {
     lastImportedAt: string | null;
     recentCount: number;
@@ -186,4 +185,24 @@ export type StatusResponse = {
     recentCount: number;
     hourly: StatusBucket[];
   };
+};
+
+export type RunnerStatus = 'healthy' | 'stale' | 'dead';
+
+export type RunnerData = {
+  workerId: string;
+  hostname: string;
+  pid: number;
+  version: string | null;
+  startedAt: string;
+  lastHeartbeatAt: string;
+  status: RunnerStatus;
+  ageSeconds: number;
+};
+
+export type UpsertRunnerInput = {
+  workerId: string;
+  hostname: string;
+  pid: number;
+  version?: string | null;
 };

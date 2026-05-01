@@ -18,6 +18,7 @@
     "pg-boss": "^10.1.5",
     "postgres": "^3.4.4",
     "rss-parser": "^3.13.0",
+    "uuid": "^11.0.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {

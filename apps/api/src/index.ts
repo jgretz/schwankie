@@ -13,6 +13,7 @@ import {feedsRoutes} from './routes/feeds';
 import {emailsRouter} from './routes/emails';
 import {workRoutes} from './routes/work';
 import {statusRoutes} from './routes/status';
+import {runnersRoutes} from './routes/runners';
 import {rssRoutes} from './routes/rss';
 import {atomRoutes} from './routes/atom';
 
@@ -41,6 +42,7 @@ app.route('/', feedsRoutes);
 app.route('/', emailsRouter);
 app.route('/', workRoutes);
 app.route('/', statusRoutes);
+app.route('/', runnersRoutes);
 app.route('/', rssRoutes);
 app.route('/', atomRoutes);
 app.route('/api/metadata', metadataRoutes);

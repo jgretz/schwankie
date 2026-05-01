@@ -1,4 +1,4 @@
-import type {emailItem, feed, link, rssItem, workRequest} from 'database';
+import type {emailItem, feed, link, rssItem, runner, workRequest} from 'database';
 
 export type EmailItem = typeof emailItem.$inferSelect;
 
@@ -165,4 +165,13 @@ export type WorkRequestType = 'refresh-all-feeds' | 'refresh-emails';
 export type CreateWorkRequestInput = {
   type: WorkRequestType;
   payload?: Record<string, unknown>;
+};
+
+export type RunnerRow = typeof runner.$inferSelect;
+
+export type UpsertRunnerInput = {
+  workerId: string;
+  hostname: string;
+  pid: number;
+  version?: string | null;
 };

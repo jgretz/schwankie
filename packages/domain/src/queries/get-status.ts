@@ -13,7 +13,6 @@ export type FailingFeed = {
 
 export type StatusSummary = {
   fetchedAt: string;
-  heartbeat: {lastAt: string | null};
   email: {
     lastImportedAt: string | null;
     recentCount: number;
@@ -30,22 +29,24 @@ export type StatusSummary = {
   };
 };
 
-const SETTING_KEYS = [
-  'tasks_heartbeat_at',
-  'gmail_last_imported_at',
-  'tasks_feed_schedule_last_at',
-] as const;
+const SETTING_KEYS = ['gmail_last_imported_at', 'tasks_feed_schedule_last_at'] as const;
 
 type SettingKey = (typeof SETTING_KEYS)[number];
 
-async function loadSettings(db: ReturnType<typeof getDb>): Promise<Record<SettingKey, string | null>> {
+async function loadSettings(
+  db: ReturnType<typeof getDb>,
+): Promise<Record<SettingKey, string | null>> {
   const rows = await db
     .select({key: setting.key, value: setting.value})
     .from(setting)
-    .where(sql`${setting.key} IN (${sql.join(SETTING_KEYS.map((k) => sql`${k}`), sql`, `)})`);
+    .where(
+      sql`${setting.key} IN (${sql.join(
+        SETTING_KEYS.map((k) => sql`${k}`),
+        sql`, `,
+      )})`,
+    );
 
   const out: Record<SettingKey, string | null> = {
-    tasks_heartbeat_at: null,
     gmail_last_imported_at: null,
     tasks_feed_schedule_last_at: null,
   };
@@ -84,10 +85,7 @@ export async function getStatus(): Promise<StatusSummary> {
   const [settings, emailRecent, emailHourlyRaw, feedCounts, failing, rssRecent, rssHourlyRaw] =
     await Promise.all([
       loadSettings(db),
-      db
-        .select({count: count()})
-        .from(emailItem)
-        .where(gte(emailItem.importedAt, since7d)),
+      db.select({count: count()}).from(emailItem).where(gte(emailItem.importedAt, since7d)),
       db
         .select({
           hour: sql<Date>`date_trunc('hour', ${emailItem.importedAt})`.as('hour'),
@@ -115,10 +113,7 @@ export async function getStatus(): Promise<StatusSummary> {
         .where(and(eq(feed.disabled, false), gt(feed.errorCount, 0)))
         .orderBy(desc(feed.errorCount))
         .limit(10),
-      db
-        .select({count: count()})
-        .from(rssItem)
-        .where(gte(rssItem.createdAt, since24h)),
+      db.select({count: count()}).from(rssItem).where(gte(rssItem.createdAt, since24h)),
       db
         .select({
           hour: sql<Date>`date_trunc('hour', ${rssItem.createdAt})`.as('hour'),
@@ -135,7 +130,6 @@ export async function getStatus(): Promise<StatusSummary> {
 
   return {
     fetchedAt: new Date().toISOString(),
-    heartbeat: {lastAt: settings.tasks_heartbeat_at},
     email: {
       lastImportedAt: settings.gmail_last_imported_at,
       recentCount: emailRecent[0]?.count ?? 0,

@@ -2,17 +2,16 @@ import {resolve, dirname} from 'node:path';
 import {info, error} from './log';
 import {spawnWorker, stopWorker, setOnCrash, resetBackoff} from './child';
 import {checkForUpdates, applyUpdate, rollback} from './updater';
-import {waitForHealthy, type HealthConfig} from './health';
+import {waitForHeartbeat, type HealthSettings} from './health';
 
 interface Config {
   remote: string;
   branch: string;
   updateIntervalMs: number;
   drainTimeoutMs: number;
-  health: HealthConfig;
+  health: HealthSettings;
 }
 
-// Resolve repo root: deploy/mac-mini/src/runner.ts → ../../..
 const RUNNER_DIR = dirname(new URL(import.meta.url).pathname);
 const REPO_DIR = resolve(RUNNER_DIR, '..', '..', '..');
 const CONFIG_PATH = resolve(RUNNER_DIR, '..', 'config.json');
@@ -21,11 +20,19 @@ async function loadConfig(): Promise<Config> {
   return Bun.file(CONFIG_PATH).json() as Promise<Config>;
 }
 
+function readApiCreds(): {apiUrl: string; apiKey: string} {
+  const apiUrl = process.env.API_URL;
+  const apiKey = process.env.API_KEY;
+  if (!apiUrl || !apiKey) {
+    throw new Error('API_URL and API_KEY must be set in env for the runner');
+  }
+  return {apiUrl, apiKey};
+}
+
 function buildEnv(): NodeJS.ProcessEnv {
   return {
     ...process.env,
     NODE_ENV: 'production',
-    WORKER_ID: process.env.WORKER_ID ?? `worker-${process.pid}`,
   };
 }
 
@@ -48,17 +55,32 @@ async function performUpdate(config: Config): Promise<void> {
     return;
   }
 
-  // Restart worker with new code
   await stopWorker(config.drainTimeoutMs);
-  spawnWorker(REPO_DIR, buildEnv());
+  const child = spawnWorker(REPO_DIR, buildEnv());
+  const spawnTime = new Date();
 
-  const healthy = await waitForHealthy(config.health);
+  if (typeof child.pid !== 'number') {
+    error('Spawned worker has no pid; rolling back');
+    await stopWorker(config.drainTimeoutMs);
+    await rollback(updateConfig, previousSha);
+    spawnWorker(REPO_DIR, buildEnv());
+    return;
+  }
+
+  const {apiUrl, apiKey} = readApiCreds();
+  const healthy = await waitForHeartbeat({
+    apiUrl,
+    apiKey,
+    childPid: child.pid,
+    spawnTime,
+    ...config.health,
+  });
 
   if (healthy) {
     resetBackoff();
     info('Update deployed successfully');
   } else {
-    error('Health check failed after update, rolling back');
+    error('Heartbeat check failed after update, rolling back');
     await stopWorker(config.drainTimeoutMs);
     await rollback(updateConfig, previousSha);
     spawnWorker(REPO_DIR, buildEnv());
@@ -101,10 +123,10 @@ async function main(): Promise<void> {
   process.env.NODE_ENV = 'production';
 
   const config = await loadConfig();
+  readApiCreds(); // fail fast if env missing
 
   info('Runner starting', {repoDir: REPO_DIR, branch: config.branch});
 
-  // Set up crash handler — respawn uses the same env
   setOnCrash(() => {
     if (!isShuttingDown) {
       info('Respawning crashed worker');
@@ -112,14 +134,11 @@ async function main(): Promise<void> {
     }
   });
 
-  // Spawn initial worker
   spawnWorker(REPO_DIR, buildEnv());
 
-  // Signal handling — forward to child for graceful drain
   process.on('SIGTERM', () => shutdown(config));
   process.on('SIGINT', () => shutdown(config));
 
-  // Start update polling
   scheduleUpdateLoop(config);
 
   info('Runner started, polling for updates', {intervalMs: config.updateIntervalMs});

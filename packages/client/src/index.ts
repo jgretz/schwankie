@@ -18,10 +18,7 @@ export {
   type PendingEmbeddingLink,
   type PendingEmbeddingsResponse,
 } from './calls/list-pending-embeddings';
-export {
-  upsertLinkEmbedding,
-  type UpsertLinkEmbeddingInput,
-} from './calls/upsert-link-embedding';
+export {upsertLinkEmbedding, type UpsertLinkEmbeddingInput} from './calls/upsert-link-embedding';
 export {
   listQueueSimilarityScores,
   type QueueSimilarityScoreItem,
@@ -76,6 +73,11 @@ export {triggerRefreshAllFeeds} from './calls/trigger-refresh-all-feeds';
 export {triggerRefreshEmails} from './calls/trigger-refresh-emails';
 export {cleanupWorkRequests} from './calls/cleanup-work-requests';
 export {getStatus} from './calls/get-status';
+export {upsertRunner} from './calls/upsert-runner';
+export {recordRunnerHeartbeat} from './calls/record-runner-heartbeat';
+export {listRunners} from './calls/list-runners';
+export {deleteRunner} from './calls/delete-runner';
+export {cleanupStaleRunners} from './calls/cleanup-stale-runners';
 
 // types
 export type {
@@ -102,4 +104,7 @@ export type {
   StatusResponse,
   StatusBucket,
   StatusFailingFeed,
+  RunnerData,
+  RunnerStatus,
+  UpsertRunnerInput,
 } from './types';

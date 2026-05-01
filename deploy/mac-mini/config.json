@@ -4,9 +4,9 @@
   "updateIntervalMs": 120000,
   "drainTimeoutMs": 30000,
   "health": {
-    "url": "http://localhost:3002/health",
     "initialDelayMs": 5000,
     "retries": 6,
-    "retryIntervalMs": 5000
+    "retryIntervalMs": 5000,
+    "staleThresholdMs": 120000
   }
 }

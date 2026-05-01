@@ -1,9 +1,11 @@
 import {hostname} from 'os';
 import z from 'zod';
 import PgBoss from 'pg-boss';
+import {v7 as uuidv7} from 'uuid';
 import {parseEnv} from 'env';
-import {init} from 'client';
-import {enrichContentHandler} from './jobs/enrich-content';
+import {init, recordRunnerHeartbeat, upsertRunner} from 'client';
+import {createScheduleEnrichContentHandler} from './jobs/schedule-enrich-content';
+import {enrichLinkHandler} from './jobs/enrich-link';
 import {scoreLinksHandler} from './jobs/score-links';
 import {computeEmbeddingsHandler} from './jobs/compute-embeddings';
 import {normalizeTagsHandler} from './jobs/normalize-tags';
@@ -13,7 +15,7 @@ import {importEmailsHandler} from './jobs/import-emails';
 import {createProcessWorkRequestsHandler} from './jobs/process-work-requests';
 import {cleanupWorkRequestsHandler} from './jobs/cleanup-work-requests';
 import {heartbeatHandler} from './jobs/heartbeat';
-import {startHealthServer} from './healthCheck';
+import {cleanupRunnersHandler} from './jobs/cleanup-runners';
 import {runWithAutoRecovery} from './connectionManager';
 
 const envSchema = z.object({
@@ -21,7 +23,6 @@ const envSchema = z.object({
   API_KEY: z.string(),
   PGBOSS_DATABASE_URL: z.string().url().optional(),
   PG_POOL_SIZE: z.coerce.number().default(10),
-  WORKER_ID: z.string().optional(),
   OLLAMA_URL: z.string().url().optional(),
   OLLAMA_MODEL: z.string().default('llama3.2:3b'),
   OLLAMA_SCORE_HIGH: z.coerce.number().default(4),
@@ -29,8 +30,6 @@ const envSchema = z.object({
   OLLAMA_EMBED_MODEL: z.string().default('nomic-embed-text'),
 });
 const env = parseEnv(envSchema);
-
-init({apiUrl: env.API_URL, apiKey: env.API_KEY});
 
 interface JobDefinition {
   queue: string;
@@ -40,7 +39,8 @@ interface JobDefinition {
 }
 
 const jobDefinitions: JobDefinition[] = [
-  {queue: 'enrich-content', schedule: '*/1 * * * *'},
+  {queue: 'schedule-enrich-content', schedule: '* * * * *'},
+  {queue: 'enrich-link', schedule: '', options: {batchSize: 5}},
   {queue: 'compute-embeddings', schedule: '*/15 * * * *'},
   {queue: 'score-links', schedule: '*/2 * * * *'},
   {queue: 'normalize-tags', schedule: '*/5 * * * *'},
@@ -49,12 +49,14 @@ const jobDefinitions: JobDefinition[] = [
   {queue: 'import-emails', schedule: '0 * * * *'},
   {queue: 'process-work-requests', schedule: '*/5 * * * *', runOnBoot: true},
   {queue: 'cleanup-work-requests', schedule: '0 4 * * *'},
-  {queue: 'heartbeat', schedule: '*/5 * * * *', runOnBoot: true},
+  {queue: 'cleanup-runners', schedule: '0 5 * * *'},
+  {queue: 'heartbeat', schedule: '* * * * *', runOnBoot: true},
 ];
 
 async function setupWorkers(boss: PgBoss): Promise<void> {
   const handlers: Record<string, PgBoss.WorkHandler<unknown>> = {
-    'enrich-content': enrichContentHandler,
+    'schedule-enrich-content': createScheduleEnrichContentHandler(boss),
+    'enrich-link': enrichLinkHandler as PgBoss.WorkHandler<unknown>,
     'compute-embeddings': computeEmbeddingsHandler,
     'score-links': scoreLinksHandler,
     'normalize-tags': normalizeTagsHandler,
@@ -63,6 +65,7 @@ async function setupWorkers(boss: PgBoss): Promise<void> {
     'import-emails': importEmailsHandler as PgBoss.WorkHandler<unknown>,
     'process-work-requests': createProcessWorkRequestsHandler(boss),
     'cleanup-work-requests': cleanupWorkRequestsHandler,
+    'cleanup-runners': cleanupRunnersHandler,
     heartbeat: heartbeatHandler,
   };
 
@@ -91,11 +94,19 @@ async function setupWorkers(boss: PgBoss): Promise<void> {
 }
 
 async function main(): Promise<void> {
-  const workerId = env.WORKER_ID || hostname();
+  const workerId = uuidv7();
   process.env.WORKER_ID = workerId;
   console.log(`Starting schwankie task runner (worker: ${workerId})...`);
 
-  startHealthServer();
+  init({apiUrl: env.API_URL, apiKey: env.API_KEY});
+
+  await upsertRunner({
+    workerId,
+    hostname: hostname(),
+    pid: process.pid,
+    version: process.env.GIT_SHA ?? null,
+  });
+  await recordRunnerHeartbeat(workerId);
 
   await runWithAutoRecovery(setupWorkers);
 }
