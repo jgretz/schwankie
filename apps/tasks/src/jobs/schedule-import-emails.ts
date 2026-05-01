@@ -4,6 +4,7 @@ import {GmailClient} from '../utils/gmail-client';
 
 export function createScheduleImportEmailsHandler(boss: PgBoss): PgBoss.WorkHandler<unknown> {
   return async () => {
+    console.log('[schedule-import-emails] running');
     try {
       let tokens: Awaited<ReturnType<typeof getGmailTokens>>;
       try {
@@ -27,7 +28,7 @@ export function createScheduleImportEmailsHandler(boss: PgBoss): PgBoss.WorkHand
       const messageIds = await gmail.listMessages(filter);
 
       if (messageIds.length === 0) {
-        console.log('[schedule-import-emails] no unread messages');
+        console.log(`[schedule-import-emails] no unread messages (filter="${filter}")`);
         return;
       }
 
