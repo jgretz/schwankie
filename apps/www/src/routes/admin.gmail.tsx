@@ -9,6 +9,7 @@ import {
   disconnectGmailAction,
   getGmailAuthUrlAction,
   setGmailFilterAction,
+  testGmailConnectionAction,
 } from '@www/lib/gmail-actions';
 
 export const Route = createFileRoute('/admin/gmail')({
@@ -24,6 +25,7 @@ function AdminGmailPage() {
   const {data: status, isLoading, error} = useGmailStatus();
   const [filter, setFilter] = useState('');
   const [filterLoading, setFilterLoading] = useState(false);
+  const [testingConnection, setTestingConnection] = useState(false);
 
   useEffect(() => {
     if (status?.filter) {
@@ -44,6 +46,28 @@ function AdminGmailPage() {
     } catch (error) {
       console.error('Failed to get auth URL:', error);
       toast.error('Failed to connect Gmail');
+    }
+  }, []);
+
+  const handleTestConnection = useCallback(async () => {
+    setTestingConnection(true);
+    try {
+      const result = await testGmailConnectionAction();
+      if (result.ok) {
+        const expiresAt = new Date(result.expiry).toLocaleString();
+        toast.success(`Connected as ${result.email} — token valid until ${expiresAt}`);
+      } else if (result.reason === 'token_revoked') {
+        toast.error('Token revoked — disconnect and reconnect Gmail');
+      } else if (result.reason === 'not_connected') {
+        toast.error('Gmail is not connected');
+      } else {
+        toast.error(`Gmail API error: ${result.message}`);
+      }
+    } catch (error) {
+      console.error('Failed to test Gmail connection:', error);
+      toast.error('Failed to test Gmail connection');
+    } finally {
+      setTestingConnection(false);
     }
   }, []);
 
@@ -212,6 +236,9 @@ function AdminGmailPage() {
               </div>
 
               <div className="flex gap-3 pt-4 border-t border-border">
+                <Button variant="outline" onClick={handleTestConnection} disabled={testingConnection}>
+                  {testingConnection ? 'Testing…' : 'Test Connection'}
+                </Button>
                 <Button variant="destructive" onClick={handleDisconnect}>
                   Disconnect Gmail
                 </Button>

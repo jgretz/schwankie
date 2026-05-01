@@ -8,6 +8,7 @@ const mockClearGmailTokens = mock(async () => undefined);
 const mockSetGmailTokens = mock(async () => undefined);
 const mockGetGmailTokens = mock(async () => null as any);
 const mockRefreshGmailTokens = mock(async () => null as any);
+const mockTestGmailConnection = mock(async () => ({ok: false, reason: 'not_connected', message: 'Gmail is not connected'}) as any);
 
 mock.module('env', () => ({
   parseEnv: () => ({API_KEY: 'test-key', WWW_URL: 'http://localhost:3000'}),
@@ -77,6 +78,10 @@ mock.module('../../src/lib/gmail-oauth', () => ({
 
 mock.module('../../src/commands/refresh-gmail-tokens', () => ({
   refreshGmailTokens: mockRefreshGmailTokens,
+}));
+
+mock.module('../../src/commands/test-gmail-connection', () => ({
+  testGmailConnection: mockTestGmailConnection,
 }));
 
 type GmailModule = typeof import('../../src/routes/gmail');
@@ -202,6 +207,53 @@ describe('Gmail Routes', function () {
       expect(res.status).toBe(200);
       const json = await res.json();
       expect(json.filter).toBe('is:unread');
+    });
+  });
+
+  describe('POST /api/gmail/test', function () {
+    it('should return ok result when connection works', async function () {
+      mockTestGmailConnection.mockResolvedValueOnce({
+        ok: true,
+        email: 'user@gmail.com',
+        expiry: '2026-12-31T00:00:00.000Z',
+      });
+
+      const app = makeApp();
+      const res = await app.request('/api/gmail/test', {
+        method: 'POST',
+        headers: {Authorization: 'Bearer test-key'},
+      });
+
+      expect(res.status).toBe(200);
+      const json = await res.json();
+      expect(json.ok).toBe(true);
+      expect(json.email).toBe('user@gmail.com');
+    });
+
+    it('should return failure result with reason when not connected', async function () {
+      mockTestGmailConnection.mockResolvedValueOnce({
+        ok: false,
+        reason: 'not_connected',
+        message: 'Gmail is not connected',
+      });
+
+      const app = makeApp();
+      const res = await app.request('/api/gmail/test', {
+        method: 'POST',
+        headers: {Authorization: 'Bearer test-key'},
+      });
+
+      expect(res.status).toBe(200);
+      const json = await res.json();
+      expect(json.ok).toBe(false);
+      expect(json.reason).toBe('not_connected');
+    });
+
+    it('should reject without auth', async function () {
+      const app = makeApp();
+      const res = await app.request('/api/gmail/test', {method: 'POST'});
+
+      expect(res.status).toBe(401);
     });
   });
 

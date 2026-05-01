@@ -23,6 +23,13 @@ export const disconnectGmailAction = createServerFn({method: 'POST'}).handler(as
   return disconnectGmail();
 });
 
+export const testGmailConnectionAction = createServerFn({method: 'POST'}).handler(async () => {
+  await getClient();
+  await requireAuth();
+  const {testGmailConnection} = await import('client');
+  return testGmailConnection();
+});
+
 const setGmailFilterInput = z.object({
   filter: z.string(),
 });

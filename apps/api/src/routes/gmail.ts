@@ -16,6 +16,7 @@ import {
   GmailTokenRevokedError,
 } from '../lib/gmail-oauth';
 import {refreshGmailTokens} from '../commands/refresh-gmail-tokens';
+import {testGmailConnection} from '../commands/test-gmail-connection';
 import {setGmailFilterSchema} from '../validators/gmail';
 
 const {WWW_URL} = parseEnv(z.object({WWW_URL: z.string().url()}));
@@ -84,6 +85,11 @@ gmailRouter.post('/api/gmail/filter', auth, async (c) => {
 
   await setSetting('gmail_filter', parsed.data.filter);
   return c.json({filter: parsed.data.filter});
+});
+
+gmailRouter.post('/api/gmail/test', auth, async (c) => {
+  const result = await testGmailConnection();
+  return c.json(result);
 });
 
 gmailRouter.get('/api/gmail/tokens', auth, async (c) => {

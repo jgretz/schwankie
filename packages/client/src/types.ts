@@ -79,6 +79,10 @@ export type GmailTokensResponse = {
   expiry: string;
 };
 
+export type GmailConnectionTestResult =
+  | {ok: true; email: string; expiry: string}
+  | {ok: false; reason: 'not_connected' | 'token_revoked' | 'api_error'; message: string};
+
 export type FeedData = {
   id: string;
   name: string;

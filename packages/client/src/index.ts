@@ -48,6 +48,7 @@ export {disconnectGmail} from './calls/disconnect-gmail';
 export {getGmailStatus} from './calls/get-gmail-status';
 export {setGmailFilter} from './calls/set-gmail-filter';
 export {getGmailTokens} from './calls/get-gmail-tokens';
+export {testGmailConnection} from './calls/test-gmail-connection';
 export {fetchFeeds} from './calls/fetch-feeds';
 export {getFeed} from './calls/get-feed';
 export {createFeed} from './calls/create-feed';
@@ -92,6 +93,7 @@ export type {
   GmailAuthUrlResponse,
   GmailStatusResponse,
   GmailTokensResponse,
+  GmailConnectionTestResult,
   FeedData,
   RssItemData,
   RssItemWithFeedData,
