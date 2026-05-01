@@ -17,7 +17,9 @@ export const fetchLinksAction = createServerFn({method: 'GET'})
   .inputValidator(fetchLinksInput)
   .handler(async ({data}) => {
     await getClient();
-    await requireAuth();
+    if (data.status !== 'saved') {
+      await requireAuth();
+    }
     const {fetchLinks} = await import('client');
     return fetchLinks(data);
   });

@@ -11,7 +11,9 @@ export const fetchTagsAction = createServerFn({method: 'GET'})
   .inputValidator(fetchTagsInput)
   .handler(async ({data}) => {
     await getClient();
-    await requireAuth();
+    if (data.all || data.status !== 'saved') {
+      await requireAuth();
+    }
     const {fetchTags} = await import('client');
     return fetchTags(data);
   });
