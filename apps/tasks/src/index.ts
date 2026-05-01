@@ -53,7 +53,7 @@ const jobDefinitions: JobDefinition[] = [
   {queue: 'normalize-tag-chunk', schedule: '', options: {batchSize: 1}},
   {queue: 'import-feed', schedule: '', options: {batchSize: 50}},
   {queue: 'schedule-feed-imports', schedule: '*/30 * * * *'},
-  {queue: 'schedule-import-emails', schedule: '0 * * * *'},
+  {queue: 'schedule-import-emails', schedule: '*/30 * * * *'},
   {queue: 'import-email-message', schedule: '', options: {batchSize: 5}},
   {queue: 'process-work-requests', schedule: '*/5 * * * *', runOnBoot: true},
   {queue: 'cleanup-work-requests', schedule: '0 4 * * *'},
