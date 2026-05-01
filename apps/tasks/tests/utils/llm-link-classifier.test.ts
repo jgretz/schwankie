@@ -377,5 +377,91 @@ describe('LLM Link Classifier', () => {
         expect(typeof item.reason).toBe('string');
       });
     });
+
+    it('should split batches larger than the chunk size into multiple ollama calls', async () => {
+      const links: ScoredLink[] = Array.from({length: 25}, (_, i) => ({
+        url: `https://example.com/article-${i}`,
+        title: `Article ${i}`,
+        score: 2,
+        context: `context ${i}`,
+      }));
+
+      let callCount = 0;
+      global.fetch = mock(async (_url: unknown, init?: RequestInit) => {
+        callCount += 1;
+        const body = JSON.parse(String(init?.body ?? '{}')) as {prompt: string};
+        const matches = [...body.prompt.matchAll(/^(\d+)\. URL:/gm)];
+        const indices = matches.map((m) => Number(m[1]));
+        const results = indices.map((index) => ({
+          index,
+          keep: true,
+          confidence: 0.9,
+          reason: 'ok',
+        }));
+        return {
+          ok: true,
+          json: async () => ({response: JSON.stringify({results})}),
+        } as unknown as Response;
+      }) as unknown as typeof fetch;
+
+      const result = await classifyAmbiguousLinks(
+        links,
+        {from: 'test@example.com', subject: 'Test'},
+        'http://localhost:11434',
+        'model',
+      );
+
+      expect(callCount).toBe(3);
+      expect(result).toHaveLength(25);
+      expect(result.map((r) => r.url)).toEqual(links.map((l) => l.url));
+      result.forEach((item) => {
+        expect(item.keep).toBe(true);
+        expect(item.confidence).toBe(0.9);
+      });
+    });
+
+    it('should isolate chunk failures so other chunks still classify', async () => {
+      const links: ScoredLink[] = Array.from({length: 15}, (_, i) => ({
+        url: `https://example.com/article-${i}`,
+        title: `Article ${i}`,
+        score: 2,
+        context: `context ${i}`,
+      }));
+
+      let callCount = 0;
+      global.fetch = mock(async (_url: unknown, init?: RequestInit) => {
+        callCount += 1;
+        if (callCount === 1) {
+          throw new Error('simulated timeout');
+        }
+        const body = JSON.parse(String(init?.body ?? '{}')) as {prompt: string};
+        const matches = [...body.prompt.matchAll(/^(\d+)\. URL:/gm)];
+        const indices = matches.map((m) => Number(m[1]));
+        const results = indices.map((index) => ({
+          index,
+          keep: false,
+          confidence: 0.95,
+          reason: 'sponsor',
+        }));
+        return {
+          ok: true,
+          json: async () => ({response: JSON.stringify({results})}),
+        } as unknown as Response;
+      }) as unknown as typeof fetch;
+
+      const result = await classifyAmbiguousLinks(
+        links,
+        {from: 'test@example.com', subject: 'Test'},
+        'http://localhost:11434',
+        'model',
+      );
+
+      expect(callCount).toBe(2);
+      expect(result).toHaveLength(15);
+      // Failed chunk falls back to keep-all with confidence 0
+      expect(result.slice(0, 10).every((r) => r.confidence === 0 && r.reason === 'fallback')).toBe(true);
+      // Second chunk completes normally
+      expect(result.slice(10).every((r) => r.confidence === 0.95 && r.reason === 'sponsor')).toBe(true);
+    });
   });
 });

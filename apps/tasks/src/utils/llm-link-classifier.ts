@@ -38,22 +38,22 @@ A link is NOT worth saving if it is:
 
 Respond ONLY with valid JSON matching the specified format.`;
 
+const CHUNK_SIZE = 10;
+
 function fallbackKeepAll(links: ScoredLink[]): LinkClassification[] {
   return links.map((link) => ({url: link.url, keep: true, confidence: 0, reason: 'fallback'}));
 }
 
-export async function classifyAmbiguousLinks(
-  links: ScoredLink[],
+async function classifyChunk(
+  chunk: ScoredLink[],
   emailContext: EmailContext,
   ollamaUrl: string,
   ollamaModel: string,
 ): Promise<LinkClassification[]> {
-  if (links.length === 0) return [];
-
   // Prompt injection risk: from, subject, title, and context are inserted verbatim.
   // A crafted newsletter could embed payloads in any field. Accepted risk — local LLM,
   // personal data only, worst case is link misclassification.
-  const linkList = links
+  const linkList = chunk
     .map(
       (link, i) =>
         // context is already capped at 200 chars by emailParser
@@ -79,7 +79,7 @@ ${userMessage}`;
       format: 'json',
     });
 
-    return links.map((link, i) => {
+    return chunk.map((link, i) => {
       const result = response.results.find((r) => r.index === i + 1);
       if (!result) {
         return {url: link.url, keep: true, confidence: 0, reason: 'missing'};
@@ -88,6 +88,23 @@ ${userMessage}`;
     });
   } catch (error) {
     console.error('Failed to classify ambiguous links:', error);
-    return fallbackKeepAll(links);
+    return fallbackKeepAll(chunk);
   }
+}
+
+export async function classifyAmbiguousLinks(
+  links: ScoredLink[],
+  emailContext: EmailContext,
+  ollamaUrl: string,
+  ollamaModel: string,
+): Promise<LinkClassification[]> {
+  if (links.length === 0) return [];
+
+  const results: LinkClassification[] = [];
+  for (let i = 0; i < links.length; i += CHUNK_SIZE) {
+    const chunk = links.slice(i, i + CHUNK_SIZE);
+    const chunkResults = await classifyChunk(chunk, emailContext, ollamaUrl, ollamaModel);
+    results.push(...chunkResults);
+  }
+  return results;
 }
