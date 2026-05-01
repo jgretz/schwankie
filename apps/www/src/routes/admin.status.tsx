@@ -173,7 +173,7 @@ function RunnerCard({runner, now}: {runner: RunnerData; now: number}) {
   const queryClient = useQueryClient();
   const removable = runner.status !== 'healthy';
   const health = RUNNER_HEALTH[runner.status];
-  const shortId = runner.workerId.slice(0, 8);
+  const shortId = `${runner.workerId.slice(0, 8)}…${runner.workerId.slice(-12)}`;
   const shortVersion = runner.version ? runner.version.slice(0, 7) : null;
 
   const remove = useMutation({
