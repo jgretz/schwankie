@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'bun:test';
-import {buildInput} from '../../src/jobs/compute-embeddings';
+import {buildInput} from '../../src/jobs/embed-link';
 
 describe('buildInput', function () {
   it('concatenates title, description, and content with blank-line separators', function () {

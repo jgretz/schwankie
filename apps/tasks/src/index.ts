@@ -6,12 +6,16 @@ import {parseEnv} from 'env';
 import {init, recordRunnerHeartbeat, upsertRunner} from 'client';
 import {createScheduleEnrichContentHandler} from './jobs/schedule-enrich-content';
 import {enrichLinkHandler} from './jobs/enrich-link';
-import {scoreLinksHandler} from './jobs/score-links';
-import {computeEmbeddingsHandler} from './jobs/compute-embeddings';
-import {normalizeTagsHandler} from './jobs/normalize-tags';
+import {createScheduleScoreLinksHandler} from './jobs/schedule-score-links';
+import {scoreLinkHandler} from './jobs/score-link';
+import {createScheduleComputeEmbeddingsHandler} from './jobs/schedule-compute-embeddings';
+import {embedLinkHandler} from './jobs/embed-link';
+import {createScheduleNormalizeTagsHandler} from './jobs/schedule-normalize-tags';
+import {normalizeTagChunkHandler} from './jobs/normalize-tag-chunk';
 import {importFeedHandler} from './jobs/import-feed';
 import {createScheduleFeedImportsHandler} from './jobs/schedule-feed-imports';
-import {importEmailsHandler} from './jobs/import-emails';
+import {createScheduleImportEmailsHandler} from './jobs/schedule-import-emails';
+import {importEmailMessageHandler} from './jobs/import-email-message';
 import {createProcessWorkRequestsHandler} from './jobs/process-work-requests';
 import {cleanupWorkRequestsHandler} from './jobs/cleanup-work-requests';
 import {heartbeatHandler} from './jobs/heartbeat';
@@ -41,12 +45,16 @@ interface JobDefinition {
 const jobDefinitions: JobDefinition[] = [
   {queue: 'schedule-enrich-content', schedule: '* * * * *'},
   {queue: 'enrich-link', schedule: '', options: {batchSize: 5}},
-  {queue: 'compute-embeddings', schedule: '*/15 * * * *'},
-  {queue: 'score-links', schedule: '*/2 * * * *'},
-  {queue: 'normalize-tags', schedule: '*/5 * * * *'},
+  {queue: 'schedule-compute-embeddings', schedule: '*/15 * * * *'},
+  {queue: 'embed-link', schedule: '', options: {batchSize: 5}},
+  {queue: 'schedule-score-links', schedule: '*/2 * * * *'},
+  {queue: 'score-link', schedule: '', options: {batchSize: 10}},
+  {queue: 'schedule-normalize-tags', schedule: '*/5 * * * *'},
+  {queue: 'normalize-tag-chunk', schedule: '', options: {batchSize: 1}},
   {queue: 'import-feed', schedule: '', options: {batchSize: 50}},
   {queue: 'schedule-feed-imports', schedule: '*/30 * * * *'},
-  {queue: 'import-emails', schedule: '0 * * * *'},
+  {queue: 'schedule-import-emails', schedule: '0 * * * *'},
+  {queue: 'import-email-message', schedule: '', options: {batchSize: 5}},
   {queue: 'process-work-requests', schedule: '*/5 * * * *', runOnBoot: true},
   {queue: 'cleanup-work-requests', schedule: '0 4 * * *'},
   {queue: 'cleanup-runners', schedule: '0 5 * * *'},
@@ -57,12 +65,16 @@ async function setupWorkers(boss: PgBoss): Promise<void> {
   const handlers: Record<string, PgBoss.WorkHandler<unknown>> = {
     'schedule-enrich-content': createScheduleEnrichContentHandler(boss),
     'enrich-link': enrichLinkHandler as PgBoss.WorkHandler<unknown>,
-    'compute-embeddings': computeEmbeddingsHandler,
-    'score-links': scoreLinksHandler,
-    'normalize-tags': normalizeTagsHandler,
+    'schedule-compute-embeddings': createScheduleComputeEmbeddingsHandler(boss),
+    'embed-link': embedLinkHandler as PgBoss.WorkHandler<unknown>,
+    'schedule-score-links': createScheduleScoreLinksHandler(boss),
+    'score-link': scoreLinkHandler as PgBoss.WorkHandler<unknown>,
+    'schedule-normalize-tags': createScheduleNormalizeTagsHandler(boss),
+    'normalize-tag-chunk': normalizeTagChunkHandler as PgBoss.WorkHandler<unknown>,
     'import-feed': importFeedHandler as PgBoss.WorkHandler<unknown>,
     'schedule-feed-imports': createScheduleFeedImportsHandler(boss),
-    'import-emails': importEmailsHandler as PgBoss.WorkHandler<unknown>,
+    'schedule-import-emails': createScheduleImportEmailsHandler(boss),
+    'import-email-message': importEmailMessageHandler as PgBoss.WorkHandler<unknown>,
     'process-work-requests': createProcessWorkRequestsHandler(boss),
     'cleanup-work-requests': cleanupWorkRequestsHandler,
     'cleanup-runners': cleanupRunnersHandler,

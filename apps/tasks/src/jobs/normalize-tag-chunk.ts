@@ -1,5 +1,5 @@
 import type PgBoss from 'pg-boss';
-import {getCanonicalTags, getTagsNeedingNormalization, markTagNormalized, mergeTag} from 'client';
+import {getCanonicalTags, markTagNormalized, mergeTag} from 'client';
 import {generate} from '../lib/ollama';
 
 type OllamaMerge = {merge: true; canonical: string};
@@ -8,6 +8,10 @@ type OllamaResponse = OllamaMerge | OllamaNoMerge;
 
 const SIMILARITY_THRESHOLD = 0.6;
 const MAX_CANDIDATES = 10;
+
+interface NormalizeTagChunkData {
+  tags: Array<{id: number; text: string}>;
+}
 
 export function levenshtein(a: string, b: string): number {
   const m = a.length;
@@ -58,91 +62,78 @@ export function buildPrompt(candidates: string[], newTag: string): string {
   ].join('\n');
 }
 
-async function callOllama(
-  ollamaUrl: string,
-  model: string,
-  prompt: string,
-): Promise<OllamaResponse> {
-  return generate<OllamaResponse>({
-    url: ollamaUrl,
-    model,
-    prompt,
-  });
-}
-
-export const normalizeTagsHandler: PgBoss.WorkHandler<unknown> = async () => {
-  if (!process.env.OLLAMA_URL) {
-    console.log('[normalize] OLLAMA_URL not set, skipping tag normalization');
-    return;
+export const normalizeTagChunkHandler: PgBoss.WorkHandler<NormalizeTagChunkData> = async (jobs) => {
+  for (const job of jobs) {
+    await processChunk(job.data.tags);
   }
-  await normalizeTags(process.env.OLLAMA_URL, process.env.OLLAMA_MODEL || 'llama3.2:3b');
 };
 
-export async function normalizeTags(ollamaUrl: string, ollamaModel: string): Promise<void> {
-  const {tags: unprocessed} = await getTagsNeedingNormalization();
-
-  if (unprocessed.length === 0) return;
+async function processChunk(rows: Array<{id: number; text: string}>): Promise<void> {
+  const ollamaUrl = process.env.OLLAMA_URL;
+  if (!ollamaUrl) return;
+  const ollamaModel = process.env.OLLAMA_MODEL || 'llama3.2:3b';
 
   const {tags: canonicalRows} = await getCanonicalTags(500);
-  const canonicalTags = canonicalRows.map((r) => r.text);
+  const canonical: Array<{id: number; text: string}> = canonicalRows.map((r) => ({
+    id: r.id,
+    text: r.text,
+  }));
 
-  for (const row of unprocessed) {
+  for (const row of rows) {
     try {
       const tag = row.text.trim();
 
-      // No canonical tags yet — just mark as processed
-      if (canonicalTags.length === 0) {
+      if (canonical.length === 0) {
         await markTagNormalized(row.id);
-        canonicalTags.push(row.text);
-        canonicalRows.push(row);
-        console.log(`[normalize] tag "${tag}": first canonical`);
+        canonical.push({id: row.id, text: row.text});
+        console.log(`[normalize-tag-chunk] "${tag}": first canonical`);
         continue;
       }
 
-      // Exact match — merge immediately
-      const exactMatch = canonicalRows.find((r) => r.text === tag);
-      if (exactMatch && exactMatch.id !== row.id) {
-        await mergeTag(row.id, exactMatch.id);
-        console.log(`[normalize] tag "${tag}": exact match, merged into "${exactMatch.text}"`);
+      const exact = canonical.find((r) => r.text === tag);
+      if (exact && exact.id !== row.id) {
+        await mergeTag(row.id, exact.id);
+        console.log(`[normalize-tag-chunk] "${tag}": exact match → "${exact.text}"`);
         continue;
       }
 
-      // Find fuzzy candidates
-      const candidates = findCandidates(tag, canonicalTags);
-
-      // No close matches — new canonical
+      const candidates = findCandidates(
+        tag,
+        canonical.map((r) => r.text),
+      );
       if (candidates.length === 0) {
         await markTagNormalized(row.id);
-        canonicalTags.push(row.text);
-        canonicalRows.push(row);
-        console.log(`[normalize] tag "${tag}": no close matches, new canonical`);
+        canonical.push({id: row.id, text: row.text});
+        console.log(`[normalize-tag-chunk] "${tag}": no close matches, new canonical`);
         continue;
       }
 
-      // Ambiguous — ask Ollama with only the close candidates
       const prompt = buildPrompt(candidates, tag);
-      const result = await callOllama(ollamaUrl, ollamaModel, prompt);
+      const result = await generate<OllamaResponse>({
+        url: ollamaUrl,
+        model: ollamaModel,
+        prompt,
+      });
 
       if (result.merge && result.canonical) {
-        const canonicalRow = canonicalRows.find((r) => r.text === result.canonical);
-
-        if (canonicalRow) {
-          await mergeTag(row.id, canonicalRow.id);
-          console.log(`[normalize] tag "${tag}": merged into "${result.canonical}"`);
+        const target = canonical.find((r) => r.text === result.canonical);
+        if (target) {
+          await mergeTag(row.id, target.id);
+          console.log(`[normalize-tag-chunk] "${tag}": merged into "${result.canonical}"`);
         } else {
           await markTagNormalized(row.id);
-          canonicalTags.push(row.text);
-          canonicalRows.push(row);
-          console.log(`[normalize] tag "${tag}": canonical "${result.canonical}" not found, kept`);
+          canonical.push({id: row.id, text: row.text});
+          console.log(
+            `[normalize-tag-chunk] "${tag}": canonical "${result.canonical}" not found, kept`,
+          );
         }
       } else {
         await markTagNormalized(row.id);
-        canonicalTags.push(row.text);
-        canonicalRows.push(row);
-        console.log(`[normalize] tag "${tag}": new canonical`);
+        canonical.push({id: row.id, text: row.text});
+        console.log(`[normalize-tag-chunk] "${tag}": new canonical`);
       }
     } catch (error) {
-      console.warn(`[normalize] tag "${row.text}": failed`, error);
+      console.warn(`[normalize-tag-chunk] "${row.text}": failed`, error);
     }
   }
 }

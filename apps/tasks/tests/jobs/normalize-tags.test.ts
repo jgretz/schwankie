@@ -1,5 +1,10 @@
 import {describe, expect, it} from 'bun:test';
-import {buildPrompt, findCandidates, levenshtein, similarity} from '../../src/jobs/normalize-tags';
+import {
+  buildPrompt,
+  findCandidates,
+  levenshtein,
+  similarity,
+} from '../../src/jobs/normalize-tag-chunk';
 
 describe('levenshtein', function () {
   it('should return 0 for identical strings', function () {
