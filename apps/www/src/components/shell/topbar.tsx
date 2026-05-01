@@ -23,7 +23,7 @@ export function Topbar({
 }: TopbarProps) {
   return (
     <header className="sticky top-0 z-[100] border-b border-border bg-bg">
-      <div className="flex h-14 items-center gap-3 px-4 md:gap-4 md:px-8">
+      <div className="mx-auto flex h-14 max-w-[1200px] items-center gap-3 px-4 md:gap-4">
         {showMenuButton && (
           <button
             type="button"
