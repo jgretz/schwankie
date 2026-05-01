@@ -33,8 +33,8 @@ export function createProcessWorkRequestsHandler(boss: PgBoss): PgBoss.WorkHandl
             `[process-work-requests] ${wr.id}: dispatched ${feeds.length} import-feed jobs`,
           );
         } else if (wr.type === 'refresh-emails') {
-          await boss.send('import-emails', {});
-          console.log(`[process-work-requests] ${wr.id}: dispatched import-emails`);
+          await boss.send('schedule-import-emails', {});
+          console.log(`[process-work-requests] ${wr.id}: dispatched schedule-import-emails`);
         } else {
           throw new Error(`Unknown work request type: ${wr.type}`);
         }
