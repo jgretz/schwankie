@@ -18,9 +18,10 @@ import {createScheduleImportEmailsHandler} from './jobs/schedule-import-emails';
 import {importEmailMessageHandler} from './jobs/import-email-message';
 import {createProcessWorkRequestsHandler} from './jobs/process-work-requests';
 import {cleanupWorkRequestsHandler} from './jobs/cleanup-work-requests';
-import {heartbeatHandler} from './jobs/heartbeat';
 import {cleanupRunnersHandler} from './jobs/cleanup-runners';
 import {runWithAutoRecovery} from './connectionManager';
+
+const HEARTBEAT_INTERVAL_MS = 60_000;
 
 const envSchema = z.object({
   API_URL: z.string().url(),
@@ -58,7 +59,6 @@ const jobDefinitions: JobDefinition[] = [
   {queue: 'process-work-requests', schedule: '*/5 * * * *', runOnBoot: true},
   {queue: 'cleanup-work-requests', schedule: '0 4 * * *'},
   {queue: 'cleanup-runners', schedule: '0 5 * * *'},
-  {queue: 'heartbeat', schedule: '* * * * *', runOnBoot: true},
 ];
 
 async function setupWorkers(boss: PgBoss): Promise<void> {
@@ -78,7 +78,6 @@ async function setupWorkers(boss: PgBoss): Promise<void> {
     'process-work-requests': createProcessWorkRequestsHandler(boss),
     'cleanup-work-requests': cleanupWorkRequestsHandler,
     'cleanup-runners': cleanupRunnersHandler,
-    heartbeat: heartbeatHandler,
   };
 
   for (const {queue, schedule, options} of jobDefinitions) {
@@ -119,6 +118,14 @@ async function main(): Promise<void> {
     version: process.env.GIT_SHA ?? null,
   });
   await recordRunnerHeartbeat(workerId);
+
+  setInterval(async function () {
+    try {
+      await recordRunnerHeartbeat(workerId);
+    } catch (error) {
+      console.error('[heartbeat] Failed:', error);
+    }
+  }, HEARTBEAT_INTERVAL_MS);
 
   await runWithAutoRecovery(setupWorkers);
 }
