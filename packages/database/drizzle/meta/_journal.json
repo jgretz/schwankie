@@ -92,6 +92,13 @@
       "when": 1777642223827,
       "tag": "0012_add-runner-table",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "6",
+      "when": 1780866400697,
+      "tag": "0013_add_link_embedding_hnsw_index",
+      "breakpoints": true
     }
   ]
 }

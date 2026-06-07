@@ -36,5 +36,9 @@ export const linkEmbedding = pgTable(
   (table) => ({
     linkIdIdx: uniqueIndex('idx_link_embedding_link_id').on(table.linkId),
     modelIdx: index('idx_link_embedding_model').on(table.model),
+    // NOTE: an HNSW cosine index (idx_link_embedding_hnsw) on `embedding` is
+    // created via a custom migration — drizzle-orm 0.30 can't express pgvector
+    // operator classes in the schema. It backs the <=> similarity scans in
+    // scoreQueuedBySimilarity and getRelatedByVector.
   }),
 );
