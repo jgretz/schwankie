@@ -32,9 +32,12 @@ export function makePage(overrides: Partial<LinksResponse> = {}): LinksResponse 
   };
 }
 
+const PAGE_SIZE = 25;
+
 export function makeInfiniteData(pages: LinksResponse[]): InfiniteData<LinksResponse> {
   return {
     pages,
-    pageParams: pages.map((_, index) => index * pages.length),
+    // Mirror real offset pagination: page 0 → offset 0, page 1 → offset 25, …
+    pageParams: pages.map((_, index) => index * PAGE_SIZE),
   };
 }

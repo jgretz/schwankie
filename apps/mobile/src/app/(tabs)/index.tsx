@@ -1,5 +1,5 @@
 import {View, FlatList, ActivityIndicator, RefreshControl} from 'react-native';
-import {useCallback, useState} from 'react';
+import {useCallback, useMemo, useState} from 'react';
 import type {ListRenderItem} from 'react-native';
 import Toast from 'react-native-toast-message';
 import type {LinkData} from 'client';
@@ -27,7 +27,7 @@ export default function QueueScreen() {
   const {mutate: updateLink, isPending: isPromoting} = useUpdateLink();
   const {mutate: deleteLink, isPending: isDeleting} = useDeleteLink();
 
-  const links = data?.pages.flatMap((page) => page.items) ?? [];
+  const links = useMemo(() => data?.pages.flatMap((page) => page.items) ?? [], [data]);
 
   const handleEndReached = () => {
     if (hasNextPage && !isFetchingNextPage) {
