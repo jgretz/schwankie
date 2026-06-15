@@ -6,11 +6,12 @@ import {
   TextInput,
   TouchableOpacity,
 } from 'react-native';
-import {useMemo, useState} from 'react';
+import {useCallback, useMemo, useState} from 'react';
+import type {ListRenderItem} from 'react-native';
 import {MaterialIcons} from '@expo/vector-icons';
+import type {LinkData} from 'client';
 import {useColors} from '../../theme/use-colors';
-import {LinkRow} from '../../components/LinkRow';
-import {LinkActions} from '../../components/LinkActions';
+import {CompendiumLinkRow} from '../../components/CompendiumLinkRow';
 import {EmptyState} from '../../components/EmptyState';
 import {FilterStrip} from '../../components/FilterStrip';
 import {TagsDrawer} from '../../components/TagsDrawer';
@@ -49,6 +50,11 @@ export default function CompendiumScreen() {
   const {data: tags = []} = useLinkTags('saved');
 
   const links = useMemo(() => data?.pages.flatMap((page) => page.items) ?? [], [data]);
+
+  const renderItem = useCallback<ListRenderItem<LinkData>>(
+    ({item}) => <CompendiumLinkRow link={item} colors={colors} />,
+    [colors],
+  );
 
   const handleEndReached = () => {
     if (hasNextPage && !isFetchingNextPage) {
@@ -154,20 +160,12 @@ export default function CompendiumScreen() {
       <FlatList
         data={links}
         keyExtractor={(item) => String(item.id)}
-        renderItem={({item}) => (
-          <View>
-            <LinkRow link={item} colors={colors} />
-            <LinkActions url={item.url} colors={colors} />
-          </View>
-        )}
+        renderItem={renderItem}
+        maintainVisibleContentPosition={{minIndexForVisible: 0}}
         onEndReached={handleEndReached}
         onEndReachedThreshold={0.5}
         refreshControl={
-          <RefreshControl
-            refreshing={isRefetching}
-            onRefresh={refetch}
-            tintColor={colors.accent}
-          />
+          <RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={colors.accent} />
         }
         ListEmptyComponent={
           isLoading ? (
