@@ -1,7 +1,20 @@
 import {useInfiniteQuery, useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
+import type {InfiniteData, QueryClient, UseMutationOptions} from '@tanstack/react-query';
 import Toast from 'react-native-toast-message';
 import {createLink, deleteLink, fetchLinks, fetchTags, updateLink} from 'client';
-import type {CreateLinkInput, LinkStatus, UpdateLinkInput} from 'client';
+import type {CreateLinkInput, LinkData, LinksResponse, LinkStatus, UpdateLinkInput} from 'client';
+import {removeLinkFromInfiniteData} from './links-cache';
+
+type LinksSnapshot = Array<[readonly unknown[], InfiniteData<LinksResponse> | undefined]>;
+
+type MutationContext = {previous: LinksSnapshot} | undefined;
+
+function restoreLinksSnapshot(queryClient: QueryClient, previous: LinksSnapshot | undefined): void {
+  if (!previous) return;
+  for (const [key, value] of previous) {
+    queryClient.setQueryData(key, value);
+  }
+}
 
 const PAGE_SIZE = 25;
 
@@ -54,16 +67,41 @@ export function useCreateLink() {
   });
 }
 
-export function useUpdateLink() {
-  const queryClient = useQueryClient();
+type UpdateLinkVariables = {id: number; data: UpdateLinkInput};
 
-  return useMutation({
-    mutationFn: ({id, data}: {id: number; data: UpdateLinkInput}) => updateLink(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({queryKey: ['links']});
+/**
+ * Builds the optimistic-update mutation options. Extracted from the hook so the
+ * `onMutate`/`onError` cache logic is unit-testable against a real QueryClient
+ * without rendering React.
+ */
+export function updateLinkMutationOptions(
+  queryClient: QueryClient,
+): UseMutationOptions<LinkData, Error, UpdateLinkVariables, MutationContext> {
+  return {
+    mutationFn: ({id, data}) => updateLink(id, data),
+    onMutate: async ({id, data}) => {
+      // Only status changes remove the row from the queued list; other updates
+      // fall back to the existing (non-optimistic) behavior.
+      if (!data.status) return undefined;
+
+      await queryClient.cancelQueries({queryKey: ['links', 'queued']});
+      const previous = queryClient.getQueriesData<InfiniteData<LinksResponse>>({
+        queryKey: ['links', 'queued'],
+      });
+      queryClient.setQueriesData<InfiniteData<LinksResponse>>(
+        {queryKey: ['links', 'queued']},
+        (old) => removeLinkFromInfiniteData(old, id),
+      );
+      return {previous};
+    },
+    onSuccess: (_res, {data}) => {
+      // Invalidate the destination list + tag counts only — never the visible
+      // queued query, which is already correct via the optimistic edit.
+      queryClient.invalidateQueries({queryKey: ['links', data.status ?? 'saved']});
       queryClient.invalidateQueries({queryKey: ['tags']});
     },
-    onError: (error) => {
+    onError: (error, _vars, context) => {
+      restoreLinksSnapshot(queryClient, context?.previous);
       console.error('[useUpdateLink] Error:', error);
       Toast.show({
         type: 'error',
@@ -71,19 +109,40 @@ export function useUpdateLink() {
         text2: error instanceof Error ? error.message : 'Unknown error',
       });
     },
-  });
+  };
 }
 
-export function useDeleteLink() {
+export function useUpdateLink() {
   const queryClient = useQueryClient();
+  return useMutation(updateLinkMutationOptions(queryClient));
+}
 
-  return useMutation({
-    mutationFn: (id: number) => deleteLink(id),
+/**
+ * Builds the optimistic-delete mutation options. Extracted from the hook for the
+ * same testability reason as {@link updateLinkMutationOptions}.
+ */
+export function deleteLinkMutationOptions(
+  queryClient: QueryClient,
+): UseMutationOptions<{deleted: boolean}, Error, number, MutationContext> {
+  return {
+    mutationFn: (id) => deleteLink(id),
+    onMutate: async (id) => {
+      // We don't know which list holds the item — snapshot/edit every status.
+      await queryClient.cancelQueries({queryKey: ['links']});
+      const previous = queryClient.getQueriesData<InfiniteData<LinksResponse>>({
+        queryKey: ['links'],
+      });
+      queryClient.setQueriesData<InfiniteData<LinksResponse>>({queryKey: ['links']}, (old) =>
+        removeLinkFromInfiniteData(old, id),
+      );
+      return {previous};
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({queryKey: ['links']});
+      // The row is already removed optimistically; only refresh tag counts.
       queryClient.invalidateQueries({queryKey: ['tags']});
     },
-    onError: (error) => {
+    onError: (error, _id, context) => {
+      restoreLinksSnapshot(queryClient, context?.previous);
       console.error('[useDeleteLink] Error:', error);
       Toast.show({
         type: 'error',
@@ -91,5 +150,10 @@ export function useDeleteLink() {
         text2: error instanceof Error ? error.message : 'Unknown error',
       });
     },
-  });
+  };
+}
+
+export function useDeleteLink() {
+  const queryClient = useQueryClient();
+  return useMutation(deleteLinkMutationOptions(queryClient));
 }

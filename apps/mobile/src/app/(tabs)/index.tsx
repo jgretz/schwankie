@@ -1,9 +1,10 @@
 import {View, FlatList, ActivityIndicator, RefreshControl} from 'react-native';
-import {useState} from 'react';
+import {useCallback, useMemo, useState} from 'react';
+import type {ListRenderItem} from 'react-native';
 import Toast from 'react-native-toast-message';
+import type {LinkData} from 'client';
 import {useColors} from '../../theme/use-colors';
-import {LinkRow} from '../../components/LinkRow';
-import {LinkActions} from '../../components/LinkActions';
+import {QueueLinkRow} from '../../components/QueueLinkRow';
 import {EmptyState} from '../../components/EmptyState';
 import {useDeleteLink, useLinks, useUpdateLink} from '../../services/links';
 
@@ -26,7 +27,7 @@ export default function QueueScreen() {
   const {mutate: updateLink, isPending: isPromoting} = useUpdateLink();
   const {mutate: deleteLink, isPending: isDeleting} = useDeleteLink();
 
-  const links = data?.pages.flatMap((page) => page.items) ?? [];
+  const links = useMemo(() => data?.pages.flatMap((page) => page.items) ?? [], [data]);
 
   const handleEndReached = () => {
     if (hasNextPage && !isFetchingNextPage) {
@@ -34,28 +35,56 @@ export default function QueueScreen() {
     }
   };
 
-  const handlePromote = (id: number) => {
-    setPendingPromoteId(id);
-    updateLink(
-      {id, data: {status: 'saved'}},
-      {
-        onSuccess: () => {
-          Toast.show({type: 'success', text1: 'Added to Compendium'});
+  const handlePromote = useCallback(
+    (id: number) => {
+      setPendingPromoteId(id);
+      updateLink(
+        {id, data: {status: 'saved'}},
+        {
+          onSuccess: () => {
+            Toast.show({type: 'success', text1: 'Added to Compendium'});
+          },
+          onSettled: () => setPendingPromoteId(null),
         },
-        onSettled: () => setPendingPromoteId(null),
-      },
-    );
-  };
+      );
+    },
+    [updateLink],
+  );
 
-  const handleDelete = (id: number) => {
-    setPendingDeleteId(id);
-    deleteLink(id, {
-      onSuccess: () => {
-        Toast.show({type: 'success', text1: 'Link deleted'});
-      },
-      onSettled: () => setPendingDeleteId(null),
-    });
-  };
+  const handleDelete = useCallback(
+    (id: number) => {
+      setPendingDeleteId(id);
+      deleteLink(id, {
+        onSuccess: () => {
+          Toast.show({type: 'success', text1: 'Link deleted'});
+        },
+        onSettled: () => setPendingDeleteId(null),
+      });
+    },
+    [deleteLink],
+  );
+
+  const renderItem = useCallback<ListRenderItem<LinkData>>(
+    ({item}) => (
+      <QueueLinkRow
+        link={item}
+        colors={colors}
+        onPromote={handlePromote}
+        onDelete={handleDelete}
+        isPromoting={pendingPromoteId === item.id && isPromoting}
+        isDeleting={pendingDeleteId === item.id && isDeleting}
+      />
+    ),
+    [
+      colors,
+      handlePromote,
+      handleDelete,
+      pendingPromoteId,
+      isPromoting,
+      pendingDeleteId,
+      isDeleting,
+    ],
+  );
 
   if (isLoading) {
     return (
@@ -93,27 +122,12 @@ export default function QueueScreen() {
       <FlatList
         data={links}
         keyExtractor={(item) => String(item.id)}
-        renderItem={({item}) => (
-          <View>
-            <LinkRow link={item} colors={colors} />
-            <LinkActions
-              url={item.url}
-              onPromote={() => handlePromote(item.id)}
-              onDelete={() => handleDelete(item.id)}
-              isPromoting={pendingPromoteId === item.id && isPromoting}
-              isDeleting={pendingDeleteId === item.id && isDeleting}
-              colors={colors}
-            />
-          </View>
-        )}
+        renderItem={renderItem}
+        maintainVisibleContentPosition={{minIndexForVisible: 0}}
         onEndReached={handleEndReached}
         onEndReachedThreshold={0.5}
         refreshControl={
-          <RefreshControl
-            refreshing={isRefetching}
-            onRefresh={refetch}
-            tintColor={colors.accent}
-          />
+          <RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={colors.accent} />
         }
         ListFooterComponent={
           isFetchingNextPage ? (
