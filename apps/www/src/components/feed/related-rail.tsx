@@ -54,7 +54,7 @@ export function RelatedRail({linkId}: RelatedRailProps) {
             href={item.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="truncate font-serif text-[0.85rem] text-text transition-colors hover:text-accent"
+            className="min-w-0 truncate font-serif text-[0.85rem] text-text transition-colors hover:text-accent"
             title={item.title}
           >
             {item.title}
