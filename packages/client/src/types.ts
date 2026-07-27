@@ -246,7 +246,10 @@ export type DailySummaryData = {
   lookbackHours: number;
   windowStart: string;
   windowEnd: string;
+  /** Links in the source window. */
   itemCount: number;
+  /** Links the topics account for; <= itemCount. */
+  coveredCount: number;
   notable: string | null;
   topics: DigestTopic[];
   createdAt: string;
@@ -259,6 +262,7 @@ export type UpsertDailySummaryInput = {
   windowStart?: string;
   windowEnd?: string;
   itemCount?: number;
+  coveredCount?: number;
   notable?: string | null;
   topics: DigestTopic[];
 };

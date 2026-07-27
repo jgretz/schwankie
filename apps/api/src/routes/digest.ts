@@ -61,12 +61,20 @@ digestRoutes.post('/api/digest/daily-summary', auth, async (c) => {
   const lookbackHours = parsed.data.lookbackHours ?? 24;
   const fallback = digestWindow(now, lookbackHours);
 
+  // What the topics account for. Always derivable, so it never needs sending.
+  const coveredCount =
+    parsed.data.coveredCount ?? topics.reduce((sum, topic) => sum + topic.itemCount, 0);
+
   const summary = await upsertDailySummary({
     summaryDate: parsed.data.summaryDate ?? localSummaryDate(now),
     lookbackHours,
     windowStart: parsed.data.windowStart ? new Date(parsed.data.windowStart) : fallback.windowStart,
     windowEnd: parsed.data.windowEnd ? new Date(parsed.data.windowEnd) : fallback.windowEnd,
-    itemCount: parsed.data.itemCount ?? topics.reduce((sum, topic) => sum + topic.itemCount, 0),
+    // The window size is only knowable by the caller that queried it. Falling
+    // back to coveredCount keeps the invariant covered <= item rather than
+    // claiming a window of zero.
+    itemCount: parsed.data.itemCount ?? coveredCount,
+    coveredCount,
     notable: notable ?? null,
     topics,
   });

@@ -89,10 +89,20 @@ steps:
       {{steps.rank.output.notable}}
       </notable>
 
+      The source window these were clustered from, to record verbatim:
+        windowStart = {{steps.load.output.windowStart}}
+        windowEnd   = {{steps.load.output.windowEnd}}
+        itemCount   = {{steps.load.output.count}}
+
       Write a request body to {{runDir}}/payload.json of the form
-      {"topics": <the array above>, "notable": <the notable text, JSON-encoded>}
+      {"topics": <the array above>, "notable": <the notable text, JSON-encoded>,
+       "windowStart": <windowStart>, "windowEnd": <windowEnd>,
+       "itemCount": <itemCount as a number>}
       using a script — do NOT hand-assemble the JSON, the notable text may
       contain quotes or newlines.
+
+      itemCount is the size of the SOURCE WINDOW above, not the number of
+      links in the topics — the API derives that itself. Do not recompute it.
 
       Then POST that file to {API_URL}/api/digest/daily-summary with an
       `Authorization: Bearer {API_KEY}` header and Content-Type

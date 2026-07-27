@@ -84,6 +84,7 @@ export async function makeDailySummary(overrides: Partial<UpsertDailySummaryInpu
     windowStart: new Date(windowEnd.getTime() - 24 * 60 * 60 * 1000),
     windowEnd,
     itemCount: 0,
+    coveredCount: 0,
     notable: null,
     topics: [],
     ...overrides,

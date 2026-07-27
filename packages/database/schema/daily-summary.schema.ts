@@ -35,7 +35,14 @@ export const dailySummary = pgTable(
     lookbackHours: integer('lookback_hours').notNull(),
     windowStart: timestamp('window_start', {precision: 6, withTimezone: true}).notNull(),
     windowEnd: timestamp('window_end', {precision: 6, withTimezone: true}).notNull(),
+    /** Links in the source window — what actually arrived over lookbackHours. */
     itemCount: integer('item_count').notNull().default(0),
+    /**
+     * Links the topics account for. Always <= itemCount: clustering is lossy,
+     * and the gap is the signal for whether the noise filter or the model is
+     * doing the work.
+     */
+    coveredCount: integer('covered_count').notNull().default(0),
     notable: text('notable'),
     topics: jsonb('topics').$type<DigestTopic[]>().notNull().default([]),
     createdAt: timestamp('created_at', {precision: 6, withTimezone: true}).notNull().defaultNow(),

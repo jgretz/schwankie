@@ -209,7 +209,10 @@ export type UpsertDailySummaryInput = {
   lookbackHours: number;
   windowStart: Date;
   windowEnd: Date;
+  /** Links in the source window. */
   itemCount: number;
+  /** Links the topics account for; <= itemCount. */
+  coveredCount: number;
   notable?: string | null;
   topics: DigestTopic[];
 };

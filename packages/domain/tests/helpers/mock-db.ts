@@ -112,6 +112,7 @@ type DailySummaryRow = {
   windowStart: Date;
   windowEnd: Date;
   itemCount: number;
+  coveredCount: number;
   notable: string | null;
   topics: unknown[];
   createdAt: Date;
@@ -340,6 +341,7 @@ const COLUMN_MAP: Record<string, Record<string, string>> = {
     window_start: 'windowStart',
     window_end: 'windowEnd',
     item_count: 'itemCount',
+    covered_count: 'coveredCount',
     notable: 'notable',
     topics: 'topics',
     created_at: 'createdAt',
@@ -649,6 +651,7 @@ function defaultsForTable(table: any, values: any, id: number): any {
         windowStart: values.windowStart ?? values.window_start ?? now,
         windowEnd: values.windowEnd ?? values.window_end ?? now,
         itemCount: values.itemCount ?? values.item_count ?? 0,
+        coveredCount: values.coveredCount ?? values.covered_count ?? 0,
         notable: values.notable ?? null,
         topics: values.topics ?? [],
         createdAt: values.createdAt ?? values.created_at ?? now,

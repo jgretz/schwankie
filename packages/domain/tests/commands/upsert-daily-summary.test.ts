@@ -48,7 +48,8 @@ describe('upsertDailySummary', function () {
       lookbackHours: 24,
       windowStart: new Date('2026-07-26T11:00:00Z'),
       windowEnd: new Date('2026-07-27T11:00:00Z'),
-      itemCount: 4,
+      itemCount: 120,
+      coveredCount: 4,
       notable: 'Model releases dominated.',
       topics,
     });
@@ -68,6 +69,29 @@ describe('upsertDailySummary', function () {
     expect(created!.itemCount).toBe(0);
   });
 
+  it('should store the window size and the covered count independently', async function () {
+    // The whole point of two columns: clustering is lossy, and the gap between
+    // what arrived and what the topics account for is the interesting signal.
+    const created = await makeDailySummary({
+      summaryDate: '2026-07-27',
+      itemCount: 504,
+      coveredCount: 96,
+    });
+
+    expect(created!.itemCount).toBe(504);
+    expect(created!.coveredCount).toBe(96);
+  });
+
+  it('should overwrite both counts on a re-run', async function () {
+    await makeDailySummary({summaryDate: '2026-07-27', itemCount: 504, coveredCount: 96});
+
+    await makeDailySummary({summaryDate: '2026-07-27', itemCount: 310, coveredCount: 71});
+
+    const stored = await getDailySummary('2026-07-27');
+    expect(stored!.itemCount).toBe(310);
+    expect(stored!.coveredCount).toBe(71);
+  });
+
   it('should default notable to null when omitted', async function () {
     const created = await upsertDailySummary({
       summaryDate: '2026-07-27',
@@ -75,6 +99,7 @@ describe('upsertDailySummary', function () {
       windowStart: new Date('2026-07-26T11:00:00Z'),
       windowEnd: new Date('2026-07-27T11:00:00Z'),
       itemCount: 0,
+      coveredCount: 0,
       topics: [],
     });
 
