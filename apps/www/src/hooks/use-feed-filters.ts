@@ -17,6 +17,8 @@ export function useFeedFilters(): {
 
   const pathname = useRouterState({select: (s) => s.location.pathname});
 
+  // The trailing fallback is 'public', which IS a tag section — a path without
+  // its own branch renders the tag sidebar and fires a needless tags query.
   const currentSection = pathname.startsWith('/admin')
     ? 'admin'
     : pathname === '/queue'
@@ -25,9 +27,11 @@ export function useFeedFilters(): {
         ? 'feeds'
         : pathname.startsWith('/email')
           ? 'emails'
-          : pathname === '/about'
-            ? 'about'
-            : 'public';
+          : pathname.startsWith('/daily-summary')
+            ? 'daily-summary'
+            : pathname === '/about'
+              ? 'about'
+              : 'public';
 
   const status = pathname === '/queue' ? 'queued' : 'saved';
   const currentPath = pathname === '/queue' ? '/queue' : '/';
