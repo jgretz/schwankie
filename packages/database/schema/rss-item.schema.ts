@@ -23,5 +23,8 @@ export const rssItem = pgTable(
   (table) => ({
     feedGuidIdx: uniqueIndex('idx_rss_item_feed_guid').on(table.feedId, table.guid),
     readPublishedIdx: index('idx_rss_item_read_published').on(table.read, table.publishedAt),
+    // The digest window filters on ingestion time, not published_at (nullable,
+    // and carrying known bad rows where published_at > created_at).
+    createdAtIdx: index('idx_rss_item_created_at').on(table.createdAt),
   }),
 );

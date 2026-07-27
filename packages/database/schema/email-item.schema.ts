@@ -1,4 +1,4 @@
-import {boolean, pgTable, text, timestamp, uniqueIndex, uuid} from 'drizzle-orm/pg-core';
+import {boolean, index, pgTable, text, timestamp, uniqueIndex, uuid} from 'drizzle-orm/pg-core';
 
 export const emailItem = pgTable(
   'email_item',
@@ -14,6 +14,11 @@ export const emailItem = pgTable(
     importedAt: timestamp('imported_at', {precision: 6, withTimezone: true}).notNull().defaultNow(),
   },
   (table) => ({
-    emailItemMessageLinkUnique: uniqueIndex('email_item_message_link_unique').on(table.emailMessageId, table.link),
+    emailItemMessageLinkUnique: uniqueIndex('email_item_message_link_unique').on(
+      table.emailMessageId,
+      table.link,
+    ),
+    // The digest window filters on imported_at; email items carry no published date.
+    importedAtIdx: index('idx_email_item_imported_at').on(table.importedAt),
   }),
 );

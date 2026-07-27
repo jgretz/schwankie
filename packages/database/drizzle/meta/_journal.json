@@ -99,6 +99,13 @@
       "when": 1780866400697,
       "tag": "0013_add_link_embedding_hnsw_index",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "6",
+      "when": 1785174970286,
+      "tag": "0014_add-daily-summary",
+      "breakpoints": true
     }
   ]
 }
