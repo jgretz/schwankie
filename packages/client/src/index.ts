@@ -83,6 +83,7 @@ export {fetchDigestSourceItems} from './calls/fetch-digest-source-items';
 export {fetchDailySummary} from './calls/fetch-daily-summary';
 export {fetchDailySummaryDates} from './calls/fetch-daily-summary-dates';
 export {upsertDailySummary} from './calls/upsert-daily-summary';
+export {listPromoteFailures} from './calls/list-promote-failures';
 
 // types
 export type {
@@ -119,4 +120,5 @@ export type {
   DigestTopicLink,
   DailySummaryData,
   UpsertDailySummaryInput,
+  PromoteFailureData,
 } from './types';

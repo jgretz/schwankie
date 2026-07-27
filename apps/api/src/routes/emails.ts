@@ -7,6 +7,7 @@ import {
   markEmailItemRead,
   promoteEmailItem,
 } from '@domain';
+import {capturePromoteFailure} from '../commands/capture-promote-failure';
 import {bulkUpsertEmailItemsSchema, emailItemIdParamSchema} from '../validators/emails';
 
 export const emailsRouter = new Hono();
@@ -54,6 +55,15 @@ emailsRouter.post('/api/emails/:id/promote', auth, async (c) => {
     return c.json({error: 'Invalid email item ID'}, 400);
   }
 
-  const link = await promoteEmailItem(parsed.data.id);
-  return c.json(link);
+  // Capture outside the command's transaction, and rethrow untouched so
+  // error-handler.ts still maps NotFoundError to 404 and
+  // DomainValidationError to 422. promoteEmailItem signals not-found by
+  // throwing, so one catch covers both.
+  try {
+    const link = await promoteEmailItem(parsed.data.id);
+    return c.json(link);
+  } catch (error) {
+    await capturePromoteFailure({source: 'email', sourceItemId: parsed.data.id, error});
+    throw error;
+  }
 });

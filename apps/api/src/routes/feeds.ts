@@ -13,7 +13,9 @@ import {
   promoteRssItem,
   bulkUpsertRssItems,
   getLink,
+  NotFoundError,
 } from '@domain';
+import {capturePromoteFailure} from '../commands/capture-promote-failure';
 import {
   createFeedSchema,
   updateFeedSchema,
@@ -145,10 +147,27 @@ feedsRoutes.post('/api/feeds/:feedId/items/:itemId/promote', auth, async (c) => 
   if (itemId === null) {
     return c.json({error: 'Invalid item ID'}, 400);
   }
-  const linkId = await promoteRssItem(itemId);
+  // The capture has to sit out here: promoteRssItem runs its whole body inside
+  // a transaction, so a row written from within it would roll back with the
+  // failure. Rethrow the original error untouched — error-handler.ts owns the
+  // status mapping.
+  let linkId: number | null;
+  try {
+    linkId = await promoteRssItem(itemId);
+  } catch (error) {
+    await capturePromoteFailure({source: 'rss', sourceItemId: itemId, error});
+    throw error;
+  }
+
   if (linkId === null) {
+    await capturePromoteFailure({
+      source: 'rss',
+      sourceItemId: itemId,
+      error: new NotFoundError('rssItem', itemId),
+    });
     return c.json({error: 'Item not found'}, 404);
   }
+
   const link = await getLink(linkId);
   return c.json(link);
 });
