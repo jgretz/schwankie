@@ -1,6 +1,6 @@
 import type PgBoss from 'pg-boss';
 import {bulkUpsertEmailItems, getGmailTokens, type BulkUpsertEmailItemsInput} from 'client';
-import {GmailClient, extractDisplayName} from '../utils/gmail-client';
+import {GmailClient, extractDisplayName, type GmailMessage} from '../utils/gmail-client';
 import {
   parseLinksWithScores,
   type ParsedLink,
@@ -59,12 +59,12 @@ type EmailItemInput = BulkUpsertEmailItemsInput['items'][number];
  * own field.
  */
 export function buildEmailItems(
-  message: {from: string; subject: string},
+  message: Pick<GmailMessage, 'from' | 'subject'>,
   messageId: string,
   links: ParsedLink[],
 ): EmailItemInput[] {
   const emailFrom = extractDisplayName(message.from);
-  const emailSubject = message.subject?.trim() || undefined;
+  const emailSubject = message.subject.trim() || undefined;
 
   return links.map((parsed) => ({
     messageId,
