@@ -210,3 +210,55 @@ export type UpsertRunnerInput = {
   pid: number;
   version?: string | null;
 };
+
+export type DigestSourceItem = {
+  url: string;
+  title: string;
+  source: string;
+  sourceKind: 'rss' | 'email';
+  ingestedAt: string;
+};
+
+export type DigestSourceItemsResponse = {
+  items: DigestSourceItem[];
+  windowStart: string;
+  windowEnd: string;
+  count: number;
+};
+
+export type DigestTopicLink = {
+  url: string;
+  title: string;
+  source: string;
+};
+
+export type DigestTopic = {
+  rank: number;
+  title: string;
+  body: string;
+  itemCount: number;
+  links: DigestTopicLink[];
+};
+
+export type DailySummaryData = {
+  id: string;
+  summaryDate: string;
+  lookbackHours: number;
+  windowStart: string;
+  windowEnd: string;
+  itemCount: number;
+  notable: string | null;
+  topics: DigestTopic[];
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type UpsertDailySummaryInput = {
+  summaryDate?: string;
+  lookbackHours?: number;
+  windowStart?: string;
+  windowEnd?: string;
+  itemCount?: number;
+  notable?: string | null;
+  topics: DigestTopic[];
+};

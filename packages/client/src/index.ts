@@ -79,6 +79,10 @@ export {recordRunnerHeartbeat} from './calls/record-runner-heartbeat';
 export {listRunners} from './calls/list-runners';
 export {deleteRunner} from './calls/delete-runner';
 export {cleanupStaleRunners} from './calls/cleanup-stale-runners';
+export {fetchDigestSourceItems} from './calls/fetch-digest-source-items';
+export {fetchDailySummary} from './calls/fetch-daily-summary';
+export {fetchDailySummaryDates} from './calls/fetch-daily-summary-dates';
+export {upsertDailySummary} from './calls/upsert-daily-summary';
 
 // types
 export type {
@@ -109,4 +113,10 @@ export type {
   RunnerData,
   RunnerStatus,
   UpsertRunnerInput,
+  DigestSourceItem,
+  DigestSourceItemsResponse,
+  DigestTopic,
+  DigestTopicLink,
+  DailySummaryData,
+  UpsertDailySummaryInput,
 } from './types';
