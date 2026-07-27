@@ -72,6 +72,12 @@ export {listDailySummaryDates} from './queries/list-daily-summary-dates';
 export {upsertDailySummary} from './commands/upsert-daily-summary';
 
 // lib
+export {DomainValidationError, NotFoundError} from './lib/errors';
+export {
+  fitLinkFields,
+  type FitLinkFieldsInput,
+  type FitLinkFieldsOutput,
+} from './lib/fit-link-fields';
 export {normalizeTag} from './lib/normalize-tag';
 export {normalizeUrl} from './lib/normalize-url';
 export {DIGEST_TZ, digestWindow, localSummaryDate} from './lib/digest-date';

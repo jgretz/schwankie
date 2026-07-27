@@ -75,9 +75,10 @@ export type ListTagsResult = {tags: Array<TagWithCount | TagSimple>};
 
 export type CreateLinkInput = {
   url: string;
-  title: string;
-  description?: string;
-  imageUrl?: string;
+  /** Optional: fitLinkFields falls back to the url when absent or blank. */
+  title?: string | null;
+  description?: string | null;
+  imageUrl?: string | null;
   status?: 'saved' | 'queued';
   tags?: string[];
 };

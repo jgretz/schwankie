@@ -1,12 +1,14 @@
 import type {Database} from 'database';
 import {link, linkTag} from 'database';
 import {getDb} from '../db';
+import {fitLinkFields} from '../lib/fit-link-fields';
 import {resolveTags, upsertTags} from '../lib/upsert-tags';
 import type {CreateLinkInput, LinkWithTags} from '../types';
 
 export async function createLink(input: CreateLinkInput, db?: Database): Promise<LinkWithTags> {
   const database = db || getDb();
   const normalizedTags = resolveTags(input.tags);
+  const fields = fitLinkFields(input);
 
   const execute = async (tx: any) => {
     const tagRecords = await upsertTags(tx, normalizedTags);
@@ -14,10 +16,7 @@ export async function createLink(input: CreateLinkInput, db?: Database): Promise
     const [created] = await tx
       .insert(link)
       .values({
-        url: input.url,
-        title: input.title,
-        description: input.description,
-        imageUrl: input.imageUrl,
+        ...fields,
         status: input.status ?? 'saved',
       })
       .returning();
