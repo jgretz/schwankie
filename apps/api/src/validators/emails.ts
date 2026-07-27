@@ -7,6 +7,7 @@ export const emailItemIdParamSchema = z.object({
 export const emailItemSchema = z.object({
   messageId: z.string(),
   emailFrom: z.string(),
+  emailSubject: z.string().optional(),
   link: z.string().url(),
   title: z.string().optional(),
   description: z.string().optional(),

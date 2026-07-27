@@ -15,6 +15,7 @@ export type EmailItem = typeof emailItem.$inferSelect;
 export type CreateEmailItemInput = {
   emailMessageId: string;
   emailFrom: string;
+  emailSubject?: string;
   link: string;
   title?: string;
   description?: string;

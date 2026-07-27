@@ -1,5 +1,5 @@
 import type PgBoss from 'pg-boss';
-import {bulkUpsertEmailItems, getGmailTokens} from 'client';
+import {bulkUpsertEmailItems, getGmailTokens, type BulkUpsertEmailItemsInput} from 'client';
 import {GmailClient, extractDisplayName} from '../utils/gmail-client';
 import {
   parseLinksWithScores,
@@ -51,6 +51,31 @@ async function classifyLinks(
   }
 }
 
+type EmailItemInput = BulkUpsertEmailItemsInput['items'][number];
+
+/**
+ * The sender identifies the newsletter and is what every consumer groups and
+ * filters on, so it holds the display name alone — the subject travels in its
+ * own field.
+ */
+export function buildEmailItems(
+  message: {from: string; subject: string},
+  messageId: string,
+  links: ParsedLink[],
+): EmailItemInput[] {
+  const emailFrom = extractDisplayName(message.from);
+  const emailSubject = message.subject?.trim() || undefined;
+
+  return links.map((parsed) => ({
+    messageId,
+    emailFrom,
+    emailSubject,
+    link: parsed.url,
+    title: parsed.title,
+    description: parsed.description,
+  }));
+}
+
 export const importEmailMessageHandler: PgBoss.WorkHandler<ImportEmailMessageData> = async (
   jobs,
 ) => {
@@ -88,20 +113,7 @@ async function processOne(job: PgBoss.Job<ImportEmailMessageData>): Promise<void
     const parsedLinks = await classifyLinks(scoredLinks, emailContext, ollamaUrl, ollamaModel);
 
     if (parsedLinks.length > 0) {
-      const displayName = extractDisplayName(message.from);
-      const subjectTrimmed = message.subject?.trim() || '';
-      const subjectPreview = subjectTrimmed.slice(0, 25);
-      const ellipsis = subjectTrimmed.length > 25 ? '...' : '';
-      const emailFrom =
-        subjectPreview.length > 0 ? `${displayName} (${subjectPreview}${ellipsis})` : displayName;
-
-      const items = parsedLinks.map((parsed: ParsedLink) => ({
-        messageId,
-        emailFrom,
-        link: parsed.url,
-        title: parsed.title,
-        description: parsed.description,
-      }));
+      const items = buildEmailItems(message, messageId, parsedLinks);
 
       const {inserted} = await bulkUpsertEmailItems({items});
       console.log(`[import-email-message] ${messageId}: inserted ${inserted}`);

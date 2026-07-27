@@ -156,6 +156,7 @@ export type EmailItemData = {
   id: string;
   emailMessageId: string;
   emailFrom: string;
+  emailSubject: string | null;
   link: string;
   title: string | null;
   description: string | null;

@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import {useMemo, useState} from 'react';
 import type {EmailItemData} from 'client';
+import {formatEmailMeta} from '../../lib/format-email-meta';
 import {useColors} from '../../theme/use-colors';
 import {LoadingState, ErrorState, EmptyState} from '../../components/ListStates';
 import {ItemActions} from '../../components/ItemActions';
@@ -85,6 +86,11 @@ export default function EmailsScreen() {
       hour: 'numeric',
       minute: '2-digit',
     })}`;
+    const {meta, subject} = formatEmailMeta({
+      emailFrom: item.emailFrom,
+      emailSubject: item.emailSubject,
+      date: displayDate,
+    });
 
     return (
       <View
@@ -116,8 +122,13 @@ export default function EmailsScreen() {
             </Text>
           )}
           <Text style={{fontSize: 11, color: colors.textFaint}} numberOfLines={1}>
-            {item.emailFrom} · {displayDate}
+            {meta}
           </Text>
+          {subject && (
+            <Text style={{fontSize: 11, color: colors.textFaint, marginTop: 2}} numberOfLines={1}>
+              {subject}
+            </Text>
+          )}
         </View>
         <ItemActions
           url={item.link}

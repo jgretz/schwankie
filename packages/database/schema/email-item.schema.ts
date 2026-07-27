@@ -6,6 +6,8 @@ export const emailItem = pgTable(
     id: uuid('id').primaryKey().defaultRandom(),
     emailMessageId: text('email_message_id').notNull(),
     emailFrom: text('email_from').notNull(),
+    // Nullable: rows ingested before the sender/subject split carry no subject.
+    emailSubject: text('email_subject'),
     link: text('link').notNull(),
     title: text('title'),
     description: text('description'),

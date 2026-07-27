@@ -131,6 +131,7 @@ export function extractDisplayName(fromHeader: string): string {
   const match = fromHeader.match(/^"?([^"<]+)"?\s*</);
   if (match) return match[1].trim();
 
-  // No angle brackets - just an email address, return as-is
-  return fromHeader.trim();
+  // No display name — fall back to the bare address so `<hi@x.com>` doesn't
+  // keep its angle brackets.
+  return extractEmailAddress(fromHeader).trim();
 }

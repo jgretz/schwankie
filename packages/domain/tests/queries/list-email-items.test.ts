@@ -44,6 +44,27 @@ describe('listEmailItems', function () {
     expect(ids.indexOf(item2!.id)).toBeLessThan(ids.indexOf(item1!.id));
   });
 
+  it('should return every item from a sender regardless of subject', async function () {
+    const first = await makeEmailItem({emailFrom: 'Bubbles', emailSubject: 'Monday issue'});
+    const second = await makeEmailItem({emailFrom: 'Bubbles', emailSubject: 'Tuesday issue'});
+    const third = await makeEmailItem({emailFrom: 'Bubbles', emailSubject: 'Wednesday issue'});
+    const other = await makeEmailItem({emailFrom: 'Frothy', emailSubject: 'Monday issue'});
+
+    const result = await listEmailItems({limit: 100, offset: 0, from: 'Bubbles'});
+    const ids = result.items.map((i) => i.id);
+
+    expect(ids).toHaveLength(3);
+    expect(ids).toContain(first!.id);
+    expect(ids).toContain(second!.id);
+    expect(ids).toContain(third!.id);
+    expect(ids).not.toContain(other!.id);
+    expect(result.items.map((i) => i.emailSubject).sort()).toEqual([
+      'Monday issue',
+      'Tuesday issue',
+      'Wednesday issue',
+    ]);
+  });
+
   it('should handle pagination', async function () {
     await makeEmailItem();
     await makeEmailItem();

@@ -1,0 +1,1 @@
+ALTER TABLE "email_item" ADD COLUMN "email_subject" text;

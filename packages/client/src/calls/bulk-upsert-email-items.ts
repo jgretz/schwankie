@@ -4,6 +4,7 @@ export interface BulkUpsertEmailItemsInput {
   items: Array<{
     messageId: string;
     emailFrom: string;
+    emailSubject?: string;
     link: string;
     title?: string;
     description?: string;
