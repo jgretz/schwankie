@@ -1,0 +1,98 @@
+name: schwankie-daily-summary
+version: 1
+description: Cluster the last 24h of schwankie links into ranked topics and publish them.
+entry: fetch
+input:
+  lookbackHours: {type: number, default: 24}
+  topicCount: {type: number, default: 10}
+steps:
+  fetch:
+    kind: worker
+    description: Pull the noise-filtered source window from the API to the run dir.
+    prompt: |
+      Read apps/tasks/.env for API_URL and API_KEY.
+
+      GET {API_URL}/api/digest/source-items?hours={{run.lookbackHours}} with an
+      `Authorization: Bearer {API_KEY}` header, and write the response body
+      verbatim to {{runDir}}/source.json. Do not summarize, edit, or reformat it.
+
+      The response is a JSON object with items, windowStart, windowEnd and
+      count. An empty items array is a valid result — write it anyway.
+    payload:
+      agent: {orientation: implementer}
+      timeoutMs: 600000
+      successCheck: {kind: fileExists, paths: ["{{runDir}}/source.json"]}
+    on: {success: load}
+  load:
+    kind: transform
+    description: Parse the window into the step graph — a completion turn has no tools.
+    use: read-json
+    file: source.json
+    output:
+      items: {type: array, items: object}
+      windowStart: string
+      windowEnd: string
+      count: number
+    on: {default: rank}
+  rank:
+    kind: completion
+    description: Cluster the window into ranked topics as validated JSON.
+    prompt: |
+      These are the {{steps.load.output.count}} links schwankie collected
+      between {{steps.load.output.windowStart}} and {{steps.load.output.windowEnd}}:
+
+      <items>
+      {{steps.load.output.items}}
+      </items>
+
+      Cluster them into at most {{run.topicCount}} topics, ranked by
+      significance — the topic that matters most to a working engineer first.
+
+      Each topic needs:
+        - rank: its position, starting at 1
+        - title: a short noun phrase, not a headline
+        - body: exactly two sentences saying what happened and why it matters
+        - itemCount: how many links the topic covers
+        - links: the representative links, each {url, title, source} copied
+          verbatim from the items above
+
+      Also write `notable`: one sentence on the single most significant thing
+      in the window.
+
+      If the item list is empty, return an empty topics array and a notable
+      line saying the window was quiet.
+    output:
+      topics: {type: array, items: object}
+      notable: string
+    on: {success: publish}
+  publish:
+    kind: worker
+    description: POST the already-schema-checked payload to the API.
+    prompt: |
+      Read apps/tasks/.env for API_URL and API_KEY.
+
+      The ranked topics, already schema-validated, are this JSON array:
+      <topics>
+      {{steps.rank.output.topics}}
+      </topics>
+
+      The notable line is, verbatim between the markers:
+      <notable>
+      {{steps.rank.output.notable}}
+      </notable>
+
+      Write a request body to {{runDir}}/payload.json of the form
+      {"topics": <the array above>, "notable": <the notable text, JSON-encoded>}
+      using a script — do NOT hand-assemble the JSON, the notable text may
+      contain quotes or newlines.
+
+      Then POST that file to {API_URL}/api/digest/daily-summary with an
+      `Authorization: Bearer {API_KEY}` header and Content-Type
+      application/json. The endpoint upserts on summary_date, so re-running
+      this overwrites today rather than duplicating it.
+
+      Report the response status. A 201 is success; anything else is a failure.
+    payload:
+      agent: {orientation: implementer}
+      timeoutMs: 300000
+    on: {success: null}
