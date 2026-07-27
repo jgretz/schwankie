@@ -1,12 +1,12 @@
 export type EmailMetaInput = {
-  /** Omit (or pass null) to hide the sender, e.g. when rows are grouped by it. */
-  emailFrom?: string | null;
-  emailSubject?: string | null;
+  /** Pass null to hide the sender, e.g. when rows are already grouped by it. */
+  emailFrom: string | null;
+  emailSubject: string | null;
   date: string;
 };
 
 export type EmailMetaParts = {
-  /** `sender · date`, or just the date when the sender is hidden. */
+  /** `sender · date`, or the date alone when the sender is hidden. */
   meta: string;
   /** Rendered as its own line; null means render nothing. */
   subject: string | null;
@@ -18,12 +18,10 @@ export type EmailMetaParts = {
  * leave a dangling separator or an empty line.
  */
 export function formatEmailMeta(input: EmailMetaInput): EmailMetaParts {
-  const segments = [input.emailFrom, input.date].filter((segment): segment is string =>
-    Boolean(segment && segment.trim()),
-  );
+  const sender = input.emailFrom?.trim();
 
   return {
-    meta: segments.join(' · '),
+    meta: sender ? `${sender} · ${input.date}` : input.date,
     subject: input.emailSubject?.trim() || null,
   };
 }

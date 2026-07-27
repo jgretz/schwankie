@@ -27,6 +27,12 @@ describe('formatEmailMeta', function () {
     expect(subject).toBe('Weekly digest');
   });
 
+  it('should trim the sender', function () {
+    const {meta} = formatEmailMeta({emailFrom: '  Bubbles  ', emailSubject: null, date: DATE});
+
+    expect(meta).toBe(`Bubbles · ${DATE}`);
+  });
+
   it('should trim the subject', function () {
     expect(
       formatEmailMeta({emailFrom: 'Bubbles', emailSubject: '  Weekly digest  ', date: DATE})
