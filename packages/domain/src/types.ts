@@ -1,4 +1,5 @@
-import type {emailItem, feed, link, rssItem, runner, workRequest} from 'database';
+import type {dailySummary, emailItem, feed, link, rssItem, runner, workRequest} from 'database';
+import type {DigestTopic} from 'database';
 
 export type EmailItem = typeof emailItem.$inferSelect;
 
@@ -125,6 +126,8 @@ export type CreateRssItemInput = {
   content?: string;
   imageUrl?: string;
   publishedAt?: string;
+  /** Ingestion time. Settable for backfills; mirrors CreateEmailItemInput.importedAt. */
+  createdAt?: Date;
 };
 
 export type ListRssItemsParams = {
@@ -174,4 +177,39 @@ export type UpsertRunnerInput = {
   hostname: string;
   pid: number;
   version?: string | null;
+};
+
+export type DailySummary = typeof dailySummary.$inferSelect;
+
+/** One link in the digest window, flattened across its two source tables. */
+export type DigestSourceItem = {
+  url: string;
+  title: string;
+  source: string;
+  sourceKind: 'rss' | 'email';
+  ingestedAt: Date;
+};
+
+export type ListDigestSourceItemsParams = {
+  /** Size of the lookback window in hours. */
+  hours: number;
+  /** Injectable clock; defaults to now. Present so the window is testable. */
+  now?: Date;
+};
+
+export type ListDigestSourceItemsResult = {
+  items: DigestSourceItem[];
+  windowStart: string;
+  windowEnd: string;
+  count: number;
+};
+
+export type UpsertDailySummaryInput = {
+  summaryDate: string;
+  lookbackHours: number;
+  windowStart: Date;
+  windowEnd: Date;
+  itemCount: number;
+  notable?: string | null;
+  topics: DigestTopic[];
 };

@@ -16,6 +16,7 @@ export async function createRssItem(input: CreateRssItemInput): Promise<RssItem 
       content: input.content,
       imageUrl: input.imageUrl,
       publishedAt: input.publishedAt ? new Date(input.publishedAt) : undefined,
+      createdAt: input.createdAt,
     })
     .onConflictDoNothing()
     .returning();

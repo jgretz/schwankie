@@ -66,10 +66,16 @@ export {recordHeartbeat} from './commands/record-heartbeat';
 export {deleteRunner} from './commands/delete-runner';
 export {cleanupStaleRunners} from './commands/cleanup-stale-runners';
 export {listRunners} from './queries/list-runners';
+export {listDigestSourceItems} from './queries/list-digest-source-items';
+export {getDailySummary} from './queries/get-daily-summary';
+export {listDailySummaryDates} from './queries/list-daily-summary-dates';
+export {upsertDailySummary} from './commands/upsert-daily-summary';
 
 // lib
 export {normalizeTag} from './lib/normalize-tag';
 export {normalizeUrl} from './lib/normalize-url';
+export {DIGEST_TZ, digestWindow, localSummaryDate} from './lib/digest-date';
+export {filterDigestItems} from './lib/digest-filters';
 export {validateSettingValue} from './lib/setting-schemas';
 export {loadKey, encryptToken, decryptToken} from './lib/crypto';
 
@@ -108,6 +114,12 @@ export type {
   CreateWorkRequestInput,
   RunnerRow,
   UpsertRunnerInput,
+  DailySummary,
+  DigestSourceItem,
+  ListDigestSourceItemsParams,
+  ListDigestSourceItemsResult,
+  UpsertDailySummaryInput,
 } from './types';
+export type {DigestTopic} from 'database';
 export type {LinkStatus} from './queries/get-tags-with-count';
 export type {StatusSummary, StatusBucket, FailingFeed} from './queries/get-status';
