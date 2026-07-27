@@ -80,6 +80,12 @@ describe('fitLinkFields', function () {
       expect(result.title).toBe('https://example.com/article');
     });
 
+    it('should trim surrounding whitespace off a title it keeps', function () {
+      const result = fitLinkFields({url: 'https://example.com', title: '  Short title\n'});
+
+      expect(result.title).toBe('Short title');
+    });
+
     it('should truncate the url fallback when the url exceeds the title bound', function () {
       const url = `https://example.com/${repeat('a', 600)}`;
 
@@ -117,6 +123,12 @@ describe('fitLinkFields', function () {
 
       expect(result.description).toBeUndefined();
     });
+
+    it('should return undefined for a whitespace-only description', function () {
+      const result = fitLinkFields({url: 'https://example.com', description: ' \n\t '});
+
+      expect(result.description).toBeUndefined();
+    });
   });
 
   describe('imageUrl', function () {
@@ -140,6 +152,12 @@ describe('fitLinkFields', function () {
 
     it('should return undefined for an empty image url', function () {
       const result = fitLinkFields({url: 'https://example.com', imageUrl: ''});
+
+      expect(result.imageUrl).toBeUndefined();
+    });
+
+    it('should return undefined for a whitespace-only image url', function () {
+      const result = fitLinkFields({url: 'https://example.com', imageUrl: '  '});
 
       expect(result.imageUrl).toBeUndefined();
     });

@@ -7,6 +7,7 @@ import {DomainValidationError} from './errors';
 const MAX_URL = 2048;
 const MAX_TITLE = 500;
 const MAX_DESCRIPTION = 800;
+const MAX_IMAGE_URL = 2048;
 
 const ELLIPSIS = '…';
 
@@ -46,21 +47,24 @@ function truncate(value: string, max: number): string {
  */
 export function fitLinkFields(input: FitLinkFieldsInput): FitLinkFieldsOutput {
   const url = input.url;
-  if (countCodePoints(url) > MAX_URL) {
+  const urlLength = countCodePoints(url);
+  if (urlLength > MAX_URL) {
     throw new DomainValidationError(
       'url',
-      `url exceeds the maximum of ${MAX_URL} characters (got ${countCodePoints(url)})`,
+      `url exceeds the maximum of ${MAX_URL} characters (got ${urlLength})`,
     );
   }
 
-  // `title` is NOT NULL, so an absent or whitespace-only one falls back to the url.
-  const rawTitle = input.title?.trim() ? input.title : url;
-  const title = truncate(rawTitle, MAX_TITLE);
+  // Blank is treated as absent throughout: `title` is NOT NULL so it falls back
+  // to the url, and the nullable columns drop out of the insert entirely.
+  const title = truncate(input.title?.trim() || url, MAX_TITLE);
 
-  const description = input.description ? truncate(input.description, MAX_DESCRIPTION) : undefined;
+  const rawDescription = input.description?.trim();
+  const description = rawDescription ? truncate(rawDescription, MAX_DESCRIPTION) : undefined;
 
+  const rawImageUrl = input.imageUrl?.trim();
   const imageUrl =
-    input.imageUrl && countCodePoints(input.imageUrl) <= MAX_URL ? input.imageUrl : undefined;
+    rawImageUrl && countCodePoints(rawImageUrl) <= MAX_IMAGE_URL ? rawImageUrl : undefined;
 
   return {url, title, description, imageUrl};
 }
