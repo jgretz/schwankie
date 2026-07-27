@@ -91,6 +91,14 @@ mock.module('@domain', () => ({
   listLinksNeedingEmbedding: mock(async () => []),
   upsertLinkEmbedding: mock(async () => undefined),
   scoreQueuedBySimilarity: mock(async () => []),
+  // digest routes — the mock.module registry is global across test files, so
+  // every @domain mock must carry these or routes/digest.ts fails to link.
+  listDigestSourceItems: mock(async () => ({items: [], windowStart: '', windowEnd: '', count: 0})),
+  getDailySummary: mock(async () => null),
+  listDailySummaryDates: mock(async () => []),
+  upsertDailySummary: mock(async () => null),
+  localSummaryDate: () => '2026-07-27',
+  digestWindow: () => ({windowStart: new Date(), windowEnd: new Date()}),
 }));
 
 // Dynamic import after mocks are set up

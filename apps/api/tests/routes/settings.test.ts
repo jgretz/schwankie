@@ -14,6 +14,14 @@ mock.module('@domain', () => ({
   setSetting: mockSetSetting,
   validateSettingValue: mockValidateSettingValue,
   deleteLinks: mock(async () => 0),
+  // digest routes — the mock.module registry is global across test files, so
+  // every @domain mock must carry these or routes/digest.ts fails to link.
+  listDigestSourceItems: mock(async () => ({items: [], windowStart: '', windowEnd: '', count: 0})),
+  getDailySummary: mock(async () => null),
+  listDailySummaryDates: mock(async () => []),
+  upsertDailySummary: mock(async () => null),
+  localSummaryDate: () => '2026-07-27',
+  digestWindow: () => ({windowStart: new Date(), windowEnd: new Date()}),
 }));
 
 type SettingsModule = typeof import('../../src/routes/settings');

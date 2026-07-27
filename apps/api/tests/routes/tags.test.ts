@@ -81,6 +81,14 @@ mock.module('@domain', () => ({
   loadKey: () => Buffer.from(new Uint8Array(32)),
   encryptToken: (x: string) => x,
   decryptToken: (x: string) => x,
+  // digest routes — the mock.module registry is global across test files, so
+  // every @domain mock must carry these or routes/digest.ts fails to link.
+  listDigestSourceItems: mock(async () => ({items: [], windowStart: '', windowEnd: '', count: 0})),
+  getDailySummary: mock(async () => null),
+  listDailySummaryDates: mock(async () => []),
+  upsertDailySummary: mock(async () => null),
+  localSummaryDate: () => '2026-07-27',
+  digestWindow: () => ({windowStart: new Date(), windowEnd: new Date()}),
 }));
 
 type TagsModule = typeof import('../../src/routes/tags');
