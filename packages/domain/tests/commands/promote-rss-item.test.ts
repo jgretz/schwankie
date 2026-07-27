@@ -3,6 +3,17 @@ import {setupDb, store} from '../helpers/setup';
 import {makeFeed, makeRssItem} from '../helpers/factory';
 import {promoteRssItem} from '../../src/commands/promote-rss-item';
 import {getLink} from '../../src/queries/get-link';
+import {DomainValidationError} from '../../src/lib/errors';
+
+const ELLIPSIS = '…';
+
+function repeat(char: string, count: number): string {
+  return Array.from({length: count}, () => char).join('');
+}
+
+function codePoints(value: string): number {
+  return Array.from(value).length;
+}
 
 describe('promoteRssItem', function () {
   setupDb();
@@ -67,5 +78,60 @@ describe('promoteRssItem', function () {
     const linkId = await promoteRssItem('non-existent-id');
 
     expect(linkId).toBeNull();
+  });
+
+  describe('destination column bounds', function () {
+    it('should truncate an over-long title to 500 code points', async function () {
+      const feed = await makeFeed();
+      const item = await makeRssItem(feed.id, {title: repeat('a', 900)});
+
+      const linkId = await promoteRssItem(item!.id);
+      const link = await getLink(linkId!);
+
+      expect(codePoints(link!.title)).toBe(500);
+      expect(link!.title.endsWith(ELLIPSIS)).toBe(true);
+    });
+
+    // The Bubbles regression: rss_item.summary is unbounded text, but
+    // link.description is varchar(800).
+    it('should truncate an over-long summary to 800 code points', async function () {
+      const feed = await makeFeed();
+      const item = await makeRssItem(feed.id, {summary: repeat('a', 76386)});
+
+      const linkId = await promoteRssItem(item!.id);
+      const link = await getLink(linkId!);
+
+      expect(codePoints(link!.description!)).toBe(800);
+      expect(link!.description!.endsWith(ELLIPSIS)).toBe(true);
+    });
+
+    it('should drop an over-long image url', async function () {
+      const feed = await makeFeed();
+      const item = await makeRssItem(feed.id, {
+        imageUrl: `https://example.com/${repeat('a', 2100)}.jpg`,
+      });
+
+      const linkId = await promoteRssItem(item!.id);
+      const link = await getLink(linkId!);
+
+      expect(link!.imageUrl).toBeNull();
+    });
+
+    it('should throw DomainValidationError for an over-long link', async function () {
+      const feed = await makeFeed();
+      const item = await makeRssItem(feed.id, {
+        link: `https://example.com/${repeat('a', 2100)}`,
+      });
+
+      let caught: unknown;
+      try {
+        await promoteRssItem(item!.id);
+      } catch (error) {
+        caught = error;
+      }
+
+      expect(caught).toBeInstanceOf(DomainValidationError);
+      expect((caught as DomainValidationError).field).toBe('url');
+    });
   });
 });

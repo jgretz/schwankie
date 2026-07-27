@@ -1,5 +1,9 @@
 import {mock, describe, it, expect, beforeAll, beforeEach} from 'bun:test';
 import {Hono} from 'hono';
+// Deep import rather than `@domain`: the barrel is mocked below, and
+// error-handler.ts branches on `instanceof`, so the mock has to expose the
+// same class identity the handler sees.
+import {DomainValidationError, NotFoundError} from 'domain/src/lib/errors';
 
 // Mock env module first
 mock.module('env', () => ({parseEnv: () => ({API_KEY: 'test-key'})}));
@@ -40,6 +44,8 @@ const mockPromoteRssItem = mock(async () => null as any);
 const mockBulkUpsertRssItems = mock(async () => undefined);
 
 mock.module('@domain', () => ({
+  DomainValidationError,
+  NotFoundError,
   getLink: mockGetLink,
   listLinks: mockListLinks,
   createLink: mockCreateLink,

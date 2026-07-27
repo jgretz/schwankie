@@ -1,5 +1,9 @@
 import {mock, describe, it, expect, beforeAll} from 'bun:test';
 import {Hono} from 'hono';
+// Deep import rather than `@domain`: the barrel is mocked below, and
+// error-handler.ts branches on `instanceof`, so the mock has to expose the
+// same class identity the handler sees.
+import {DomainValidationError, NotFoundError} from 'domain/src/lib/errors';
 
 // Mock modules first, before any imports
 const mockGetSetting = mock(async () => null as any);
@@ -17,6 +21,8 @@ mock.module('env', () => ({
 }));
 
 mock.module('@domain', () => ({
+  DomainValidationError,
+  NotFoundError,
   getSetting: mockGetSetting,
   setSetting: mockSetSetting,
   clearGmailTokens: mockClearGmailTokens,

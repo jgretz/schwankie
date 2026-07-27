@@ -1,6 +1,7 @@
 import {link, rssItem} from 'database';
 import {eq} from 'drizzle-orm';
 import {getDb} from '../db';
+import {fitLinkFields} from '../lib/fit-link-fields';
 
 export async function promoteRssItem(id: string): Promise<number | null> {
   const db = getDb();
@@ -13,10 +14,12 @@ export async function promoteRssItem(id: string): Promise<number | null> {
     const [created] = await tx
       .insert(link)
       .values({
-        url: item.link,
-        title: item.title,
-        description: item.summary || undefined,
-        imageUrl: item.imageUrl || undefined,
+        ...fitLinkFields({
+          url: item.link,
+          title: item.title,
+          description: item.summary,
+          imageUrl: item.imageUrl,
+        }),
         status: 'queued',
         content: null,
       })

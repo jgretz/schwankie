@@ -531,12 +531,41 @@ function getValue(chunks: any[]): any {
 
 // --- Row defaults ---
 
+/**
+ * Real bounds from packages/database/schema/link.schema.ts. Without these the
+ * mock silently accepts values Postgres rejects with SQLSTATE 22001, so a
+ * green test suite says nothing about whether an insert would survive.
+ */
+const LINK_COLUMN_LIMITS: Record<string, number> = {
+  url: 2048,
+  title: 500,
+  description: 800,
+  image_url: 2048,
+};
+
+function assertLinkColumnBounds(row: Record<string, unknown>): void {
+  const violation = Object.entries(LINK_COLUMN_LIMITS).find(([column, limit]) => {
+    const value = row[column];
+    return typeof value === 'string' && Array.from(value).length > limit;
+  });
+
+  if (violation) {
+    throw new Error(`value too long for type character varying(${violation[1]})`);
+  }
+}
+
 function defaultsForTable(table: any, values: any, id: number): any {
   const name = tableName(table);
   const now = new Date();
 
   switch (name) {
     case 'link':
+      assertLinkColumnBounds({
+        url: values.url,
+        title: values.title,
+        description: values.description,
+        image_url: values.imageUrl ?? values.image_url,
+      });
       return {
         id,
         url: values.url ?? '',
