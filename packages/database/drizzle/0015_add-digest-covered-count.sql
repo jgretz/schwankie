@@ -1,0 +1,1 @@
+ALTER TABLE "daily_summary" ADD COLUMN "covered_count" integer DEFAULT 0 NOT NULL;

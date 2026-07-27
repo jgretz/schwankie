@@ -238,7 +238,7 @@ describe('POST /api/digest/daily-summary', function () {
     expect(mockUpsertDailySummary.mock.calls[0]![0]).toMatchObject({topics: [], itemCount: 0});
   });
 
-  it('should derive itemCount from the topics when omitted', async function () {
+  it('should derive coveredCount from the topics when omitted', async function () {
     mockUpsertDailySummary.mockResolvedValue({});
     const app = makeApp();
 
@@ -248,7 +248,59 @@ describe('POST /api/digest/daily-summary', function () {
       body: JSON.stringify({topics: [topic, {...topic, rank: 2, itemCount: 3}]}),
     });
 
-    expect(mockUpsertDailySummary.mock.calls[0]![0]).toMatchObject({itemCount: 5});
+    expect(mockUpsertDailySummary.mock.calls[0]![0]).toMatchObject({coveredCount: 5});
+  });
+
+  it('should keep the window size distinct from the covered count', async function () {
+    mockUpsertDailySummary.mockResolvedValue({});
+    const app = makeApp();
+
+    await app.request('/api/digest/daily-summary', {
+      method: 'POST',
+      headers: {...authHeader, 'Content-Type': 'application/json'},
+      body: JSON.stringify({topics: [topic], itemCount: 504}),
+    });
+
+    expect(mockUpsertDailySummary.mock.calls[0]![0]).toMatchObject({
+      itemCount: 504,
+      coveredCount: 2,
+    });
+  });
+
+  it('should fall back to the covered count when the window size is omitted', async function () {
+    // Never claim a window of zero — that would break covered <= item.
+    mockUpsertDailySummary.mockResolvedValue({});
+    const app = makeApp();
+
+    await app.request('/api/digest/daily-summary', {
+      method: 'POST',
+      headers: {...authHeader, 'Content-Type': 'application/json'},
+      body: JSON.stringify({topics: [topic]}),
+    });
+
+    expect(mockUpsertDailySummary.mock.calls[0]![0]).toMatchObject({
+      itemCount: 2,
+      coveredCount: 2,
+    });
+  });
+
+  it('should forward the window bounds the caller queried', async function () {
+    mockUpsertDailySummary.mockResolvedValue({});
+    const app = makeApp();
+
+    await app.request('/api/digest/daily-summary', {
+      method: 'POST',
+      headers: {...authHeader, 'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        topics: [],
+        windowStart: '2026-07-26T19:00:00.000Z',
+        windowEnd: '2026-07-27T19:00:00.000Z',
+      }),
+    });
+
+    const call = mockUpsertDailySummary.mock.calls[0]![0] as any;
+    expect(call.windowStart.toISOString()).toBe('2026-07-26T19:00:00.000Z');
+    expect(call.windowEnd.toISOString()).toBe('2026-07-27T19:00:00.000Z');
   });
 
   it('should return 400 when topics are missing', async function () {
