@@ -1,6 +1,9 @@
 import {mock, describe, it, expect, beforeAll, beforeEach} from 'bun:test';
 import {Hono} from 'hono';
-// Real classes, not stubs — error-handler.ts branches on `instanceof`.
+import {HTTPException} from 'hono/http-exception';
+// Deep import rather than `@domain`: the barrel is mocked below, and
+// error-handler.ts branches on `instanceof`, so the test and the handler have
+// to reach the same class identity.
 import {DomainValidationError, NotFoundError} from 'domain/src/lib/errors';
 
 // Mock env module first, before any routes load
@@ -80,10 +83,10 @@ const RSS_PROMOTE_URL = 'http://localhost/api/feeds/feed-id/items/item-id/promot
 const EMAIL_PROMOTE_URL =
   'http://localhost/api/emails/550e8400-e29b-41d4-a716-446655440000/promote';
 
-describe('Promote routes - error mapping', () => {
+describe('Promote routes - error mapping', function () {
   let app: Hono;
 
-  beforeAll(async () => {
+  beforeAll(async function () {
     const [feeds, emails, errors] = await Promise.all([
       import('../../src/routes/feeds'),
       import('../../src/routes/emails'),
@@ -96,14 +99,14 @@ describe('Promote routes - error mapping', () => {
     app.onError(errors.errorHandler);
   });
 
-  beforeEach(() => {
+  beforeEach(function () {
     mockGetLink.mockReset();
     mockPromoteRssItem.mockReset();
     mockPromoteEmailItem.mockReset();
   });
 
-  describe('DomainValidationError', () => {
-    it('should return 422 naming the offending field when the rss url is over-long', async () => {
+  describe('DomainValidationError', function () {
+    it('should return 422 naming the offending field when the rss url is over-long', async function () {
       mockPromoteRssItem.mockImplementation(async () => {
         throw new DomainValidationError('url', 'url exceeds the maximum of 2048 characters');
       });
@@ -115,7 +118,7 @@ describe('Promote routes - error mapping', () => {
       expect(body.field).toBe('url');
     });
 
-    it('should return 422 when the email url is over-long', async () => {
+    it('should return 422 when the email url is over-long', async function () {
       mockPromoteEmailItem.mockImplementation(async () => {
         throw new DomainValidationError('url', 'url exceeds the maximum of 2048 characters');
       });
@@ -128,8 +131,8 @@ describe('Promote routes - error mapping', () => {
     });
   });
 
-  describe('not found', () => {
-    it('should return 404 when the rss item does not exist', async () => {
+  describe('not found', function () {
+    it('should return 404 when the rss item does not exist', async function () {
       mockPromoteRssItem.mockImplementation(async () => null);
 
       const res = await app.fetch(new Request(RSS_PROMOTE_URL, {method: 'POST', headers: AUTH}));
@@ -137,7 +140,7 @@ describe('Promote routes - error mapping', () => {
       expect(res.status).toBe(404);
     });
 
-    it('should return 404 when the email command throws NotFoundError', async () => {
+    it('should return 404 when the email command throws NotFoundError', async function () {
       mockPromoteEmailItem.mockImplementation(async () => {
         throw new NotFoundError('emailItem', 'missing-id');
       });
@@ -148,8 +151,8 @@ describe('Promote routes - error mapping', () => {
     });
   });
 
-  describe('unhandled errors', () => {
-    it('should return 500 without leaking postgres driver text', async () => {
+  describe('unhandled errors', function () {
+    it('should return 500 without leaking postgres driver text', async function () {
       mockPromoteRssItem.mockImplementation(async () => {
         throw new Error('value too long for type character varying(800)');
       });
@@ -160,6 +163,16 @@ describe('Promote routes - error mapping', () => {
       expect(res.status).toBe(500);
       expect(text).not.toContain('character varying');
       expect(text).not.toContain('22001');
+    });
+
+    it('should preserve the status of a thrown HTTPException', async function () {
+      mockPromoteRssItem.mockImplementation(async () => {
+        throw new HTTPException(413, {message: 'Payload too large'});
+      });
+
+      const res = await app.fetch(new Request(RSS_PROMOTE_URL, {method: 'POST', headers: AUTH}));
+
+      expect(res.status).toBe(413);
     });
   });
 });

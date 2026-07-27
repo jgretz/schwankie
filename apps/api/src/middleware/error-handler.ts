@@ -1,4 +1,5 @@
 import type {ErrorHandler} from 'hono';
+import {HTTPException} from 'hono/http-exception';
 import {DomainValidationError, NotFoundError} from '@domain';
 
 /**
@@ -16,6 +17,12 @@ export const errorHandler: ErrorHandler = (err, c) => {
 
   if (err instanceof NotFoundError) {
     return c.json({error: 'Not found'}, 404);
+  }
+
+  // Hono middleware signals its status by throwing; collapsing that into a 500
+  // would turn a 401 or a 413 into a server fault.
+  if (err instanceof HTTPException) {
+    return err.getResponse();
   }
 
   return c.json({error: 'Internal server error'}, 500);

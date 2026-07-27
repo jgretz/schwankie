@@ -3,8 +3,6 @@
  * type rather than string-matching a message, so wording can change freely.
  */
 
-type ErrorOptions = {cause?: unknown};
-
 /** A value the caller supplied cannot be persisted as-is. */
 export class DomainValidationError extends Error {
   readonly field: string;
