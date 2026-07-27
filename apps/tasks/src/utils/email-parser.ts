@@ -181,23 +181,42 @@ const BLOCKED_TITLES = [
   'apple podcasts',
 ];
 
-const TRACKING_PARAMS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'mc_cid', 'mc_eid'];
+const TRACKING_PARAMS = [
+  'utm_source',
+  'utm_medium',
+  'utm_campaign',
+  'utm_term',
+  'utm_content',
+  'mc_cid',
+  'mc_eid',
+];
 
 // Structural regions to skip (headers, footers, sponsors, ads)
 const SKIP_SELECTORS = [
   // Header/meta regions
-  '.el-splitbar', '#preview', '.preheader',
+  '.el-splitbar',
+  '#preview',
+  '.preheader',
   // Sponsor regions
-  '.norss', '#together', '[class*="sponsor"]',
-  '#together-with', '#sponsy-copy', // TLDR sponsor sections
+  '.norss',
+  '#together',
+  '[class*="sponsor"]',
+  '#together-with',
+  '#sponsy-copy', // TLDR sponsor sections
   // Ad regions (beehiiv/techpresso style)
-  '[id*="-ad-"]', '[id*="ad-block"]',
-  '[data-ad-link]', '[data-ad-role]',
+  '[id*="-ad-"]',
+  '[id*="ad-block"]',
+  '[data-ad-link]',
+  '[data-ad-role]',
   // Ads/classifieds
-  '.classifieds', '[class*="classified"]',
+  '.classifieds',
+  '[class*="classified"]',
   // Footer regions
-  '#footer', '.noarchive', '.footer',
-  '[class*="unsubscribe"]', '[class*="preferences"]',
+  '#footer',
+  '.noarchive',
+  '.footer',
+  '[class*="unsubscribe"]',
+  '[class*="preferences"]',
 ];
 
 function isInSkipRegion($el: ReturnType<cheerio.CheerioAPI>): boolean {
@@ -208,7 +227,7 @@ function scoreLinkQuality(
   $anchor: ReturnType<cheerio.CheerioAPI>,
   $: cheerio.CheerioAPI,
   title: string,
-  positionRatio: number
+  positionRatio: number,
 ): number {
   let score = 0;
 
@@ -282,7 +301,8 @@ export function isBlockedTitle(title: string): boolean {
   if (lowerTitle.startsWith('try ')) return true;
   // Newsletter self-links with dates (e.g. "Tech / Daily - 2025.12.18")
   if (/tech\s*\/\s*daily\s*-\s*\d{4}\.\d{2}\.\d{2}/i.test(title)) return true;
-  if (BLOCKED_TITLES.some((blocked) => lowerTitle === blocked || lowerTitle.includes(blocked))) return true;
+  if (BLOCKED_TITLES.some((blocked) => lowerTitle === blocked || lowerTitle.includes(blocked)))
+    return true;
   if (lowerTitle.startsWith('http://') || lowerTitle.startsWith('https://')) return true;
   if (/^\s*⭐/.test(title)) return true;
   if (/\(sponsor\)\s*$/i.test(title)) return true;
@@ -314,9 +334,7 @@ export function normalizeUrl(url: string): string {
 }
 
 function cleanText(text: string): string {
-  return text
-    .replace(/\s+/g, ' ')
-    .trim();
+  return text.replace(/\s+/g, ' ').trim();
 }
 
 function isValidTitle(title: string): boolean {
@@ -463,11 +481,13 @@ export function parseLinksWithScores(html: string): ScoredLink[] {
   // Fallback links receive SCORE_KEEP_THRESHOLD so they land in the ambiguous LLM bucket when
   // Ollama is enabled — a single unstructured email with many links may batch all of them to LLM.
   if (results.size === 0) {
-    return parseLinksFromHtml(html).map((link): ScoredLink => ({
-      ...link,
-      score: SCORE_KEEP_THRESHOLD,
-      context: link.description || '',
-    }));
+    return parseLinksFromHtml(html).map(
+      (link): ScoredLink => ({
+        ...link,
+        score: SCORE_KEEP_THRESHOLD,
+        context: link.description || '',
+      }),
+    );
   }
 
   return Array.from(results.values());
