@@ -91,18 +91,21 @@ const EMAIL_PROMOTE_URL =
 
 describe('Promote routes - error mapping', function () {
   let app: Hono;
+  let capturePromoteFailure: typeof import('../../src/commands/capture-promote-failure').capturePromoteFailure;
 
   beforeAll(async function () {
-    const [feeds, emails, errors] = await Promise.all([
+    const [feeds, emails, errors, capture] = await Promise.all([
       import('../../src/routes/feeds'),
       import('../../src/routes/emails'),
       import('../../src/middleware/error-handler'),
+      import('../../src/commands/capture-promote-failure'),
     ]);
 
     app = new Hono();
     app.route('/', feeds.feedsRoutes);
     app.route('/', emails.emailsRouter);
     app.onError(errors.errorHandler);
+    capturePromoteFailure = capture.capturePromoteFailure;
   });
 
   beforeEach(function () {
@@ -296,6 +299,18 @@ describe('Promote routes - error mapping', function () {
 
       expect(res.status).toBe(500);
       expect(text).not.toContain('promote_failure insert failed');
+    });
+
+    // The route rethrows whatever capture leaves behind, so capture must be
+    // total. A null-prototype throwable makes `String(error)` throw, which the
+    // guard only catches because it wraps the message extraction too, not just
+    // the insert.
+    it('should not throw on a throwable that resists stringifying', async function () {
+      const hostile = Object.create(null);
+
+      await capturePromoteFailure({source: 'rss', sourceItemId: 'item-id', error: hostile});
+
+      expect(mockRecordPromoteFailure).toHaveBeenCalledTimes(0);
     });
 
     it('should record nothing when the rss promote succeeds', async function () {

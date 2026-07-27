@@ -46,16 +46,20 @@ async function resolveSourceContext(
 export async function capturePromoteFailure(input: CapturePromoteFailureInput): Promise<void> {
   const {source, sourceItemId, error} = input;
 
-  const {url, title} = await resolveSourceContext(source, sourceItemId);
-  const code = promoteErrorCode(error);
-  const message = errorMessage(error);
-
-  console.error(
-    `[promote] source=${source} itemId=${sourceItemId} url=${url ?? '-'} code=${code ?? '-'} message=${message}`,
-    error,
-  );
-
+  // One guard around the whole body, not just the insert: message extraction
+  // and the log line are cheap but not provably total (`String(x)` throws for
+  // a null-prototype throwable), and anything that escapes here would replace
+  // the promote error the route is about to rethrow.
   try {
+    const {url, title} = await resolveSourceContext(source, sourceItemId);
+    const code = promoteErrorCode(error);
+    const message = errorMessage(error);
+
+    console.error(
+      `[promote] source=${source} itemId=${sourceItemId} url=${url ?? '-'} code=${code ?? '-'} message=${message}`,
+      error,
+    );
+
     await recordPromoteFailure({
       source,
       sourceItemId,
@@ -65,6 +69,6 @@ export async function capturePromoteFailure(input: CapturePromoteFailureInput): 
       errorCode: code,
     });
   } catch (captureError) {
-    console.error('[promote] failed to record promote failure', captureError);
+    console.error('[promote] failed to capture promote failure', captureError);
   }
 }
