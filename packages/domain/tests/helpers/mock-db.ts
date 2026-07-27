@@ -246,8 +246,6 @@ function getNextIdKey(table: any): keyof typeof store.nextId {
     case 'link_embedding':
       return 'linkEmbedding';
     case 'daily_summary':
-      // uuid pk — the counter is unused, any key satisfies the signature.
-      return 'link';
     case 'promote_failure':
       // uuid pk — the counter is unused, any key satisfies the signature.
       return 'link';

@@ -13,7 +13,6 @@ const mockGetLink = mock(async () => null as any);
 const mockPromoteRssItem = mock(async () => null as any);
 const mockPromoteEmailItem = mock(async () => null as any);
 const mockRecordPromoteFailure = mock(async (_input?: unknown) => null as any);
-const mockListPromoteFailures = mock(async () => null as any);
 const mockGetRssItem = mock(async () => null as any);
 const mockGetEmailItem = mock(async () => null as any);
 const mockNoop = mock(async () => null as any);
@@ -60,7 +59,7 @@ mock.module('@domain', () => ({
   getEmailItem: mockGetEmailItem,
   getRssItem: mockGetRssItem,
   recordPromoteFailure: mockRecordPromoteFailure,
-  listPromoteFailures: mockListPromoteFailures,
+  listPromoteFailures: mockNoop,
   createEmailItem: mockNoop,
   markEmailItemRead: mockNoop,
   markAllEmailItemsRead: mockNoop,
@@ -114,6 +113,25 @@ describe('Promote routes - error mapping', function () {
     mockGetRssItem.mockReset();
     mockGetEmailItem.mockReset();
   });
+
+  /** POST the promote and return the `[promote] source=...` console.error call. */
+  async function promoteAndCaptureLogLine(url: string): Promise<unknown[] | undefined> {
+    const originalConsoleError = console.error;
+    const lines: unknown[][] = [];
+    console.error = (...args: unknown[]) => {
+      lines.push(args);
+    };
+
+    try {
+      await app.fetch(new Request(url, {method: 'POST', headers: AUTH}));
+    } finally {
+      console.error = originalConsoleError;
+    }
+
+    return lines.find(
+      (args) => typeof args[0] === 'string' && args[0].startsWith('[promote] source='),
+    );
+  }
 
   describe('DomainValidationError', function () {
     it('should return 422 naming the offending field when the rss url is over-long', async function () {
@@ -215,6 +233,9 @@ describe('Promote routes - error mapping', function () {
       mockPromoteEmailItem.mockImplementation(async () => {
         throw new DomainValidationError('url', 'url exceeds the maximum of 2048 characters');
       });
+      mockGetEmailItem.mockImplementation(
+        async () => ({link: 'https://example.com/b', title: 'Newsletter'}) as any,
+      );
 
       const res = await app.fetch(new Request(EMAIL_PROMOTE_URL, {method: 'POST', headers: AUTH}));
       const body = await res.json();
@@ -222,6 +243,9 @@ describe('Promote routes - error mapping', function () {
       expect(mockRecordPromoteFailure).toHaveBeenCalledTimes(1);
       expect(mockRecordPromoteFailure.mock.calls[0]![0]).toMatchObject({
         source: 'email',
+        sourceItemId: '550e8400-e29b-41d4-a716-446655440000',
+        url: 'https://example.com/b',
+        title: 'Newsletter',
         errorMessage: 'url exceeds the maximum of 2048 characters',
         errorCode: 'DOMAIN_VALIDATION',
       });
@@ -335,6 +359,37 @@ describe('Promote routes - error mapping', function () {
 
       expect(mockRecordPromoteFailure.mock.calls[0]![0]).toMatchObject({errorCode: '22001'});
       expect(res.status).toBe(500);
+    });
+
+    // The `[promote]` line is the fly-logs half of this feature — operators grep
+    // for it, so its prefix and key=value shape are a contract, not a detail.
+    it('should log one greppable [promote] line carrying the original error', async function () {
+      const promoteError = new DomainValidationError('url', 'url is too long');
+      mockPromoteRssItem.mockImplementation(async () => {
+        throw promoteError;
+      });
+      mockGetRssItem.mockImplementation(
+        async () => ({link: 'https://example.com/a', title: 'Bubbles'}) as any,
+      );
+
+      const line = await promoteAndCaptureLogLine(RSS_PROMOTE_URL);
+
+      expect(line).toBeDefined();
+      expect(line![0]).toBe(
+        '[promote] source=rss itemId=item-id url=https://example.com/a code=DOMAIN_VALIDATION message=url is too long',
+      );
+      expect(line![1]).toBe(promoteError);
+    });
+
+    it('should log dashes for the url and code it could not resolve', async function () {
+      mockPromoteRssItem.mockImplementation(async () => {
+        throw new Error('boom');
+      });
+      mockGetRssItem.mockImplementation(async () => null);
+
+      const line = await promoteAndCaptureLogLine(RSS_PROMOTE_URL);
+
+      expect(line![0]).toBe('[promote] source=rss itemId=item-id url=- code=- message=boom');
     });
   });
 });

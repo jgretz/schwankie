@@ -1,7 +1,13 @@
 import {index, pgTable, text, timestamp, uuid} from 'drizzle-orm/pg-core';
 
-/** Which ingestion table the promote was attempted from. */
-export type PromoteFailureSource = 'rss' | 'email';
+/**
+ * Which ingestion table the promote was attempted from. The column stays plain
+ * `text` (no pg enum), so this tuple is the single source of truth — the API
+ * validator derives its `z.enum` from it rather than restating the literals.
+ */
+export const PROMOTE_FAILURE_SOURCES = ['rss', 'email'] as const;
+
+export type PromoteFailureSource = (typeof PROMOTE_FAILURE_SOURCES)[number];
 
 /**
  * One row per failed promote. Written from the API route's catch block, never

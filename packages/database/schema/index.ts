@@ -11,4 +11,8 @@ export {workRequest} from './work-request.schema';
 export {linkEmbedding} from './link-embedding.schema';
 export {runner} from './runner.schema';
 export {dailySummary, type DigestTopic} from './daily-summary.schema';
-export {promoteFailure, type PromoteFailureSource} from './promote-failure.schema';
+export {
+  promoteFailure,
+  PROMOTE_FAILURE_SOURCES,
+  type PromoteFailureSource,
+} from './promote-failure.schema';
