@@ -90,6 +90,9 @@ function DailySummaryPage() {
             <p className="mt-1 font-sans text-[0.8rem] text-text-faint">
               {formatDate(summary.summaryDate)} · {summary.itemCount}{' '}
               {summary.itemCount === 1 ? 'link' : 'links'} over {summary.lookbackHours}h
+              {summary.topics.length > 0
+                ? ` · ${summary.coveredCount} in ${summary.topics.length} topics`
+                : null}
             </p>
           ) : null}
         </div>

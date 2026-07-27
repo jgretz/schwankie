@@ -18,6 +18,7 @@ export async function upsertDailySummary(
     windowStart: input.windowStart,
     windowEnd: input.windowEnd,
     itemCount: input.itemCount,
+    coveredCount: input.coveredCount,
     notable: input.notable ?? null,
     topics: input.topics,
     updatedAt: now,

@@ -35,7 +35,10 @@ export const upsertDailySummarySchema = z.object({
   lookbackHours: z.number().int().min(1).max(720).optional(),
   windowStart: z.string().datetime().optional(),
   windowEnd: z.string().datetime().optional(),
+  /** Links in the source window. Defaults to the covered count when omitted. */
   itemCount: z.number().int().min(0).optional(),
+  /** Links the topics account for. Derived from the topics when omitted. */
+  coveredCount: z.number().int().min(0).optional(),
   notable: z.string().nullable().optional(),
   topics: z.array(digestTopicSchema),
 });
