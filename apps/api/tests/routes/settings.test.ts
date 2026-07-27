@@ -1,5 +1,7 @@
 import {mock, describe, it, expect, beforeAll, beforeEach} from 'bun:test';
 import {Hono} from 'hono';
+// Real classes, not stubs — error-handler.ts branches on `instanceof`.
+import {DomainValidationError, NotFoundError} from 'domain/src/lib/errors';
 
 // Mock env module first
 mock.module('env', () => ({parseEnv: () => ({API_KEY: 'test-key'})}));
@@ -10,6 +12,8 @@ const mockSetSetting = mock(async () => undefined);
 const mockValidateSettingValue = mock(() => ({success: true}));
 
 mock.module('@domain', () => ({
+  DomainValidationError,
+  NotFoundError,
   getSetting: mockGetSetting,
   setSetting: mockSetSetting,
   validateSettingValue: mockValidateSettingValue,

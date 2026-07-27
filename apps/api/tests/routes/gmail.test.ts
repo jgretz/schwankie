@@ -1,5 +1,7 @@
 import {mock, describe, it, expect, beforeAll} from 'bun:test';
 import {Hono} from 'hono';
+// Real classes, not stubs — error-handler.ts branches on `instanceof`.
+import {DomainValidationError, NotFoundError} from 'domain/src/lib/errors';
 
 // Mock modules first, before any imports
 const mockGetSetting = mock(async () => null as any);
@@ -17,6 +19,8 @@ mock.module('env', () => ({
 }));
 
 mock.module('@domain', () => ({
+  DomainValidationError,
+  NotFoundError,
   getSetting: mockGetSetting,
   setSetting: mockSetSetting,
   clearGmailTokens: mockClearGmailTokens,

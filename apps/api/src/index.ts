@@ -3,6 +3,7 @@ import {cors} from 'hono/cors';
 import z from 'zod';
 import {parseEnv} from 'env';
 import {init as initDomain} from '@domain';
+import {errorHandler} from './middleware/error-handler';
 import {healthRoutes} from './routes/health';
 import {tagsRouter} from './routes/tags';
 import {linksRoutes} from './routes/links';
@@ -50,11 +51,7 @@ app.route('/', atomRoutes);
 app.route('/', digestRoutes);
 app.route('/api/metadata', metadataRoutes);
 
-app.onError((err, c) => {
-  const message = err instanceof Error ? err.message : 'Internal server error';
-  console.error('API error:', err);
-  return c.json({error: message}, 500);
-});
+app.onError(errorHandler);
 
 console.log(`schwankie-api is running on port ${env.PORT}`);
 

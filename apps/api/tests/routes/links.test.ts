@@ -1,5 +1,7 @@
 import {mock, describe, it, expect, beforeAll, beforeEach} from 'bun:test';
 import {Hono} from 'hono';
+// Real classes, not stubs — error-handler.ts branches on `instanceof`.
+import {DomainValidationError, NotFoundError} from 'domain/src/lib/errors';
 
 // Mock env module first, before any routes load
 mock.module('env', () => ({parseEnv: () => ({API_KEY: 'test-key'})}));
@@ -29,6 +31,8 @@ const mockUpsertLinkEmbedding = mock(async () => undefined);
 const mockScoreQueuedBySimilarity = mock(async () => [] as any[]);
 
 mock.module('@domain', () => ({
+  DomainValidationError,
+  NotFoundError,
   getLink: mockGetLink,
   listLinks: mockListLinks,
   createLink: mockCreateLink,
