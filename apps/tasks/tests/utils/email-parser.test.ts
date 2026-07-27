@@ -5,7 +5,6 @@ import {
   parseLinksFromListFormat,
   isBlockedUrl,
   isBlockedTitle,
-  normalizeUrl,
   SCORE_KEEP_THRESHOLD,
   SCORE_HIGH_THRESHOLD,
   SCORE_LOW_THRESHOLD,
@@ -58,29 +57,6 @@ describe('Email Parser', () => {
     it('should allow legitimate titles', () => {
       expect(isBlockedTitle('How to Build a Web App')).toBe(false);
       expect(isBlockedTitle('Revolutionary AI Breakthrough')).toBe(false);
-    });
-  });
-
-  describe('normalizeUrl', () => {
-    it('should strip trailing slashes', () => {
-      expect(normalizeUrl('https://example.com/')).toBe('https://example.com');
-    });
-
-    it('should remove tracking parameters', () => {
-      const url = 'https://example.com/article?utm_source=email&utm_campaign=test&other=value';
-      const normalized = normalizeUrl(url);
-      expect(normalized).not.toContain('utm_source');
-      expect(normalized).not.toContain('utm_campaign');
-      expect(normalized).toContain('other=value');
-    });
-
-    it('should handle invalid URLs gracefully', () => {
-      const result = normalizeUrl('not a url');
-      expect(result).toBe('not a url');
-    });
-
-    it('should trim whitespace', () => {
-      expect(normalizeUrl('  https://example.com  ')).toBe('https://example.com');
     });
   });
 

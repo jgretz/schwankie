@@ -69,6 +69,7 @@ export {listRunners} from './queries/list-runners';
 
 // lib
 export {normalizeTag} from './lib/normalize-tag';
+export {normalizeUrl} from './lib/normalize-url';
 export {validateSettingValue} from './lib/setting-schemas';
 export {loadKey, encryptToken, decryptToken} from './lib/crypto';
 
