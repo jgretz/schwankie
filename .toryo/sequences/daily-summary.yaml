@@ -19,6 +19,9 @@ steps:
       The response is a JSON object with items, windowStart, windowEnd and
       count. An empty items array is a valid result — write it anyway.
     payload:
+      # A worker step must declare llm — dispatch rejects a payload without it,
+      # and the daemon seeds no default unless TORYO_SEQUENCE_WORKER_DEFAULTS is set.
+      llm: {model: default}
       agent: {orientation: implementer}
       timeoutMs: 600000
       successCheck: {kind: fileExists, paths: ["{{runDir}}/source.json"]}
@@ -64,6 +67,11 @@ steps:
     output:
       topics: {type: array, items: object}
       notable: string
+    payload:
+      # Required even on a completion step: the compiler supplies llm and
+      # outputSchema itself, but not agent, and dispatch rejects a payload
+      # without one.
+      agent: {orientation: planner}
     on: {success: publish}
   publish:
     kind: worker
@@ -93,6 +101,7 @@ steps:
 
       Report the response status. A 201 is success; anything else is a failure.
     payload:
+      llm: {model: default}
       agent: {orientation: implementer}
       timeoutMs: 300000
     on: {success: null}
