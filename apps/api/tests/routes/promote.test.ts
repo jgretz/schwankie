@@ -12,6 +12,10 @@ mock.module('env', () => ({parseEnv: () => ({API_KEY: 'test-key'})}));
 const mockGetLink = mock(async () => null as any);
 const mockPromoteRssItem = mock(async () => null as any);
 const mockPromoteEmailItem = mock(async () => null as any);
+const mockRecordPromoteFailure = mock(async (_input?: unknown) => null as any);
+const mockListPromoteFailures = mock(async () => null as any);
+const mockGetRssItem = mock(async () => null as any);
+const mockGetEmailItem = mock(async () => null as any);
 const mockNoop = mock(async () => null as any);
 
 mock.module('@domain', () => ({
@@ -53,7 +57,10 @@ mock.module('@domain', () => ({
   bulkUpsertEmailItems: mockNoop,
   listEmailItems: mockNoop,
   countRecentEmailItems: mockNoop,
-  getEmailItem: mockNoop,
+  getEmailItem: mockGetEmailItem,
+  getRssItem: mockGetRssItem,
+  recordPromoteFailure: mockRecordPromoteFailure,
+  listPromoteFailures: mockListPromoteFailures,
   createEmailItem: mockNoop,
   markEmailItemRead: mockNoop,
   markAllEmailItemsRead: mockNoop,
@@ -103,6 +110,9 @@ describe('Promote routes - error mapping', function () {
     mockGetLink.mockReset();
     mockPromoteRssItem.mockReset();
     mockPromoteEmailItem.mockReset();
+    mockRecordPromoteFailure.mockReset();
+    mockGetRssItem.mockReset();
+    mockGetEmailItem.mockReset();
   });
 
   describe('DomainValidationError', function () {
@@ -173,6 +183,158 @@ describe('Promote routes - error mapping', function () {
       const res = await app.fetch(new Request(RSS_PROMOTE_URL, {method: 'POST', headers: AUTH}));
 
       expect(res.status).toBe(413);
+    });
+  });
+
+  describe('failure capture', function () {
+    it('should record the rss failure once and still return 422', async function () {
+      mockPromoteRssItem.mockImplementation(async () => {
+        throw new DomainValidationError('url', 'url exceeds the maximum of 2048 characters');
+      });
+      mockGetRssItem.mockImplementation(
+        async () => ({link: 'https://example.com/a', title: 'Bubbles'}) as any,
+      );
+
+      const res = await app.fetch(new Request(RSS_PROMOTE_URL, {method: 'POST', headers: AUTH}));
+      const body = await res.json();
+
+      expect(mockRecordPromoteFailure).toHaveBeenCalledTimes(1);
+      expect(mockRecordPromoteFailure.mock.calls[0]![0]).toMatchObject({
+        source: 'rss',
+        sourceItemId: 'item-id',
+        url: 'https://example.com/a',
+        title: 'Bubbles',
+        errorMessage: 'url exceeds the maximum of 2048 characters',
+        errorCode: 'DOMAIN_VALIDATION',
+      });
+      expect(res.status).toBe(422);
+      expect(body.field).toBe('url');
+    });
+
+    it('should record the email failure once and still return 422', async function () {
+      mockPromoteEmailItem.mockImplementation(async () => {
+        throw new DomainValidationError('url', 'url exceeds the maximum of 2048 characters');
+      });
+
+      const res = await app.fetch(new Request(EMAIL_PROMOTE_URL, {method: 'POST', headers: AUTH}));
+      const body = await res.json();
+
+      expect(mockRecordPromoteFailure).toHaveBeenCalledTimes(1);
+      expect(mockRecordPromoteFailure.mock.calls[0]![0]).toMatchObject({
+        source: 'email',
+        errorMessage: 'url exceeds the maximum of 2048 characters',
+        errorCode: 'DOMAIN_VALIDATION',
+      });
+      expect(res.status).toBe(422);
+      expect(body.field).toBe('url');
+    });
+
+    it('should fall back to null context when the source lookup itself fails', async function () {
+      mockPromoteRssItem.mockImplementation(async () => {
+        throw new Error('value too long for type character varying(800)');
+      });
+      mockGetRssItem.mockImplementation(async () => {
+        throw new Error('connection terminated');
+      });
+
+      const res = await app.fetch(new Request(RSS_PROMOTE_URL, {method: 'POST', headers: AUTH}));
+
+      expect(mockRecordPromoteFailure).toHaveBeenCalledTimes(1);
+      expect(mockRecordPromoteFailure.mock.calls[0]![0]).toMatchObject({url: null, title: null});
+      expect(res.status).toBe(500);
+    });
+
+    it('should surface the original 422 when the capture write itself throws', async function () {
+      mockPromoteRssItem.mockImplementation(async () => {
+        throw new DomainValidationError('url', 'url exceeds the maximum of 2048 characters');
+      });
+      mockRecordPromoteFailure.mockImplementation(async () => {
+        throw new Error('promote_failure insert failed');
+      });
+
+      const res = await app.fetch(new Request(RSS_PROMOTE_URL, {method: 'POST', headers: AUTH}));
+      const body = await res.json();
+
+      expect(res.status).toBe(422);
+      expect(body.field).toBe('url');
+    });
+
+    it('should surface the original 500 when the capture write itself throws', async function () {
+      mockPromoteEmailItem.mockImplementation(async () => {
+        throw new Error('value too long for type character varying(800)');
+      });
+      mockRecordPromoteFailure.mockImplementation(async () => {
+        throw new Error('promote_failure insert failed');
+      });
+
+      const res = await app.fetch(new Request(EMAIL_PROMOTE_URL, {method: 'POST', headers: AUTH}));
+      const text = await res.text();
+
+      expect(res.status).toBe(500);
+      expect(text).not.toContain('promote_failure insert failed');
+    });
+
+    it('should record nothing when the rss promote succeeds', async function () {
+      mockPromoteRssItem.mockImplementation(async () => 42 as any);
+      mockGetLink.mockImplementation(async () => ({id: 42, url: 'https://example.com/a'}) as any);
+
+      const res = await app.fetch(new Request(RSS_PROMOTE_URL, {method: 'POST', headers: AUTH}));
+
+      expect(res.status).toBe(200);
+      expect(mockRecordPromoteFailure).toHaveBeenCalledTimes(0);
+    });
+
+    it('should record nothing when the email promote succeeds', async function () {
+      mockPromoteEmailItem.mockImplementation(async () => ({id: 42}) as any);
+
+      const res = await app.fetch(new Request(EMAIL_PROMOTE_URL, {method: 'POST', headers: AUTH}));
+
+      expect(res.status).toBe(200);
+      expect(mockRecordPromoteFailure).toHaveBeenCalledTimes(0);
+    });
+
+    it('should record NOT_FOUND and still 404 when the rss item is missing', async function () {
+      mockPromoteRssItem.mockImplementation(async () => null);
+
+      const res = await app.fetch(new Request(RSS_PROMOTE_URL, {method: 'POST', headers: AUTH}));
+
+      expect(mockRecordPromoteFailure).toHaveBeenCalledTimes(1);
+      expect(mockRecordPromoteFailure.mock.calls[0]![0]).toMatchObject({
+        source: 'rss',
+        sourceItemId: 'item-id',
+        errorCode: 'NOT_FOUND',
+      });
+      expect(res.status).toBe(404);
+    });
+
+    it('should record NOT_FOUND and still 404 when the email item is missing', async function () {
+      mockPromoteEmailItem.mockImplementation(async () => {
+        throw new NotFoundError('emailItem', 'missing-id');
+      });
+
+      const res = await app.fetch(new Request(EMAIL_PROMOTE_URL, {method: 'POST', headers: AUTH}));
+
+      expect(mockRecordPromoteFailure).toHaveBeenCalledTimes(1);
+      expect(mockRecordPromoteFailure.mock.calls[0]![0]).toMatchObject({
+        source: 'email',
+        errorCode: 'NOT_FOUND',
+      });
+      expect(res.status).toBe(404);
+    });
+
+    it('should record the postgres SQLSTATE when the driver supplies one', async function () {
+      const driverError = Object.assign(
+        new Error('value too long for type character varying(2048)'),
+        {code: '22001'},
+      );
+      mockPromoteRssItem.mockImplementation(async () => {
+        throw driverError;
+      });
+
+      const res = await app.fetch(new Request(RSS_PROMOTE_URL, {method: 'POST', headers: AUTH}));
+
+      expect(mockRecordPromoteFailure.mock.calls[0]![0]).toMatchObject({errorCode: '22001'});
+      expect(res.status).toBe(500);
     });
   });
 });

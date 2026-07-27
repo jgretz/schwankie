@@ -164,6 +164,17 @@ export type EmailItemData = {
   importedAt: string;
 };
 
+export type PromoteFailureData = {
+  id: string;
+  source: 'rss' | 'email';
+  sourceItemId: string;
+  url: string | null;
+  title: string | null;
+  errorMessage: string;
+  errorCode: string | null;
+  createdAt: string;
+};
+
 export type StatusBucket = {hour: string; count: number};
 
 export type StatusFailingFeed = {

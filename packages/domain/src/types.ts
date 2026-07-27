@@ -1,5 +1,14 @@
-import type {dailySummary, emailItem, feed, link, rssItem, runner, workRequest} from 'database';
-import type {DigestTopic} from 'database';
+import type {
+  dailySummary,
+  emailItem,
+  feed,
+  link,
+  promoteFailure,
+  rssItem,
+  runner,
+  workRequest,
+} from 'database';
+import type {DigestTopic, PromoteFailureSource} from 'database';
 
 export type EmailItem = typeof emailItem.$inferSelect;
 
@@ -203,6 +212,30 @@ export type ListDigestSourceItemsResult = {
   windowStart: string;
   windowEnd: string;
   count: number;
+};
+
+export type PromoteFailure = typeof promoteFailure.$inferSelect;
+
+export type RecordPromoteFailureInput = {
+  source: PromoteFailureSource;
+  sourceItemId: string;
+  url?: string | null;
+  title?: string | null;
+  errorMessage: string;
+  errorCode?: string | null;
+};
+
+export type ListPromoteFailuresParams = {
+  limit: number;
+  offset: number;
+  source?: PromoteFailureSource;
+};
+
+export type ListPromoteFailuresResult = {
+  items: PromoteFailure[];
+  total: number;
+  hasMore: boolean;
+  nextOffset: number;
 };
 
 export type UpsertDailySummaryInput = {

@@ -30,6 +30,9 @@ mock.module('@domain', () => ({
     windowStart: new Date(now.getTime() - hours * 3600 * 1000),
     windowEnd: now,
   }),
+  getRssItem: mock(async () => null),
+  recordPromoteFailure: mock(async () => null),
+  listPromoteFailures: mock(async () => null),
 }));
 
 type DigestModule = typeof import('../../src/routes/digest');

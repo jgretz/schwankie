@@ -95,6 +95,9 @@ mock.module('@domain', () => ({
   upsertDailySummary: mock(async () => null),
   localSummaryDate: () => '2026-07-27',
   digestWindow: () => ({windowStart: new Date(), windowEnd: new Date()}),
+  getRssItem: mock(async () => null),
+  recordPromoteFailure: mock(async () => null),
+  listPromoteFailures: mock(async () => null),
 }));
 
 type TagsModule = typeof import('../../src/routes/tags');

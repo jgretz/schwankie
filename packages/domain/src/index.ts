@@ -15,6 +15,8 @@ export {listEmailItems} from './queries/list-email-items';
 export {countRecentEmailItems} from './queries/count-recent-email-items';
 export {getStatus} from './queries/get-status';
 export {getEmailItem} from './queries/get-email-item';
+export {getRssItem} from './queries/get-rss-item';
+export {listPromoteFailures} from './queries/list-promote-failures';
 export {getGmailTokens} from './queries/get-gmail-tokens';
 export {listPendingWorkRequests} from './queries/list-pending-work-requests';
 export {getRelatedByTags} from './queries/get-related-by-tags';
@@ -70,6 +72,7 @@ export {listDigestSourceItems} from './queries/list-digest-source-items';
 export {getDailySummary} from './queries/get-daily-summary';
 export {listDailySummaryDates} from './queries/list-daily-summary-dates';
 export {upsertDailySummary} from './commands/upsert-daily-summary';
+export {recordPromoteFailure} from './commands/record-promote-failure';
 
 // lib
 export {DomainValidationError, NotFoundError} from './lib/errors';
@@ -125,7 +128,11 @@ export type {
   ListDigestSourceItemsParams,
   ListDigestSourceItemsResult,
   UpsertDailySummaryInput,
+  PromoteFailure,
+  RecordPromoteFailureInput,
+  ListPromoteFailuresParams,
+  ListPromoteFailuresResult,
 } from './types';
-export type {DigestTopic} from 'database';
+export type {DigestTopic, PromoteFailureSource} from 'database';
 export type {LinkStatus} from './queries/get-tags-with-count';
 export type {StatusSummary, StatusBucket, FailingFeed} from './queries/get-status';

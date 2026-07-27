@@ -72,6 +72,9 @@ mock.module('@domain', () => ({
   upsertDailySummary: mock(async () => null),
   localSummaryDate: () => '2026-07-27',
   digestWindow: () => ({windowStart: new Date(), windowEnd: new Date()}),
+  getRssItem: mock(async () => null),
+  recordPromoteFailure: mock(async () => null),
+  listPromoteFailures: mock(async () => null),
 }));
 
 const mockBuildGmailAuthUrl = mock(() => 'https://accounts.google.com/o/oauth2/v2/auth?...');

@@ -119,6 +119,17 @@ type DailySummaryRow = {
   updatedAt: Date;
 };
 
+type PromoteFailureRow = {
+  id: string;
+  source: string;
+  sourceItemId: string;
+  url: string | null;
+  title: string | null;
+  errorMessage: string;
+  errorCode: string | null;
+  createdAt: Date;
+};
+
 export const store = {
   links: [] as LinkRow[],
   tags: [] as TagRow[],
@@ -131,6 +142,7 @@ export const store = {
   workRequests: [] as WorkRequestRow[],
   linkEmbeddings: [] as LinkEmbeddingRow[],
   dailySummaries: [] as DailySummaryRow[],
+  promoteFailures: [] as (PromoteFailureRow & {_insertionOrder: number})[],
   nextId: {
     link: 1,
     tag: 1,
@@ -156,6 +168,7 @@ export function resetStore() {
   store.workRequests = [];
   store.linkEmbeddings = [];
   store.dailySummaries = [];
+  store.promoteFailures = [];
   store.nextId = {
     link: 1,
     tag: 1,
@@ -202,6 +215,8 @@ function getStoreForTable(table: any): any[] {
       return store.linkEmbeddings;
     case 'daily_summary':
       return store.dailySummaries;
+    case 'promote_failure':
+      return store.promoteFailures;
     default:
       throw new Error(`Unknown table: ${name}`);
   }
@@ -231,6 +246,9 @@ function getNextIdKey(table: any): keyof typeof store.nextId {
     case 'link_embedding':
       return 'linkEmbedding';
     case 'daily_summary':
+      // uuid pk — the counter is unused, any key satisfies the signature.
+      return 'link';
+    case 'promote_failure':
       // uuid pk — the counter is unused, any key satisfies the signature.
       return 'link';
     default:
@@ -346,6 +364,16 @@ const COLUMN_MAP: Record<string, Record<string, string>> = {
     topics: 'topics',
     created_at: 'createdAt',
     updated_at: 'updatedAt',
+  },
+  promote_failure: {
+    id: 'id',
+    source: 'source',
+    source_item_id: 'sourceItemId',
+    url: 'url',
+    title: 'title',
+    error_message: 'errorMessage',
+    error_code: 'errorCode',
+    created_at: 'createdAt',
   },
 };
 
@@ -686,12 +714,31 @@ function defaultsForTable(table: any, values: any, id: number): any {
         createdAt: values.createdAt ?? values.created_at ?? now,
         updatedAt: values.updatedAt ?? values.updated_at ?? now,
       };
+    case 'promote_failure':
+      return {
+        id: values.id ?? crypto.randomUUID(),
+        source: values.source ?? '',
+        sourceItemId: values.sourceItemId ?? values.source_item_id ?? '',
+        url: values.url ?? null,
+        title: values.title ?? null,
+        errorMessage: values.errorMessage ?? values.error_message ?? '',
+        errorCode: values.errorCode ?? values.error_code ?? null,
+        createdAt: values.createdAt ?? values.created_at ?? now,
+        // The sort tiebreaks equal createdAt by insertion order, which is what
+        // makes desc(createdAt) deterministic within a single millisecond.
+        _insertionOrder: store.insertionCounter++,
+      };
     default:
       return {id, ...values};
   }
 }
 
 // --- Select field projection ---
+
+/** Collapse Dates to their instant so equal timestamps compare as equal. */
+function toSortable(value: any): any {
+  return value instanceof Date ? value.getTime() : value;
+}
 
 function hasCountField(fields: any): boolean {
   if (!fields) return false;
@@ -933,8 +980,10 @@ function createSelectBuilder(targetTable?: any, fields?: any) {
 
             if (colInfo?.name && colInfo?.table) {
               const field = colToField(colInfo.table, colInfo.name);
-              const aVal = a[field];
-              const bVal = b[field];
+              // Two Dates for the same instant are never ===, which would skip
+              // the insertion-order tiebreak below for every timestamp column.
+              const aVal = toSortable(a[field]);
+              const bVal = toSortable(b[field]);
 
               let cmp = 0;
               if (aVal == null && bVal != null) cmp = 1;
