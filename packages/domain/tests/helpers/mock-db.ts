@@ -73,6 +73,7 @@ type EmailItemRow = {
   id: string;
   emailMessageId: string;
   emailFrom: string;
+  emailSubject: string | null;
   link: string;
   title: string | null;
   description: string | null;
@@ -322,6 +323,7 @@ const COLUMN_MAP: Record<string, Record<string, string>> = {
     id: 'id',
     email_message_id: 'emailMessageId',
     email_from: 'emailFrom',
+    email_subject: 'emailSubject',
     link: 'link',
     title: 'title',
     description: 'description',
@@ -666,6 +668,7 @@ function defaultsForTable(table: any, values: any, id: number): any {
         id: values.id ?? uuid,
         emailMessageId: values.emailMessageId ?? values.email_message_id ?? '',
         emailFrom: values.emailFrom ?? values.email_from ?? '',
+        emailSubject: values.emailSubject ?? values.email_subject ?? null,
         link: values.link ?? '',
         title: values.title ?? null,
         description: values.description ?? null,

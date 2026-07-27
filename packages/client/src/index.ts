@@ -61,7 +61,10 @@ export {markAllRssItemsRead} from './calls/mark-all-rss-items-read';
 export {promoteRssItem} from './calls/promote-rss-item';
 export {fetchAllFeeds} from './calls/fetch-all-feeds';
 export {bulkUpsertRssItems} from './calls/bulk-upsert-rss-items';
-export {bulkUpsertEmailItems} from './calls/bulk-upsert-email-items';
+export {
+  bulkUpsertEmailItems,
+  type BulkUpsertEmailItemsInput,
+} from './calls/bulk-upsert-email-items';
 export {listEmailItems} from './calls/list-email-items';
 export {markEmailItemRead} from './calls/mark-email-item-read';
 export {markAllEmailItemsRead} from './calls/mark-all-email-items-read';

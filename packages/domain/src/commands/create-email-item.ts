@@ -10,6 +10,7 @@ export async function createEmailItem(input: CreateEmailItemInput): Promise<Emai
     .values({
       emailMessageId: input.emailMessageId,
       emailFrom: input.emailFrom,
+      emailSubject: input.emailSubject,
       link: input.link,
       title: input.title,
       description: input.description,

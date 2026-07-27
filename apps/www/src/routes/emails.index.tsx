@@ -10,6 +10,7 @@ import {
   useMarkEmailItemRead,
   usePromoteEmailItem,
 } from '@www/hooks/use-email-items';
+import {formatEmailMeta} from '@www/lib/format-email-meta';
 import {triggerRefreshEmailsAction} from '@www/lib/work-request-actions';
 
 const searchSchema = z.object({
@@ -306,6 +307,11 @@ function EmailRow({item, showSender, onMarkRead, onPromote}: EmailRowProps) {
   const datePart = d.toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'});
   const timePart = d.toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
   const date = `${datePart} @ ${timePart}`;
+  const {meta, subject} = formatEmailMeta({
+    emailFrom: showSender ? item.emailFrom : null,
+    emailSubject: item.emailSubject,
+    date,
+  });
 
   return (
     <div className="flex items-center justify-between border-b border-border py-3 px-4 hover:bg-bg-subtle transition-colors group">
@@ -323,9 +329,10 @@ function EmailRow({item, showSender, onMarkRead, onPromote}: EmailRowProps) {
             {item.description}
           </p>
         )}
-        <span className="text-text-faint font-sans text-[0.8rem] mt-1 block truncate">
-          {showSender ? `${item.emailFrom} · ${date}` : date}
-        </span>
+        <span className="text-text-faint font-sans text-[0.8rem] mt-1 block truncate">{meta}</span>
+        {subject && (
+          <span className="text-text-faint font-sans text-[0.8rem] block truncate">{subject}</span>
+        )}
       </div>
       <div className="flex gap-2 ml-4 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
         {!item.read && (

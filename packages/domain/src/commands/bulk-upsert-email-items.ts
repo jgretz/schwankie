@@ -5,6 +5,7 @@ import {getDb} from '../db';
 export interface EmailItemInput {
   messageId: string;
   emailFrom: string;
+  emailSubject?: string;
   link: string;
   title?: string;
   description?: string;
@@ -18,6 +19,7 @@ export async function bulkUpsertEmailItems(items: EmailItemInput[], db?: Databas
   const rows = items.map((item) => ({
     emailMessageId: item.messageId,
     emailFrom: item.emailFrom,
+    emailSubject: item.emailSubject,
     link: item.link,
     title: item.title,
     description: item.description,
