@@ -105,6 +105,19 @@ type LinkEmbeddingRow = {
   computedAt: Date;
 };
 
+type DailySummaryRow = {
+  id: string;
+  summaryDate: string;
+  lookbackHours: number;
+  windowStart: Date;
+  windowEnd: Date;
+  itemCount: number;
+  notable: string | null;
+  topics: unknown[];
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 export const store = {
   links: [] as LinkRow[],
   tags: [] as TagRow[],
@@ -116,6 +129,7 @@ export const store = {
   settings: [] as SettingRow[],
   workRequests: [] as WorkRequestRow[],
   linkEmbeddings: [] as LinkEmbeddingRow[],
+  dailySummaries: [] as DailySummaryRow[],
   nextId: {
     link: 1,
     tag: 1,
@@ -140,6 +154,7 @@ export function resetStore() {
   store.settings = [];
   store.workRequests = [];
   store.linkEmbeddings = [];
+  store.dailySummaries = [];
   store.nextId = {
     link: 1,
     tag: 1,
@@ -184,6 +199,8 @@ function getStoreForTable(table: any): any[] {
       return store.workRequests;
     case 'link_embedding':
       return store.linkEmbeddings;
+    case 'daily_summary':
+      return store.dailySummaries;
     default:
       throw new Error(`Unknown table: ${name}`);
   }
@@ -212,6 +229,9 @@ function getNextIdKey(table: any): keyof typeof store.nextId {
       return 'workRequest';
     case 'link_embedding':
       return 'linkEmbedding';
+    case 'daily_summary':
+      // uuid pk — the counter is unused, any key satisfies the signature.
+      return 'link';
     default:
       throw new Error(`Unknown table: ${name}`);
   }
@@ -313,11 +333,37 @@ const COLUMN_MAP: Record<string, Record<string, string>> = {
     model: 'model',
     computed_at: 'computedAt',
   },
+  daily_summary: {
+    id: 'id',
+    summary_date: 'summaryDate',
+    lookback_hours: 'lookbackHours',
+    window_start: 'windowStart',
+    window_end: 'windowEnd',
+    item_count: 'itemCount',
+    notable: 'notable',
+    topics: 'topics',
+    created_at: 'createdAt',
+    updated_at: 'updatedAt',
+  },
 };
 
 function colToField(table: any, colName: string): string {
   const tName = tableName(table);
   return COLUMN_MAP[tName]?.[colName] ?? colName;
+}
+
+/**
+ * Read a column off a row, preferring the copy belonging to that column's own
+ * table. Joined rows are merged flat, so two tables sharing a column name (eg
+ * rss_item.created_at and feed.created_at) would otherwise silently resolve to
+ * whichever was merged last.
+ */
+function resolveField(row: any, col: any): any {
+  const field = colToField(col.table, col.name);
+  const owner = row?._byTable?.[tableName(col.table)];
+  if (owner && field in owner) return owner[field];
+  // Accepts both a flat row and a {_raw, _byTable} composite.
+  return row?._raw ? row._raw[field] : row?.[field];
 }
 
 // --- SQL condition evaluator ---
@@ -365,33 +411,33 @@ function evaluateCondition(row: any, condition: any, _rowTable: any): boolean {
 
   if (!col) return true;
 
-  const field = colToField(col.table, col.name);
+  const cellValue = resolveField(row, col);
 
   switch (op) {
     case '=':
-      return row[field] === val;
+      return cellValue === val;
     case '!=':
-      return row[field] !== val;
+      return cellValue !== val;
     case '>=':
-      return row[field] >= val;
+      return cellValue >= val;
     case '>':
-      return row[field] > val;
+      return cellValue > val;
     case '<=':
-      return row[field] <= val;
+      return cellValue <= val;
     case '<':
-      return row[field] < val;
+      return cellValue < val;
     case 'in':
-      return Array.isArray(val) && val.includes(row[field]);
+      return Array.isArray(val) && val.includes(cellValue);
     case 'ilike': {
-      const rowVal = row[field];
+      const rowVal = cellValue;
       if (rowVal == null) return false;
       const pattern = String(val).replace(/%/g, '.*').replace(/_/g, '.');
       return new RegExp(pattern, 'i').test(String(rowVal));
     }
     case 'is null':
-      return row[field] == null;
+      return cellValue == null;
     case 'is not null':
-      return row[field] != null;
+      return cellValue != null;
     default:
       return true;
   }
@@ -595,6 +641,19 @@ function defaultsForTable(table: any, values: any, id: number): any {
         model: values.model ?? '',
         computedAt: values.computedAt ?? values.computed_at ?? now,
       };
+    case 'daily_summary':
+      return {
+        id: values.id ?? crypto.randomUUID(),
+        summaryDate: values.summaryDate ?? values.summary_date ?? '',
+        lookbackHours: values.lookbackHours ?? values.lookback_hours ?? 24,
+        windowStart: values.windowStart ?? values.window_start ?? now,
+        windowEnd: values.windowEnd ?? values.window_end ?? now,
+        itemCount: values.itemCount ?? values.item_count ?? 0,
+        notable: values.notable ?? null,
+        topics: values.topics ?? [],
+        createdAt: values.createdAt ?? values.created_at ?? now,
+        updatedAt: values.updatedAt ?? values.updated_at ?? now,
+      };
     default:
       return {id, ...values};
   }
@@ -653,8 +712,13 @@ function performJoins(
   joins: Array<{table: any; onCondition: any}>,
   fields?: any,
 ): any[] {
-  // Keep full row data through all joins, project at the end
-  let result: any[] = baseRows.map((r) => ({_raw: {...r}}));
+  // Keep full row data through all joins, project at the end. `_byTable` keeps
+  // each table's own copy so a column name shared by two tables still resolves
+  // to the right one (see resolveField).
+  let result: any[] = baseRows.map((r) => ({
+    _raw: {...r},
+    _byTable: {[tableName(_baseTable)]: {...r}},
+  }));
 
   for (const {table: joinTable, onCondition} of joins) {
     const joinRows = getStoreForTable(joinTable);
@@ -666,7 +730,10 @@ function performJoins(
         const raw = composite._raw;
         // Check join condition against the merged raw data
         if (joinCol && raw[joinCol.leftField] === joinRow[joinCol.rightField]) {
-          joined.push({_raw: {...raw, ...joinRow}});
+          joined.push({
+            _raw: {...raw, ...joinRow},
+            _byTable: {...composite._byTable, [tableName(joinTable)]: {...joinRow}},
+          });
         }
       }
     }
@@ -676,13 +743,11 @@ function performJoins(
   // Project fields from the merged raw data
   if (fields) {
     return result.map((composite) => {
-      const raw = composite._raw;
       const projected: any = {};
       for (const [alias, col] of Object.entries(fields)) {
         const c = col as any;
         if (c?.name && c?.table) {
-          const field = colToField(c.table, c.name);
-          projected[alias] = raw[field];
+          projected[alias] = resolveField(composite, c);
         } else {
           projected[alias] = 0;
         }
@@ -691,7 +756,9 @@ function performJoins(
     });
   }
 
-  return result.map((composite) => composite._raw);
+  // Carry `_byTable` onto the flat row so a later WHERE can still tell two
+  // same-named columns apart. Callers strip it before returning to the caller.
+  return result.map((composite) => ({...composite._raw, _byTable: composite._byTable}));
 }
 
 // --- Mock Database ---
@@ -771,14 +838,14 @@ function createSelectBuilder(targetTable?: any, fields?: any) {
               for (const [alias, col] of Object.entries(fields)) {
                 const c = col as any;
                 if (c?.name && c?.table) {
-                  projected[alias] = r[colToField(c.table, c.name)];
+                  projected[alias] = resolveField(r, c);
                 } else {
                   projected[alias] = 0;
                 }
               }
               return projected;
             })
-          : mergedRows;
+          : mergedRows.map(({_byTable, ...rest}: any) => rest);
 
         // Handle groupBy with count for getTagsWithCount
         if (hasGroupBy && fields && hasCountField(fields)) {

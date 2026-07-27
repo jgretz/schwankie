@@ -1,30 +1,5 @@
 import * as cheerio from 'cheerio';
-
-const BUTTONDOWN_PATTERN = /^https?:\/\/buttondown(?:-\d+)?\.com\/c\/([A-Za-z0-9+\/=_-]+)$/;
-
-function decodeButtondownUrl(url: string): string | null {
-  const match = url.match(BUTTONDOWN_PATTERN);
-  if (!match) return null;
-
-  try {
-    const encoded = match[1].replace(/-/g, '+').replace(/_/g, '/');
-    const decoded = atob(encoded);
-    const parts = decoded.split('|');
-    if (parts.length >= 3) {
-      const actualUrl = parts[2];
-      new URL(actualUrl); // validate
-      return actualUrl;
-    }
-  } catch {
-    return null;
-  }
-  return null;
-}
-
-function unwrapTrackingUrl(url: string): string {
-  const decoded = decodeButtondownUrl(url);
-  return decoded ?? url;
-}
+import {normalizeUrl} from '@domain';
 
 export interface ParsedLink {
   url: string;
@@ -181,23 +156,32 @@ const BLOCKED_TITLES = [
   'apple podcasts',
 ];
 
-const TRACKING_PARAMS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'mc_cid', 'mc_eid'];
-
 // Structural regions to skip (headers, footers, sponsors, ads)
 const SKIP_SELECTORS = [
   // Header/meta regions
-  '.el-splitbar', '#preview', '.preheader',
+  '.el-splitbar',
+  '#preview',
+  '.preheader',
   // Sponsor regions
-  '.norss', '#together', '[class*="sponsor"]',
-  '#together-with', '#sponsy-copy', // TLDR sponsor sections
+  '.norss',
+  '#together',
+  '[class*="sponsor"]',
+  '#together-with',
+  '#sponsy-copy', // TLDR sponsor sections
   // Ad regions (beehiiv/techpresso style)
-  '[id*="-ad-"]', '[id*="ad-block"]',
-  '[data-ad-link]', '[data-ad-role]',
+  '[id*="-ad-"]',
+  '[id*="ad-block"]',
+  '[data-ad-link]',
+  '[data-ad-role]',
   // Ads/classifieds
-  '.classifieds', '[class*="classified"]',
+  '.classifieds',
+  '[class*="classified"]',
   // Footer regions
-  '#footer', '.noarchive', '.footer',
-  '[class*="unsubscribe"]', '[class*="preferences"]',
+  '#footer',
+  '.noarchive',
+  '.footer',
+  '[class*="unsubscribe"]',
+  '[class*="preferences"]',
 ];
 
 function isInSkipRegion($el: ReturnType<cheerio.CheerioAPI>): boolean {
@@ -208,7 +192,7 @@ function scoreLinkQuality(
   $anchor: ReturnType<cheerio.CheerioAPI>,
   $: cheerio.CheerioAPI,
   title: string,
-  positionRatio: number
+  positionRatio: number,
 ): number {
   let score = 0;
 
@@ -282,7 +266,8 @@ export function isBlockedTitle(title: string): boolean {
   if (lowerTitle.startsWith('try ')) return true;
   // Newsletter self-links with dates (e.g. "Tech / Daily - 2025.12.18")
   if (/tech\s*\/\s*daily\s*-\s*\d{4}\.\d{2}\.\d{2}/i.test(title)) return true;
-  if (BLOCKED_TITLES.some((blocked) => lowerTitle === blocked || lowerTitle.includes(blocked))) return true;
+  if (BLOCKED_TITLES.some((blocked) => lowerTitle === blocked || lowerTitle.includes(blocked)))
+    return true;
   if (lowerTitle.startsWith('http://') || lowerTitle.startsWith('https://')) return true;
   if (/^\s*⭐/.test(title)) return true;
   if (/\(sponsor\)\s*$/i.test(title)) return true;
@@ -295,28 +280,8 @@ export function isBlockedTitle(title: string): boolean {
   return false;
 }
 
-function stripTrackingParams(url: string): string {
-  try {
-    const parsed = new URL(url);
-    TRACKING_PARAMS.forEach((param) => parsed.searchParams.delete(param));
-    return parsed.toString();
-  } catch {
-    return url;
-  }
-}
-
-export function normalizeUrl(url: string): string {
-  let normalized = url.trim();
-  normalized = unwrapTrackingUrl(normalized);
-  normalized = stripTrackingParams(normalized);
-  normalized = normalized.replace(/\/$/, '');
-  return normalized;
-}
-
 function cleanText(text: string): string {
-  return text
-    .replace(/\s+/g, ' ')
-    .trim();
+  return text.replace(/\s+/g, ' ').trim();
 }
 
 function isValidTitle(title: string): boolean {
@@ -463,11 +428,13 @@ export function parseLinksWithScores(html: string): ScoredLink[] {
   // Fallback links receive SCORE_KEEP_THRESHOLD so they land in the ambiguous LLM bucket when
   // Ollama is enabled — a single unstructured email with many links may batch all of them to LLM.
   if (results.size === 0) {
-    return parseLinksFromHtml(html).map((link): ScoredLink => ({
-      ...link,
-      score: SCORE_KEEP_THRESHOLD,
-      context: link.description || '',
-    }));
+    return parseLinksFromHtml(html).map(
+      (link): ScoredLink => ({
+        ...link,
+        score: SCORE_KEEP_THRESHOLD,
+        context: link.description || '',
+      }),
+    );
   }
 
   return Array.from(results.values());

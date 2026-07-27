@@ -6,7 +6,7 @@ mock.module('env', () => ({parseEnv: () => ({API_KEY: 'test-key'})}));
 
 // Mock @domain exports
 const mockGetLink = mock(async () => null as any);
-const mockListLinks = mock(async () => ({links: [], total: 0}));
+const mockListLinks = mock(async () => ({links: [] as unknown[], total: 0}));
 const mockCreateLink = mock(async () => null as any);
 const mockUpdateLink = mock(async () => null as any);
 const mockDeleteLink = mock(async () => false);
@@ -51,6 +51,14 @@ mock.module('@domain', () => ({
   listLinksNeedingEmbedding: mockListLinksNeedingEmbedding,
   upsertLinkEmbedding: mockUpsertLinkEmbedding,
   scoreQueuedBySimilarity: mockScoreQueuedBySimilarity,
+  // digest routes — the mock.module registry is global across test files, so
+  // every @domain mock must carry these or routes/digest.ts fails to link.
+  listDigestSourceItems: mock(async () => ({items: [], windowStart: '', windowEnd: '', count: 0})),
+  getDailySummary: mock(async () => null),
+  listDailySummaryDates: mock(async () => []),
+  upsertDailySummary: mock(async () => null),
+  localSummaryDate: () => '2026-07-27',
+  digestWindow: () => ({windowStart: new Date(), windowEnd: new Date()}),
 }));
 
 // Mock API commands

@@ -10,3 +10,4 @@ export {emailItem} from './email-item.schema';
 export {workRequest} from './work-request.schema';
 export {linkEmbedding} from './link-embedding.schema';
 export {runner} from './runner.schema';
+export {dailySummary, type DigestTopic} from './daily-summary.schema';

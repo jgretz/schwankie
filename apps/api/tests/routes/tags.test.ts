@@ -12,13 +12,13 @@ const mockCreateLink = mock(async () => null as any);
 const mockUpdateLink = mock(async () => null as any);
 const mockDeleteLink = mock(async () => false);
 const mockResetEnrichment = mock(async () => false);
-const mockListTags = mock(async () => ({tags: [], total: 0}));
+const mockListTags = mock(async () => ({tags: [] as unknown[], total: 0}));
 const mockMergeTag = mock(async () => false);
 const mockMarkTagNormalized = mock(async () => false);
 const mockRenameTag = mock(async () => false);
 const mockDeleteTag = mock(async () => false);
 const mockNormalizeTag = mock(async () => '');
-const mockGetSetting = mock(async () => null as any);
+const mockGetSetting = mock(async (_key?: string) => null as any);
 const mockSetSetting = mock(async () => undefined);
 const mockResolveTagMinCount = mock(async () => {
   const value = await mockGetSetting('tagCountFloor');
@@ -81,6 +81,14 @@ mock.module('@domain', () => ({
   loadKey: () => Buffer.from(new Uint8Array(32)),
   encryptToken: (x: string) => x,
   decryptToken: (x: string) => x,
+  // digest routes — the mock.module registry is global across test files, so
+  // every @domain mock must carry these or routes/digest.ts fails to link.
+  listDigestSourceItems: mock(async () => ({items: [], windowStart: '', windowEnd: '', count: 0})),
+  getDailySummary: mock(async () => null),
+  listDailySummaryDates: mock(async () => []),
+  upsertDailySummary: mock(async () => null),
+  localSummaryDate: () => '2026-07-27',
+  digestWindow: () => ({windowStart: new Date(), windowEnd: new Date()}),
 }));
 
 type TagsModule = typeof import('../../src/routes/tags');

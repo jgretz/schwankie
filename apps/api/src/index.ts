@@ -16,6 +16,7 @@ import {statusRoutes} from './routes/status';
 import {runnersRoutes} from './routes/runners';
 import {rssRoutes} from './routes/rss';
 import {atomRoutes} from './routes/atom';
+import {digestRoutes} from './routes/digest';
 
 const envSchema = z.object({
   PORT: z.string().default('3001'),
@@ -30,9 +31,10 @@ const app = new Hono();
 
 app.use('/*', cors());
 
-// auth: each router handles its own auth
-// reads (GET) are public; mutations require Bearer token
-// see middleware/auth.ts
+// auth: each router handles its own auth, applied per-route rather than
+// globally. Only /ping, /api/rss, /api/atom, GET /api/runners and the Gmail
+// OAuth callback are public; everything else requires a Bearer token.
+// See middleware/auth.ts.
 app.route('/', healthRoutes);
 app.route('/', tagsRouter);
 app.route('/', linksRoutes);
@@ -45,6 +47,7 @@ app.route('/', statusRoutes);
 app.route('/', runnersRoutes);
 app.route('/', rssRoutes);
 app.route('/', atomRoutes);
+app.route('/', digestRoutes);
 app.route('/api/metadata', metadataRoutes);
 
 app.onError((err, c) => {

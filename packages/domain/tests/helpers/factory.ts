@@ -3,12 +3,14 @@ import {createFeed} from '../../src/commands/create-feed';
 import {createRssItem} from '../../src/commands/create-rss-item';
 import {createEmailItem} from '../../src/commands/create-email-item';
 import {createWorkRequest} from '../../src/commands/create-work-request';
+import {upsertDailySummary} from '../../src/commands/upsert-daily-summary';
 import type {
   CreateLinkInput,
   CreateFeedInput,
   CreateRssItemInput,
   CreateEmailItemInput,
   CreateWorkRequestInput,
+  UpsertDailySummaryInput,
 } from '../../src/types';
 
 export async function makeLink(overrides: Partial<CreateLinkInput> = {}) {
@@ -71,4 +73,21 @@ export async function makeWorkRequest(overrides: Partial<CreateWorkRequestInput>
   };
 
   return createWorkRequest(input);
+}
+
+export async function makeDailySummary(overrides: Partial<UpsertDailySummaryInput> = {}) {
+  const windowEnd = new Date('2026-07-27T11:00:00Z');
+
+  const input: UpsertDailySummaryInput = {
+    summaryDate: '2026-07-27',
+    lookbackHours: 24,
+    windowStart: new Date(windowEnd.getTime() - 24 * 60 * 60 * 1000),
+    windowEnd,
+    itemCount: 0,
+    notable: null,
+    topics: [],
+    ...overrides,
+  };
+
+  return upsertDailySummary(input);
 }
