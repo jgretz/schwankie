@@ -50,12 +50,12 @@ export function findMismatches(expected: string, pins: ReadonlyArray<BunPin>): M
     .map((pin) => ({path: pin.path, expected, actual: pin.version}));
 }
 
-function describe(mismatch: Mismatch): string {
+function formatMismatch(mismatch: Mismatch): string {
   const actual = mismatch.actual ?? 'no "ARG BUN_VERSION=" line';
   return `${mismatch.path}: expected bun ${mismatch.expected}, found ${actual}`;
 }
 
-export async function main(root: string): Promise<number> {
+async function main(root: string): Promise<number> {
   const pkgPath = join(root, 'package.json');
 
   let expected: string;
@@ -88,14 +88,21 @@ export async function main(root: string): Promise<number> {
     return 0;
   }
 
-  console.error(mismatches.map(describe).join('\n'));
+  console.error(mismatches.map(formatMismatch).join('\n'));
   console.error(`Update the pin(s) to match "packageManager" in ${pkgPath}.`);
   return 1;
 }
 
+/** Throws on a valueless `--root` rather than silently auditing the cwd instead. */
 function readRootFlag(argv: ReadonlyArray<string>): string {
   const index = argv.indexOf('--root');
-  return resolve(index === -1 ? process.cwd() : (argv[index + 1] ?? '.'));
+  if (index === -1) return process.cwd();
+
+  const value = argv[index + 1];
+  if (value === undefined || value.startsWith('--'))
+    throw new Error('--root requires a directory path');
+
+  return resolve(value);
 }
 
 if (import.meta.main) process.exit(await main(readRootFlag(Bun.argv.slice(2))));

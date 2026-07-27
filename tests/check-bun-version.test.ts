@@ -130,6 +130,14 @@ describe('check-bun-version CLI', function () {
     expect(result.stderr.toString()).toContain('no "ARG BUN_VERSION=" line');
   });
 
+  // Without the guard this silently audits the cwd — which passes — hiding the typo.
+  it('should exit non-zero when --root is given without a path', async function () {
+    const result = await Bun.$`bun run ${SCRIPT} --root`.nothrow().quiet();
+
+    expect(result.exitCode).not.toBe(0);
+    expect(result.stderr.toString()).toContain('--root requires a directory path');
+  });
+
   it('should exit non-zero when no deploy Dockerfiles are found', async function () {
     const dir = await fixture({});
 
