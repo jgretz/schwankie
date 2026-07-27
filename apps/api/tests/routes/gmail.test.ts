@@ -8,7 +8,9 @@ const mockClearGmailTokens = mock(async () => undefined);
 const mockSetGmailTokens = mock(async () => undefined);
 const mockGetGmailTokens = mock(async () => null as any);
 const mockRefreshGmailTokens = mock(async () => null as any);
-const mockTestGmailConnection = mock(async () => ({ok: false, reason: 'not_connected', message: 'Gmail is not connected'}) as any);
+const mockTestGmailConnection = mock(
+  async () => ({ok: false, reason: 'not_connected', message: 'Gmail is not connected'}) as any,
+);
 
 mock.module('env', () => ({
   parseEnv: () => ({API_KEY: 'test-key', WWW_URL: 'http://localhost:3000'}),
@@ -58,9 +60,7 @@ mock.module('@domain', () => ({
   decryptToken: (x: string) => x,
 }));
 
-const mockBuildGmailAuthUrl = mock(() =>
-  'https://accounts.google.com/o/oauth2/v2/auth?...',
-);
+const mockBuildGmailAuthUrl = mock(() => 'https://accounts.google.com/o/oauth2/v2/auth?...');
 const mockExchangeGmailCodeWithGoogle = mock(async () => ({
   accessToken: 'access123',
   refreshToken: 'refresh123',
@@ -289,9 +289,7 @@ describe('Gmail Routes', function () {
     });
 
     it('should return 410 and clear tokens on invalid_grant', async function () {
-      mockRefreshGmailTokens.mockRejectedValueOnce(
-        new GmailTokenRevokedError('invalid_grant'),
-      );
+      mockRefreshGmailTokens.mockRejectedValueOnce(new GmailTokenRevokedError('invalid_grant'));
 
       const app = makeApp();
       const res = await app.request('/api/gmail/tokens', {
