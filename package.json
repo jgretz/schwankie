@@ -2,6 +2,7 @@
   "name": "schwankie",
   "type": "module",
   "private": true,
+  "packageManager": "bun@1.3.14",
   "devDependencies": {
     "@types/bun": "latest",
     "@types/react": "18.2.56",
@@ -48,6 +49,8 @@
     "test:env": "bun test --cwd packages/env",
     "test:tasks": "bun test --cwd apps/tasks",
     "test:mobile": "bun test --cwd apps/mobile",
+    "test:scripts": "bun test ./tests/",
+    "check:bun-version": "bun run scripts/check-bun-version.ts",
     "db:generate": "bun run --cwd packages/database generate",
     "db:migrate": "bun run --cwd packages/database migrate",
     "deploy:api": "fly deploy --config ./deploy/api/fly.toml --dockerfile ./deploy/api/Dockerfile",
