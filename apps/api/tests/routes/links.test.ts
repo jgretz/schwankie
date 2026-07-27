@@ -6,7 +6,7 @@ mock.module('env', () => ({parseEnv: () => ({API_KEY: 'test-key'})}));
 
 // Mock @domain exports
 const mockGetLink = mock(async () => null as any);
-const mockListLinks = mock(async () => ({links: [], total: 0}));
+const mockListLinks = mock(async () => ({links: [] as unknown[], total: 0}));
 const mockCreateLink = mock(async () => null as any);
 const mockUpdateLink = mock(async () => null as any);
 const mockDeleteLink = mock(async () => false);

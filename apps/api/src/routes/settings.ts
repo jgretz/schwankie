@@ -1,13 +1,18 @@
 import {Hono} from 'hono';
 import {authMiddleware} from '../middleware/auth';
 import {getSetting, setSetting, validateSettingValue, type SettingResponse} from '@domain';
-import {updateSettingSchema} from '../validators/settings';
+import {settingKeyParamSchema, updateSettingSchema} from '../validators/settings';
 
 export const settingsRouter = new Hono();
 const auth = authMiddleware();
 
 settingsRouter.get('/api/settings/:key', auth, async (c) => {
-  const key = c.req.param('key');
+  const keyParsed = settingKeyParamSchema.safeParse({key: c.req.param('key')});
+  if (!keyParsed.success) {
+    return c.json({error: 'Invalid setting key'}, 400);
+  }
+  const {key} = keyParsed.data;
+
   const value = await getSetting(key);
 
   if (value === null) {
@@ -18,7 +23,11 @@ settingsRouter.get('/api/settings/:key', auth, async (c) => {
 });
 
 settingsRouter.put('/api/settings/:key', auth, async (c) => {
-  const key = c.req.param('key');
+  const keyParsed = settingKeyParamSchema.safeParse({key: c.req.param('key')});
+  if (!keyParsed.success) {
+    return c.json({error: 'Invalid setting key'}, 400);
+  }
+  const {key} = keyParsed.data;
 
   const parsed = updateSettingSchema.safeParse(await c.req.json());
   if (!parsed.success) {

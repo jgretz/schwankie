@@ -1,5 +1,9 @@
 import {z} from 'zod';
 
+export const emailItemIdParamSchema = z.object({
+  id: z.string().uuid(),
+});
+
 export const emailItemSchema = z.object({
   messageId: z.string(),
   emailFrom: z.string(),

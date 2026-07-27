@@ -7,7 +7,7 @@ import {
   markEmailItemRead,
   promoteEmailItem,
 } from '@domain';
-import {bulkUpsertEmailItemsSchema} from '../validators/emails';
+import {bulkUpsertEmailItemsSchema, emailItemIdParamSchema} from '../validators/emails';
 
 export const emailsRouter = new Hono();
 const auth = authMiddleware();
@@ -39,13 +39,21 @@ emailsRouter.post('/api/emails/mark-all-read', auth, async (c) => {
 });
 
 emailsRouter.post('/api/emails/:id/read', auth, async (c) => {
-  const id = c.req.param('id');
-  await markEmailItemRead(id);
+  const parsed = emailItemIdParamSchema.safeParse({id: c.req.param('id')});
+  if (!parsed.success) {
+    return c.json({error: 'Invalid email item ID'}, 400);
+  }
+
+  await markEmailItemRead(parsed.data.id);
   return c.json({marked: true});
 });
 
 emailsRouter.post('/api/emails/:id/promote', auth, async (c) => {
-  const id = c.req.param('id');
-  const link = await promoteEmailItem(id);
+  const parsed = emailItemIdParamSchema.safeParse({id: c.req.param('id')});
+  if (!parsed.success) {
+    return c.json({error: 'Invalid email item ID'}, 400);
+  }
+
+  const link = await promoteEmailItem(parsed.data.id);
   return c.json(link);
 });

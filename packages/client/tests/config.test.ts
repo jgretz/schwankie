@@ -29,13 +29,13 @@ describe('apiFetch', () => {
 
     let capturedHeaders: Record<string, string> = {};
 
-    global.fetch = mock(async (url, options) => {
+    global.fetch = mock(async (_url, options) => {
       capturedHeaders = (options as RequestInit).headers as Record<string, string>;
       return {
         ok: true,
         json: async () => ({message: 'success'}),
       } as unknown as Response;
-    });
+    }) as unknown as typeof fetch;
 
     await apiFetch('/api/test');
 
@@ -47,13 +47,13 @@ describe('apiFetch', () => {
 
     let capturedHeaders: Record<string, string> = {};
 
-    global.fetch = mock(async (url, options) => {
+    global.fetch = mock(async (_url, options) => {
       capturedHeaders = (options as RequestInit).headers as Record<string, string>;
       return {
         ok: true,
         json: async () => ({message: 'success'}),
       } as unknown as Response;
-    });
+    }) as unknown as typeof fetch;
 
     await apiFetch('/api/test');
 
@@ -65,13 +65,13 @@ describe('apiFetch', () => {
 
     let capturedHeaders: Record<string, string> = {};
 
-    global.fetch = mock(async (url, options) => {
+    global.fetch = mock(async (_url, options) => {
       capturedHeaders = (options as RequestInit).headers as Record<string, string>;
       return {
         ok: true,
         json: async () => ({message: 'success'}),
       } as unknown as Response;
-    });
+    }) as unknown as typeof fetch;
 
     await apiFetch('/api/test');
 
@@ -83,13 +83,13 @@ describe('apiFetch', () => {
 
     let capturedHeaders: Record<string, string> = {};
 
-    global.fetch = mock(async (url, options) => {
+    global.fetch = mock(async (_url, options) => {
       capturedHeaders = (options as RequestInit).headers as Record<string, string>;
       return {
         ok: true,
         json: async () => ({message: 'success'}),
       } as unknown as Response;
-    });
+    }) as unknown as typeof fetch;
 
     await apiFetch('/api/test', {
       headers: {'X-Custom-Header': 'custom-value'},
@@ -111,7 +111,7 @@ describe('apiFetch', () => {
           ok: true,
           json: async () => expectedData,
         }) as unknown as Response,
-    );
+    ) as unknown as typeof fetch;
 
     const result = await apiFetch('/api/test');
 
@@ -129,7 +129,7 @@ describe('apiFetch', () => {
           statusText: 'Not Found',
           text: async () => 'Resource not found',
         }) as unknown as Response,
-    );
+    ) as unknown as typeof fetch;
 
     try {
       await apiFetch('/api/test');
@@ -159,7 +159,7 @@ describe('apiFetch', () => {
         ok: true,
         json: async () => ({recovered: true}),
       } as unknown as Response;
-    });
+    }) as unknown as typeof fetch;
 
     const result = await apiFetch('/api/test');
 
@@ -180,7 +180,7 @@ describe('apiFetch', () => {
         statusText: 'Bad Gateway',
         text: async () => 'upstream down',
       } as unknown as Response;
-    });
+    }) as unknown as typeof fetch;
 
     try {
       await apiFetch('/api/test');
@@ -205,7 +205,7 @@ describe('apiFetch', () => {
         statusText: 'Not Found',
         text: async () => 'not found',
       } as unknown as Response;
-    });
+    }) as unknown as typeof fetch;
 
     try {
       await apiFetch('/api/test');
@@ -229,7 +229,7 @@ describe('apiFetch', () => {
         ok: true,
         json: async () => ({recovered: true}),
       } as unknown as Response;
-    });
+    }) as unknown as typeof fetch;
 
     const result = await apiFetch('/api/test');
 
@@ -250,7 +250,7 @@ describe('apiFetch', () => {
             throw new Error('Failed to read body');
           },
         }) as unknown as Response,
-    );
+    ) as unknown as typeof fetch;
 
     try {
       await apiFetch('/api/test');

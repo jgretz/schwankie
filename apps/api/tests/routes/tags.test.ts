@@ -12,13 +12,13 @@ const mockCreateLink = mock(async () => null as any);
 const mockUpdateLink = mock(async () => null as any);
 const mockDeleteLink = mock(async () => false);
 const mockResetEnrichment = mock(async () => false);
-const mockListTags = mock(async () => ({tags: [], total: 0}));
+const mockListTags = mock(async () => ({tags: [] as unknown[], total: 0}));
 const mockMergeTag = mock(async () => false);
 const mockMarkTagNormalized = mock(async () => false);
 const mockRenameTag = mock(async () => false);
 const mockDeleteTag = mock(async () => false);
 const mockNormalizeTag = mock(async () => '');
-const mockGetSetting = mock(async () => null as any);
+const mockGetSetting = mock(async (_key?: string) => null as any);
 const mockSetSetting = mock(async () => undefined);
 const mockResolveTagMinCount = mock(async () => {
   const value = await mockGetSetting('tagCountFloor');

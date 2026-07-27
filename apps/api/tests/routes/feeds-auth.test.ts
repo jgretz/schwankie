@@ -17,7 +17,7 @@ const mockMarkTagNormalized = mock(async () => false);
 const mockRenameTag = mock(async () => false);
 const mockDeleteTag = mock(async () => false);
 const mockNormalizeTag = mock(async () => '');
-const mockGetSetting = mock(async () => null as any);
+const mockGetSetting = mock(async (_key?: string) => null as any);
 const mockSetSetting = mock(async () => undefined);
 const mockValidateSettingValue = mock(() => ({success: true}));
 const mockResolveTagMinCount = mock(async () => {
