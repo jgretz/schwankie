@@ -5,6 +5,10 @@ import {parseFeed, getErrorMessage} from '../../src/utils/rss-parser';
 let mockFetchResult: {ok: boolean; text: () => Promise<string>} | null = null;
 const originalFetch = global.fetch;
 
+// parseFeed drops items older than 30 days, so fixture dates must be relative
+// to now — a hardcoded date makes the suite fail once the clock passes it.
+const recentPubDate = new Date().toUTCString();
+
 beforeEach(() => {
   global.fetch = (async () => mockFetchResult) as any;
 });
@@ -25,7 +29,7 @@ describe('RSS Parser', () => {
       <title>Article One</title>
       <guid>article-1</guid>
       <link>https://example.com/article-1</link>
-      <pubDate>Sat, 22 Apr 2026 10:00:00 GMT</pubDate>
+      <pubDate>${recentPubDate}</pubDate>
       <description>Summary here</description>
       <content:encoded><![CDATA[<p>Full content with HTML</p>]]></content:encoded>
       <media:thumbnail url="https://example.com/thumb.jpg" />
@@ -34,7 +38,7 @@ describe('RSS Parser', () => {
       <title>Article Two</title>
       <guid>article-2</guid>
       <link>https://example.com/article-2</link>
-      <pubDate>Sat, 22 Apr 2026 09:00:00 GMT</pubDate>
+      <pubDate>${recentPubDate}</pubDate>
       <content:encoded><![CDATA[Another article]]></content:encoded>
     </item>
   </channel>
@@ -98,14 +102,14 @@ describe('RSS Parser', () => {
       <title>Article</title>
       <guid>article-1</guid>
       <link>https://example.com/article-1</link>
-      <pubDate>Sat, 22 Apr 2026 10:00:00 GMT</pubDate>
+      <pubDate>${recentPubDate}</pubDate>
       <content:encoded>Content</content:encoded>
     </item>
     <item>
       <title>Article</title>
       <guid>article-1</guid>
       <link>https://example.com/article-1</link>
-      <pubDate>Sat, 22 Apr 2026 10:00:00 GMT</pubDate>
+      <pubDate>${recentPubDate}</pubDate>
       <content:encoded>Content</content:encoded>
     </item>
   </channel>
@@ -130,7 +134,7 @@ describe('RSS Parser', () => {
       <title>&lt;b&gt;Bold&lt;/b&gt; Title</title>
       <guid>article-1</guid>
       <link>https://example.com/article-1</link>
-      <pubDate>Sat, 22 Apr 2026 10:00:00 GMT</pubDate>
+      <pubDate>${recentPubDate}</pubDate>
       <description>&lt;p&gt;HTML summary&lt;/p&gt;</description>
       <content:encoded><![CDATA[<p>Full content</p>]]></content:encoded>
     </item>
