@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'bun:test';
-import {join} from 'node:path';
+import {dirname, join, resolve} from 'node:path';
 
 const REPO_ROOT = join(import.meta.dir, '..');
 const SCRIPT = join(REPO_ROOT, 'scripts', 'test-preload.ts');
@@ -77,4 +77,71 @@ describe('test-preload guard', function () {
     // child running the whole repo — instead of an ambiguous timeout.
     120_000,
   );
+});
+
+type Bunfig = {test?: {preload?: string[]}};
+
+// Workspaces are `apps/**` and `packages/**`, but every bunfig.toml sits at a package
+// root one level down. Matching a single level keeps `node_modules` out of the scan.
+const WORKSPACE_GLOBS = ['apps/*/bunfig.toml', 'packages/*/bunfig.toml'];
+
+// Both sides of the comparison name the same file two ways — a bunfig entry carries
+// the `.ts`, the script's import specifier omits it — so compare extensionless.
+function withoutExtension(path: string): string {
+  return path.replace(/\.ts$/, '');
+}
+
+async function declaredPackagePreloads(): Promise<string[]> {
+  const paths: string[] = [];
+
+  for (const pattern of WORKSPACE_GLOBS) {
+    for await (const bunfig of new Bun.Glob(pattern).scan({cwd: REPO_ROOT, absolute: true})) {
+      const {default: config} = (await import(bunfig)) as {default: Bunfig};
+      const preloads = config.test?.preload ?? [];
+      paths.push(...preloads.map((entry) => withoutExtension(resolve(dirname(bunfig), entry))));
+    }
+  }
+
+  return paths;
+}
+
+async function aggregatedPreloads(): Promise<string[]> {
+  const source = await Bun.file(SCRIPT).text();
+  const specifiers = [...source.matchAll(/await import\('([^']+)'\)/g)].map((match) => match[1]!);
+
+  return specifiers.map((specifier) => withoutExtension(resolve(dirname(SCRIPT), specifier)));
+}
+
+describe('test-preload aggregation', function () {
+  // `.claude/rules/testing.md` asks for two edits when a package gains a preload:
+  // its own bunfig.toml, and an import here. Only the first is needed for
+  // `bun run test`, so the second is easy to skip — and the omission then surfaces
+  // only under `bun run test:isolated`, the command nobody reaches for day to day.
+  it('should import every preload declared by a workspace bunfig.toml', async function () {
+    const declared = await declaredPackagePreloads();
+    const aggregated = await aggregatedPreloads();
+
+    const missing = declared.filter((path) => !aggregated.includes(path));
+
+    expect(missing).toEqual([]);
+  });
+
+  // Guards the other direction: a package deleted or its preload retired leaves a
+  // dangling import here, and the whole isolated run dies on the failed resolution.
+  it('should not import a preload no workspace bunfig.toml declares', async function () {
+    const declared = await declaredPackagePreloads();
+    const aggregated = await aggregatedPreloads();
+
+    const orphaned = aggregated.filter((path) => !declared.includes(path));
+
+    expect(orphaned).toEqual([]);
+  });
+
+  // A pattern that silently matched nothing would make both assertions above pass
+  // vacuously — the exact false-green the rule file exists to prevent.
+  it('should find the preloads that exist today', async function () {
+    const declared = await declaredPackagePreloads();
+
+    expect(declared.length).toBeGreaterThan(0);
+  });
 });
