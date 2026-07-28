@@ -2,8 +2,7 @@ import {memo, useState} from 'react';
 import {Button} from '@www/components/ui/button';
 import {Input} from '@www/components/ui/input';
 import {Dialog, DialogContent, DialogHeader, DialogTitle} from '@www/components/ui/dialog';
-
-export type TagItem = {id: number; text: string; count: number};
+import type {TagItem} from '@www/lib/types';
 
 export interface TagRowProps {
   tag: TagItem;

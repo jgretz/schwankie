@@ -1,4 +1,4 @@
-import type {TagItem} from '@www/components/admin/tag-row';
+import type {TagItem} from '@www/lib/types';
 
 /** Case-insensitive substring match against the tag text. */
 export function filterTags(tags: TagItem[], query: string): TagItem[] {

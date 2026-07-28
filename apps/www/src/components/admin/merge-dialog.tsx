@@ -1,6 +1,6 @@
 import {Button} from '@www/components/ui/button';
 import {Dialog, DialogContent, DialogHeader, DialogTitle} from '@www/components/ui/dialog';
-import type {TagItem} from './tag-row';
+import type {TagItem} from '@www/lib/types';
 
 export interface MergeDialogProps {
   open: boolean;

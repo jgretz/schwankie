@@ -8,6 +8,10 @@ let formatter: Intl.DateTimeFormat | null = null;
  * import side-effect-free (`"sideEffects": false`) and off the SSR import path.
  * The locale stays `undefined` so it resolves the runtime default, exactly as
  * the previous `toLocaleDateString(undefined, …)` call did.
+ *
+ * Unlike the configured singletons in `db.ts`/`config.ts`, this one takes no
+ * injected state — the cached value is a pure function of the module's own
+ * constants — so it needs no `reset()` for test isolation.
  */
 function getFormatter(): Intl.DateTimeFormat {
   if (!formatter) {

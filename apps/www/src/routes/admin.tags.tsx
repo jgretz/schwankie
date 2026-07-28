@@ -4,10 +4,10 @@ import {useAdminTags} from '@www/hooks/use-admin-tags';
 import {Button} from '@www/components/ui/button';
 import {Input} from '@www/components/ui/input';
 import {TagRow} from '@www/components/admin/tag-row';
-import type {TagItem} from '@www/components/admin/tag-row';
 import {MergeDialog} from '@www/components/admin/merge-dialog';
 import {filterTags} from '@www/lib/filter-tags';
 import {sortTagsByCount} from '@www/lib/sort-tags';
+import type {TagItem} from '@www/lib/types';
 
 export const Route = createFileRoute('/admin/tags')({
   beforeLoad: ({context}) => {

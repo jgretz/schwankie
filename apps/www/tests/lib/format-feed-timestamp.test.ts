@@ -30,4 +30,13 @@ describe('formatFeedTimestamp', function () {
 
     expect(formatFeedTimestamp(iso)).toBe(formatFeedTimestamp(iso));
   });
+
+  // The shared formatter is created once and reused; this catches it caching the
+  // first formatted value rather than the formatter itself.
+  it('should render distinct output for distinct timestamps', function () {
+    const march = formatFeedTimestamp('2026-03-04T15:07:00.000Z');
+    const july = formatFeedTimestamp('2026-07-19T02:41:00.000Z');
+
+    expect(march).not.toBe(july);
+  });
 });

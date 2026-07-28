@@ -61,6 +61,19 @@ describe('sortFeedsByUpdatedAt', function () {
     expect(result.map((f) => f.id)).toEqual(['good', 'empty']);
   });
 
+  // Ties are common: every feed fetched in the same poll shares a timestamp.
+  it('should preserve the input order for equal timestamps', function () {
+    const feeds = [
+      makeFeed({id: 'a', updatedAt: '2026-01-01T00:00:00.000Z'}),
+      makeFeed({id: 'b', updatedAt: '2026-01-01T00:00:00.000Z'}),
+      makeFeed({id: 'c', updatedAt: '2026-01-01T00:00:00.000Z'}),
+    ];
+
+    const result = sortFeedsByUpdatedAt(feeds);
+
+    expect(result.map((f) => f.id)).toEqual(['a', 'b', 'c']);
+  });
+
   it('should return an empty array for no feeds', function () {
     expect(sortFeedsByUpdatedAt([])).toEqual([]);
   });
