@@ -1,4 +1,5 @@
 # Link Metadata Extraction Architecture
+<!-- Adding an incidental implementation note (dependency override, workaround, gotcha)? It goes in the top-level "## Implementation Notes" section — never nested under a tier/layer/phase heading. See .claude/rules/doc-structure.md. -->
 
 ## Context
 
@@ -70,7 +71,7 @@ Current `link` table fields sufficient:
 - `siteName` varchar(200)
 - `contentType` varchar(100)
 
-## Dependency Notes
+## Implementation Notes
 
 ### The `re2` override
 
