@@ -8,7 +8,7 @@
     "@types/react": "18.2.56",
     "concurrently": "^9.1.2",
     "drizzle-orm": "0.30.10",
-    "prettier": "^3.3.0"
+    "prettier": "3.8.1"
   },
   "peerDependencies": {
     "typescript": "^5.4.5"
@@ -30,6 +30,8 @@
     "dev:tasks": "bun run --cwd apps/tasks dev",
     "build": "concurrently bun:build:*",
     "build:www": "cd apps/www && bun run build",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "typecheck": "concurrently bun:typecheck:*",
     "typecheck:www": "cd apps/www && bun run typecheck",
     "typecheck:mobile": "cd apps/mobile && bun run type-check",
