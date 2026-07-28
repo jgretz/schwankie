@@ -14,6 +14,12 @@ import {formatFeedTimestamp} from '@www/lib/format-feed-timestamp';
 export interface FeedRowProps {
   feed: FeedData;
   isEditing: boolean;
+  /**
+   * True while any update *or* delete is in flight. Deliberately one flag: it
+   * disables every row action together rather than letting a delete fire
+   * mid-rename, and it keeps a page-wide boolean from splitting into two props
+   * that both invalidate the memo anyway.
+   */
   isRowActionPending: boolean;
   isAnyRowEditing: boolean;
   onStartEdit: (id: string) => void;
