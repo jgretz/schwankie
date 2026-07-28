@@ -1,4 +1,5 @@
 # Exploration & Inspiration Ideas
+<!-- Adding an incidental implementation note (dependency override, workaround, gotcha)? It goes in the top-level "## Implementation Notes" section — never nested under a tier/layer/phase heading. See .claude/rules/doc-structure.md. -->
 
 Parking lot for deferred ideas built on top of the relatedness primitive
 (link embeddings + tag co-occurrence). Inspired by Atomic

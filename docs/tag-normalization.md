@@ -1,4 +1,5 @@
 # Tag Normalization Strategy
+<!-- Adding an incidental implementation note (dependency override, workaround, gotcha)? It goes in the top-level "## Implementation Notes" section — never nested under a tier/layer/phase heading. See .claude/rules/doc-structure.md. -->
 
 ## Problem Statement
 
@@ -136,7 +137,7 @@ CREATE INDEX idx_tag_alias_source ON tag_alias(source);
 
 ---
 
-## Notes for Developers
+## Implementation Notes
 
 - Normalization is **idempotent**: applying rules twice = same result. Safe to reprocess.
 - `tag_alias` is **immutable** after insert (audit trail). Do not update or delete.
