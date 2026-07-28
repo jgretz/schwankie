@@ -18,9 +18,9 @@
     "packages/**"
   ],
   "overrides": {
+    "re2": "^1.26.1",
     "react": "19.2.0",
-    "react-dom": "19.2.0",
-    "re2": "^1.26.1"
+    "react-dom": "19.2.0"
   },
   "scripts": {
     "dev": "concurrently bun:dev:api bun:dev:www",
