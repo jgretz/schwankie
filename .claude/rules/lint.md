@@ -34,14 +34,24 @@ here instead.
 
 Every `biome-ignore` must state *why* after the colon. Two rules are suppressed today:
 
-- **`correctness/useExhaustiveDependencies`** ×3 — `daily-summary.tsx`,
-  `use-form-validation.ts`, `feed-page.tsx`. Biome 1.5.3 demands member expressions
-  (`dates[index + 1]`, `schema[field]`) as literal deps, and misreads destructured
-  props as non-reactive "outer scope values". Never edit these dependency arrays to
-  appease the linter — doing so introduces stale closures or drops a needed re-run.
+- **`correctness/useExhaustiveDependencies`** ×2 — `daily-summary.tsx`,
+  `use-form-validation.ts`. Biome 1.5.3 demands member expressions
+  (`dates[index + 1]`, `schema[field]`) as literal deps, which is not expressible.
+  Never edit these dependency arrays to appease the linter — doing so introduces stale
+  closures or drops a needed re-run.
 - **`security/noDangerouslySetInnerHtml`** ×1 — `__root.tsx`, the pre-hydration theme
   script (`react-components.md` #2). It must run synchronously before React hydrates.
 
 In JSX, a suppression comment must be a `//` comment **inside the opening tag**, on the
 line directly above the offending attribute. A `{/* … */}` JSX comment node does not
 register and reports `suppressions/unused`.
+
+## Known 1.5.3 rule gaps
+
+`a11y/noAriaHiddenOnFocusable` only reasons about a **static** `aria-hidden`, and it does
+not account for `disabled`. The backdrop in `nav-drawer.tsx` is a `disabled` button —
+already unfocusable, so `aria-hidden` on it is correct — but writing it as
+`aria-hidden="true"` reports an error, while `aria-hidden={isOpen ? undefined : true}` does
+not. That attribute is dynamic because the value genuinely tracks `isOpen`, not to dodge
+the rule; do not "simplify" it to a literal. If a future edit makes it static and the
+rule fires, suppress it with a reason rather than deleting the `aria-hidden`.

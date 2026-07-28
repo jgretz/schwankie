@@ -34,10 +34,11 @@ mock.module('../../src/lib/init-client.server', () => ({
   initClientServer: mock(() => {}),
 }));
 
-let setSettingAction: (input: {
-  data: {key: string; value: string};
-}) => Promise<{key: string; value: string; set: boolean}>;
-let createSession: (email: string) => Promise<void>;
+type SettingsActions = typeof import('../../src/lib/settings-actions');
+type SessionServer = typeof import('../../src/lib/session.server');
+
+let setSettingAction: SettingsActions['setSettingAction'];
+let createSession: SessionServer['createSession'];
 
 beforeAll(async function () {
   const {init} = await import('client');
@@ -70,12 +71,12 @@ describe('setSettingAction', function () {
       async () =>
         ({
           ok: true,
-          json: async () => ({key: 'theme', value: 'dark', set: true}),
+          json: async () => ({key: 'theme', value: 'dark'}),
         }) as unknown as Response,
     ) as unknown as typeof fetch;
 
     const result = await setSettingAction({data: {key: 'theme', value: 'dark'}});
-    expect(result.set).toBe(true);
+    expect(result).toEqual({key: 'theme', value: 'dark'});
   });
 
   it('should throw Unauthorized when not authenticated', async function () {
@@ -83,12 +84,8 @@ describe('setSettingAction', function () {
       delete cookies[key];
     }
 
-    try {
-      await setSettingAction({data: {key: 'theme', value: 'dark'}});
-      expect.fail('should have thrown');
-    } catch (error) {
-      expect(error).toBeInstanceOf(Error);
-      expect((error as Error).message).toBe('Unauthorized');
-    }
+    await expect(setSettingAction({data: {key: 'theme', value: 'dark'}})).rejects.toThrow(
+      /^Unauthorized$/,
+    );
   });
 });
