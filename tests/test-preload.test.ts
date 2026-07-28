@@ -74,7 +74,7 @@ describe('test-preload guard', function () {
     },
     // Armed, the child exits in well under a second. The generous budget only comes
     // into play if the guard regresses, and buys a named assertion failure — the
-    // child running all 766 tests — instead of an ambiguous timeout.
+    // child running the whole repo — instead of an ambiguous timeout.
     120_000,
   );
 });

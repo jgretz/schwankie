@@ -66,7 +66,9 @@ invocations and nothing else — every `bun test --cwd <pkg>` is untouched. It s
 under `[test]` rather than at the top level so it applies to `bun test` alone, not
 to every `bun run`. `test:isolated` is the only caller that sets the sentinel, and
 it needs no `--preload` flag of its own because it runs from the root and picks the
-entry up. `tests/test-preload.test.ts` covers both branches.
+entry up. `tests/test-preload.test.ts` covers both branches of the guard and the
+bunfig wiring itself — it spawns a bare root `bun test` and asserts the refusal, so
+deleting the entry above fails the suite rather than quietly disarming it.
 
 ## Adding a Package That Needs a Preload
 
