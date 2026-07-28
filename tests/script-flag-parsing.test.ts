@@ -8,18 +8,39 @@ const SCAN_ROOTS = ['scripts', 'apps/tasks/src/scripts'];
 // `argv[index + 1]`, because it is what every other script defers to.
 const ALLOWED = new Set(['scripts/lib/flags.ts']);
 
-// A grep heuristic, not a type-level guarantee: it catches the two shapes the
-// bug actually shipped in, not every way it could be written.
+// A grep heuristic, not a type-level guarantee: it catches the shapes the bug
+// actually shipped in, not every way it could be written.
 //
-// The second pattern is scoped to an `args`/`argv` identifier rather than
-// matching a bare `[i + 1]`. The unscoped form also hits legitimate
+// The adjacent-read patterns are scoped to an `args`/`argv` identifier rather
+// than matching a bare `[i + 1]`. The unscoped form also hits legitimate
 // byte-decoding — `compressed[src + 1]` in the mozlz4 reader in
 // extract-zen-tabs.ts — so it would have to be suppressed there, which is worse
 // than under-matching: a suppression on a whole file blinds the sweep to a real
-// offender added to it later.
+// offender added to it later. Widening within that scope is free, so each way
+// of reaching the next element off an argv-shaped name gets its own pattern.
+//
+// `sample` pins the pattern to the shape it is meant to reject. A regex that
+// silently stops matching leaves the sweep permanently green — the same
+// false-green failure mode the guard itself exists to prevent — and only the
+// one pattern `flags.ts` happens to trip is covered by the allowlist check
+// below. Samples live in this file, which no scan root covers, so they cannot
+// trip the sweep they document.
 const BAD_PATTERNS = [
-  {name: 'a hand-rolled flag lookup', pattern: /\.indexOf\(\s*['"`]--/},
-  {name: 'an adjacent-index read off argv', pattern: /(?:args|argv)\s*\[\s*\w+\s*\+\s*1\s*\]/i},
+  {
+    name: 'a hand-rolled flag lookup',
+    pattern: /\.indexOf\(\s*['"`]--/,
+    sample: "const i = args.indexOf('--group');",
+  },
+  {
+    name: 'an adjacent-index read off argv',
+    pattern: /(?:args|argv)\w*\s*(?:\?\.)?\[\s*\w+\s*\+\s*1\s*\]/i,
+    sample: 'const value = rawArgs?.[index + 1];',
+  },
+  {
+    name: 'an adjacent .at() read off argv',
+    pattern: /(?:args|argv)\w*\s*\.at\(\s*\w+\s*\+\s*1\s*\)/i,
+    sample: 'const value = argv.at(index + 1);',
+  },
 ];
 
 const scriptFiles = (
@@ -51,7 +72,15 @@ describe('repo CLI script flag parsing', function () {
     expect(empty).toEqual([]);
   });
 
-  // An exemption that outlives its reason is the third way this sweep could go
+  it('should still match the shape each pattern is meant to reject', function () {
+    const blind = BAD_PATTERNS.filter(({pattern, sample}) => !pattern.test(sample)).map(
+      ({name}) => `${name} no longer matches its own sample`,
+    );
+
+    expect(blind).toEqual([]);
+  });
+
+  // An exemption that outlives its reason is the fourth way this sweep could go
   // quietly green: rename or rewrite flags.ts and the entry keeps waiving a file
   // that no longer needs waiving — or no longer exists.
   it('should not keep an allowlist entry that is no longer earned', async function () {
