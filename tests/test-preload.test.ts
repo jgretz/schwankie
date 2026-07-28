@@ -1,7 +1,14 @@
 import {describe, expect, it} from 'bun:test';
 import {join} from 'node:path';
 
-const SCRIPT = join(import.meta.dir, '..', 'scripts', 'test-preload.ts');
+const REPO_ROOT = join(import.meta.dir, '..');
+const SCRIPT = join(REPO_ROOT, 'scripts', 'test-preload.ts');
+
+// Set on the child of the bunfig-wiring test below. Spawning `bun test` at the repo
+// root is only safe while the guard exits before any test runs; if the bunfig entry
+// regresses, the child would reach this file and spawn a grandchild, and so on. The
+// marker makes that fork bomb impossible — a child skips the spawning test outright.
+const PROBE = 'SCHWANKIE_TEST_GUARD_PROBE';
 
 // `bun run test:isolated` sets the sentinel for the whole run, so the refusal cases
 // have to clear it explicitly ('' is falsy to the guard); inheriting the ambient
@@ -42,4 +49,32 @@ describe('test-preload guard', function () {
 
     expect(result.exitCode).toBe(0);
   });
+
+  // The guard is only worth anything if the root bunfig.toml actually invokes it.
+  // It shipped once without that entry, which made the script unreachable and left a
+  // bare root run reporting ~200 phantom failures; this is the regression test.
+  it.skipIf(Boolean(process.env[PROBE]))(
+    'should refuse a bare repo-root `bun test` before running any test',
+    async function () {
+      const result = await Bun.$`bun test`
+        .cwd(REPO_ROOT)
+        .env({...process.env, SCHWANKIE_TEST_ISOLATED: '', [PROBE]: '1'})
+        .nothrow()
+        .quiet();
+
+      const stderr = result.stderr.toString();
+      // Collapsed to a boolean deliberately: a regressed child runs the whole repo,
+      // and asserting on `stderr` itself would bury the result under ~200KB of its
+      // output. Reproduce by hand with a bare `bun test` at the repo root.
+      const refusedBeforeRunningAnything =
+        stderr.includes('shares one module registry') && !/Ran \d+ tests/.test(stderr);
+
+      expect(result.exitCode).toBe(1);
+      expect(refusedBeforeRunningAnything).toBe(true);
+    },
+    // Armed, the child exits in well under a second. The generous budget only comes
+    // into play if the guard regresses, and buys a named assertion failure — the
+    // child running all 766 tests — instead of an ambiguous timeout.
+    120_000,
+  );
 });
