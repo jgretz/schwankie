@@ -34,14 +34,13 @@ mock.module('../../src/lib/init-client.server', () => ({
   initClientServer: mock(() => {}),
 }));
 
-let renameTagAction: (input: {
-  data: {id: number; text: string};
-}) => Promise<{id: number; text: string}>;
-let mergeTagAction: (input: {
-  data: {aliasId: number; canonicalTagId: number};
-}) => Promise<{merged: boolean}>;
-let deleteTagAction: (input: {data: {id: number}}) => Promise<{id: number; deleted: boolean}>;
-let createSession: (email: string) => Promise<void>;
+type TagActions = typeof import('../../src/lib/tag-actions');
+type SessionServer = typeof import('../../src/lib/session.server');
+
+let renameTagAction: TagActions['renameTagAction'];
+let mergeTagAction: TagActions['mergeTagAction'];
+let deleteTagAction: TagActions['deleteTagAction'];
+let createSession: SessionServer['createSession'];
 
 beforeAll(async function () {
   const {init} = await import('client');
@@ -72,16 +71,22 @@ beforeEach(async function () {
 
 describe('renameTagAction', function () {
   it('should call renameTag with id and text', async function () {
-    global.fetch = mock(
-      async () =>
+    // renameTag answers with a bare {renamed} acknowledgement, so the request itself is
+    // the only place the id and the new text are observable.
+    const fetchMock = mock(
+      async (_url: string, _init?: RequestInit) =>
         ({
           ok: true,
-          json: async () => ({id: 1, text: 'new-name'}),
+          json: async () => ({renamed: true}),
         }) as unknown as Response,
-    ) as unknown as typeof fetch;
+    );
+    global.fetch = fetchMock as unknown as typeof fetch;
 
     const result = await renameTagAction({data: {id: 1, text: 'new-name'}});
-    expect(result).toEqual({id: 1, text: 'new-name'});
+
+    expect(result).toEqual({renamed: true});
+    expect(fetchMock.mock.calls[0]?.[0]).toBe('http://localhost:3001/api/tags/1');
+    expect(fetchMock.mock.calls[0]?.[1]?.body).toBe(JSON.stringify({text: 'new-name'}));
   });
 
   it('should throw error when not authenticated', async function () {
@@ -89,13 +94,9 @@ describe('renameTagAction', function () {
       delete cookies[key];
     }
 
-    try {
-      await renameTagAction({data: {id: 1, text: 'new-name'}});
-      expect.fail('should have thrown');
-    } catch (error) {
-      expect(error).toBeInstanceOf(Error);
-      expect((error as Error).message).toBe('Unauthorized');
-    }
+    await expect(renameTagAction({data: {id: 1, text: 'new-name'}})).rejects.toThrow(
+      /^Unauthorized$/,
+    );
   });
 });
 
@@ -118,13 +119,9 @@ describe('mergeTagAction', function () {
       delete cookies[key];
     }
 
-    try {
-      await mergeTagAction({data: {aliasId: 1, canonicalTagId: 2}});
-      expect.fail('should have thrown');
-    } catch (error) {
-      expect(error).toBeInstanceOf(Error);
-      expect((error as Error).message).toBe('Unauthorized');
-    }
+    await expect(mergeTagAction({data: {aliasId: 1, canonicalTagId: 2}})).rejects.toThrow(
+      /^Unauthorized$/,
+    );
   });
 });
 
@@ -134,7 +131,7 @@ describe('deleteTagAction', function () {
       async () =>
         ({
           ok: true,
-          json: async () => ({id: 1, deleted: true}),
+          json: async () => ({deleted: true}),
         }) as unknown as Response,
     ) as unknown as typeof fetch;
 
@@ -147,12 +144,6 @@ describe('deleteTagAction', function () {
       delete cookies[key];
     }
 
-    try {
-      await deleteTagAction({data: {id: 1}});
-      expect.fail('should have thrown');
-    } catch (error) {
-      expect(error).toBeInstanceOf(Error);
-      expect((error as Error).message).toBe('Unauthorized');
-    }
+    await expect(deleteTagAction({data: {id: 1}})).rejects.toThrow(/^Unauthorized$/);
   });
 });

@@ -34,18 +34,17 @@ mock.module('../../src/lib/init-client.server', () => ({
   initClientServer: mock(() => {}),
 }));
 
-let fetchMetadataAction: (input: {data: {url: string}}) => Promise<{url: string; title: string}>;
-let createLinkAction: (input: {
-  data: {url: string; title: string; tags?: string[]};
-}) => Promise<{id: number; url: string; title: string; tags: {id: number; tag: string}[]}>;
-let updateLinkAction: (input: {
-  data: {id: number; title?: string; tags?: string[]};
-}) => Promise<{id: number; title: string; tags: {id: number; tag: string}[]}>;
-let resetEnrichmentAction: (input: {data: {id: number}}) => Promise<{id: number; reset: boolean}>;
-let refetchLinkAction: (input: {data: {id: number}}) => Promise<{id: number; refetched: boolean}>;
-let suggestTagsAction: (input: {data: {id: number}}) => Promise<{id: number; tag: string}[]>;
-let deleteLinkAction: (input: {data: {id: number}}) => Promise<{id: number; deleted: boolean}>;
-let createSession: (email: string) => Promise<void>;
+type LinkActions = typeof import('../../src/lib/link-actions');
+type SessionServer = typeof import('../../src/lib/session.server');
+
+let fetchMetadataAction: LinkActions['fetchMetadataAction'];
+let createLinkAction: LinkActions['createLinkAction'];
+let updateLinkAction: LinkActions['updateLinkAction'];
+let resetEnrichmentAction: LinkActions['resetEnrichmentAction'];
+let refetchLinkAction: LinkActions['refetchLinkAction'];
+let suggestTagsAction: LinkActions['suggestTagsAction'];
+let deleteLinkAction: LinkActions['deleteLinkAction'];
+let createSession: SessionServer['createSession'];
 
 beforeAll(async function () {
   const {init} = await import('client');
@@ -84,12 +83,12 @@ describe('fetchMetadataAction', function () {
       async () =>
         ({
           ok: true,
-          json: async () => ({url: 'https://example.com', title: 'Test Title'}),
+          json: async () => ({title: 'Test Title', description: null, imageUrl: null}),
         }) as unknown as Response,
     ) as unknown as typeof fetch;
 
     const result = await fetchMetadataAction({data: {url: 'https://example.com'}});
-    expect(result).toEqual({url: 'https://example.com', title: 'Test Title'});
+    expect(result).toEqual({title: 'Test Title', description: null, imageUrl: null});
   });
 
   it('should throw error when not authenticated', async function () {
@@ -97,13 +96,9 @@ describe('fetchMetadataAction', function () {
       delete cookies[key];
     }
 
-    try {
-      await fetchMetadataAction({data: {url: 'https://example.com'}});
-      expect.fail('should have thrown');
-    } catch (error) {
-      expect(error).toBeInstanceOf(Error);
-      expect((error as Error).message).toBe('Unauthorized');
-    }
+    await expect(fetchMetadataAction({data: {url: 'https://example.com'}})).rejects.toThrow(
+      /^Unauthorized$/,
+    );
   });
 });
 
@@ -113,7 +108,12 @@ describe('createLinkAction', function () {
       async () =>
         ({
           ok: true,
-          json: async () => ({id: 1, url: 'https://example.com', title: 'Test', tags: ['tag1']}),
+          json: async () => ({
+            id: 1,
+            url: 'https://example.com',
+            title: 'Test',
+            tags: [{id: 1, text: 'tag1'}],
+          }),
         }) as unknown as Response,
     ) as unknown as typeof fetch;
 
@@ -127,13 +127,9 @@ describe('createLinkAction', function () {
       delete cookies[key];
     }
 
-    try {
-      await createLinkAction({data: {url: 'https://example.com', title: 'Test'}});
-      expect.fail('should have thrown');
-    } catch (error) {
-      expect(error).toBeInstanceOf(Error);
-      expect((error as Error).message).toBe('Unauthorized');
-    }
+    await expect(
+      createLinkAction({data: {url: 'https://example.com', title: 'Test'}}),
+    ).rejects.toThrow(/^Unauthorized$/);
   });
 });
 
@@ -143,7 +139,7 @@ describe('updateLinkAction', function () {
       async () =>
         ({
           ok: true,
-          json: async () => ({id: 1, title: 'Updated', tags: ['tag2']}),
+          json: async () => ({id: 1, title: 'Updated', tags: [{id: 2, text: 'tag2'}]}),
         }) as unknown as Response,
     ) as unknown as typeof fetch;
 
@@ -157,13 +153,9 @@ describe('updateLinkAction', function () {
       delete cookies[key];
     }
 
-    try {
-      await updateLinkAction({data: {id: 1, title: 'Updated'}});
-      expect.fail('should have thrown');
-    } catch (error) {
-      expect(error).toBeInstanceOf(Error);
-      expect((error as Error).message).toBe('Unauthorized');
-    }
+    await expect(updateLinkAction({data: {id: 1, title: 'Updated'}})).rejects.toThrow(
+      /^Unauthorized$/,
+    );
   });
 });
 
@@ -173,7 +165,7 @@ describe('resetEnrichmentAction', function () {
       async () =>
         ({
           ok: true,
-          json: async () => ({id: 1, reset: true}),
+          json: async () => ({reset: true}),
         }) as unknown as Response,
     ) as unknown as typeof fetch;
 
@@ -186,28 +178,27 @@ describe('resetEnrichmentAction', function () {
       delete cookies[key];
     }
 
-    try {
-      await resetEnrichmentAction({data: {id: 1}});
-      expect.fail('should have thrown');
-    } catch (error) {
-      expect(error).toBeInstanceOf(Error);
-      expect((error as Error).message).toBe('Unauthorized');
-    }
+    await expect(resetEnrichmentAction({data: {id: 1}})).rejects.toThrow(/^Unauthorized$/);
   });
 });
 
 describe('refetchLinkAction', function () {
   it('should call refetchLink with id', async function () {
-    global.fetch = mock(
-      async () =>
+    // refetchLink resolves to the refreshed link itself, so the response body carries no
+    // marker to assert on — the request URL is what proves the id reached the endpoint.
+    const fetchMock = mock(
+      async (_url: string, _init?: RequestInit) =>
         ({
           ok: true,
-          json: async () => ({id: 1, refetched: true}),
+          json: async () => ({id: 1, title: 'Refetched'}),
         }) as unknown as Response,
-    ) as unknown as typeof fetch;
+    );
+    global.fetch = fetchMock as unknown as typeof fetch;
 
     const result = await refetchLinkAction({data: {id: 1}});
-    expect(result.refetched).toBe(true);
+
+    expect(result.title).toBe('Refetched');
+    expect(fetchMock.mock.calls[0]?.[0]).toBe('http://localhost:3001/api/links/1/refetch');
   });
 
   it('should throw Unauthorized when not authenticated', async function () {
@@ -215,13 +206,7 @@ describe('refetchLinkAction', function () {
       delete cookies[key];
     }
 
-    try {
-      await refetchLinkAction({data: {id: 1}});
-      expect.fail('should have thrown');
-    } catch (error) {
-      expect(error).toBeInstanceOf(Error);
-      expect((error as Error).message).toBe('Unauthorized');
-    }
+    await expect(refetchLinkAction({data: {id: 1}})).rejects.toThrow(/^Unauthorized$/);
   });
 });
 
@@ -231,12 +216,12 @@ describe('suggestTagsAction', function () {
       async () =>
         ({
           ok: true,
-          json: async () => [{id: 1, tag: 'suggested'}],
+          json: async () => ({tags: ['suggested']}),
         }) as unknown as Response,
     ) as unknown as typeof fetch;
 
     const result = await suggestTagsAction({data: {id: 1}});
-    expect(result).toContainEqual({id: 1, tag: 'suggested'});
+    expect(result.tags).toContain('suggested');
   });
 
   it('should throw Unauthorized when not authenticated', async function () {
@@ -244,13 +229,7 @@ describe('suggestTagsAction', function () {
       delete cookies[key];
     }
 
-    try {
-      await suggestTagsAction({data: {id: 1}});
-      expect.fail('should have thrown');
-    } catch (error) {
-      expect(error).toBeInstanceOf(Error);
-      expect((error as Error).message).toBe('Unauthorized');
-    }
+    await expect(suggestTagsAction({data: {id: 1}})).rejects.toThrow(/^Unauthorized$/);
   });
 });
 
@@ -260,7 +239,7 @@ describe('deleteLinkAction', function () {
       async () =>
         ({
           ok: true,
-          json: async () => ({id: 1, deleted: true}),
+          json: async () => ({deleted: true}),
         }) as unknown as Response,
     ) as unknown as typeof fetch;
 
@@ -273,12 +252,6 @@ describe('deleteLinkAction', function () {
       delete cookies[key];
     }
 
-    try {
-      await deleteLinkAction({data: {id: 1}});
-      expect.fail('should have thrown');
-    } catch (error) {
-      expect(error).toBeInstanceOf(Error);
-      expect((error as Error).message).toBe('Unauthorized');
-    }
+    await expect(deleteLinkAction({data: {id: 1}})).rejects.toThrow(/^Unauthorized$/);
   });
 });
