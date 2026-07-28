@@ -4,6 +4,7 @@ import {useMutation, useQueryClient} from '@tanstack/react-query';
 import {useStatus} from '@www/hooks/use-status';
 import {useRunners} from '@www/hooks/use-runners';
 import {deleteRunnerAction} from '@www/lib/status-actions';
+import {buildHourlyBuckets} from '@www/lib/build-hourly-buckets';
 import type {RunnerData, RunnerStatus, StatusBucket} from 'client';
 
 export const Route = createFileRoute('/admin/status')({
@@ -93,24 +94,7 @@ function HealthDot({health}: {health: Health}) {
 }
 
 function Sparkline({buckets, hours = 24}: {buckets: StatusBucket[]; hours?: number}) {
-  const filled = useMemo(() => {
-    const now = new Date();
-    now.setMinutes(0, 0, 0);
-    const byIso = new Map(
-      buckets.map((b) => {
-        const d = new Date(b.hour);
-        d.setMinutes(0, 0, 0);
-        return [d.toISOString(), b.count] as const;
-      }),
-    );
-    const out: {hour: Date; count: number}[] = [];
-    for (let i = hours - 1; i >= 0; i--) {
-      const d = new Date(now);
-      d.setHours(d.getHours() - i);
-      out.push({hour: d, count: byIso.get(d.toISOString()) ?? 0});
-    }
-    return out;
-  }, [buckets, hours]);
+  const filled = useMemo(() => buildHourlyBuckets(buckets, hours, new Date()), [buckets, hours]);
 
   const max = Math.max(1, ...filled.map((b) => b.count));
   const total = filled.reduce((sum, b) => sum + b.count, 0);
