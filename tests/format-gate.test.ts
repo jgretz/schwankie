@@ -4,8 +4,9 @@ import {join} from 'node:path';
 const REPO_ROOT = join(import.meta.dir, '..');
 const WORKFLOW = join(REPO_ROOT, '.github', 'workflows', 'checks.yml');
 
-// Spawning `bunx prettier` is ~0.5s cold. The generous budget only matters when a
-// path regresses; it buys a named assertion failure instead of an ambiguous timeout.
+// A `--file-info` spawn resolves the local binary and returns in ~65ms. The budget is
+// this generous only for the cold case where bunx has to fetch prettier first; when a
+// path regresses it buys a named assertion failure instead of an ambiguous timeout.
 const SPAWN_TIMEOUT = 30_000;
 
 type PackageJson = {
