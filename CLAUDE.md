@@ -29,10 +29,11 @@ bun run generate --name <descriptive-name>  # drizzle-kit generate
 bun run migrate                             # drizzle-kit migrate
 ```
 
-Never run a bare `bun test` from the repo root — it reports ~200 phantom failures.
-bun reads `bunfig.toml` only from the cwd, so the per-package `[test] preload` entries
-are skipped, and `mock.module` registers process-globally, so `apps/api`'s partial
-`@domain` stubs leak into `packages/domain`'s tests. See `docs/testing.md`.
+A bare `bun test` from the repo root is refused with the commands above: it would
+report ~200 phantom failures, because bun reads `bunfig.toml` only from the cwd, so
+the per-package `[test] preload` entries are skipped, and `mock.module` registers
+process-globally, so `apps/api`'s partial `@domain` stubs leak into
+`packages/domain`'s tests. See `.claude/rules/testing.md`.
 
 ## Apps
 

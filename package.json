@@ -50,7 +50,7 @@
     "test:tasks": "bun test --cwd apps/tasks",
     "test:mobile": "bun test --cwd apps/mobile",
     "test:scripts": "bun test --cwd tests",
-    "test:isolated": "SCHWANKIE_TEST_ISOLATED=1 bun test --isolate --preload ./scripts/test-preload.ts",
+    "test:isolated": "SCHWANKIE_TEST_ISOLATED=1 bun test --isolate",
     "check:bun-version": "bun run scripts/check-bun-version.ts",
     "db:generate": "bun run --cwd packages/database generate",
     "db:migrate": "bun run --cwd packages/database migrate",

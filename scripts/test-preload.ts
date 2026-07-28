@@ -1,4 +1,5 @@
-// Root `bun test` preload — see docs/testing.md for the two root causes.
+// Root `bun test` preload, registered by the root bunfig.toml's `[test] preload`.
+// See .claude/rules/testing.md for the two root causes.
 //
 // A single-process root run cannot be made correct by configuration, only by
 // `--isolate`, which re-runs this preload per test file. That flag is CLI-only and

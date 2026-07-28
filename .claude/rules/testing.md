@@ -17,8 +17,9 @@ jobs, so each package gets its own process and failures are attributed per packa
 `bun run test:isolated` is the escape hatch for whole-repo flags the fan-out cannot
 serve (`--coverage`, `-t <pattern>`, `--changed`).
 
-**Never a bare `bun test` from the repo root.** It discovers the same tests as the
-fan-out but reports ~200 failures that do not exist.
+**A bare `bun test` from the repo root is refused** — it exits 1 with the list above
+before running anything. Left to run, it discovers the same tests as the fan-out but
+reports ~200 failures that do not exist.
 
 ## Why the Bare Root Run Is Broken
 
@@ -53,24 +54,19 @@ It does two things:
   four commands above;
 - otherwise imports both package preloads, making a root `--isolate` run correct.
 
-`test:isolated` is the only caller that sets the sentinel; it loads the preload via
-`--preload` on the command line. `tests/test-preload.test.ts` covers both branches.
-
-### Known gap — the bare-root guard is not armed
-
-Arming the guard for a bare `bun test` needs one entry in the **root** `bunfig.toml`:
+The root `bunfig.toml` arms it:
 
 ```toml
 [test]
 preload = ["./scripts/test-preload.ts"]
 ```
 
-Because bun reads `bunfig.toml` from the cwd only, that entry affects repo-root
-invocations and nothing else — every `bun test --cwd <pkg>` stays untouched. **It is
-not present**, so a bare root `bun test` still reports ~200 phantom failures rather
-than failing fast. Add it, then confirm `bun test; echo $?` prints the guidance and
-`1` with no `Ran N tests` summary, and drop the now-redundant `--preload` flag from
-`test:isolated`.
+Because bun reads `bunfig.toml` from the cwd only, that entry reaches repo-root
+invocations and nothing else — every `bun test --cwd <pkg>` is untouched. It sits
+under `[test]` rather than at the top level so it applies to `bun test` alone, not
+to every `bun run`. `test:isolated` is the only caller that sets the sentinel, and
+it needs no `--preload` flag of its own because it runs from the root and picks the
+entry up. `tests/test-preload.test.ts` covers both branches.
 
 ## Adding a Package That Needs a Preload
 
