@@ -104,8 +104,8 @@ if (import.meta.main) {
   let root: string;
 
   // Only the flag parse is guarded. A usage mistake deserves a one-line message,
-  // but a genuine failure inside main() — unreadable Dockerfile, malformed
-  // package.json — must keep its stack trace to stay diagnosable.
+  // but a genuine failure inside main() — an unreadable Dockerfile, say — must
+  // keep its stack trace to stay diagnosable.
   try {
     root = readRootFlag(Bun.argv.slice(2));
   } catch (error) {

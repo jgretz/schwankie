@@ -155,15 +155,19 @@ describe('check-bun-version CLI', function () {
 
   // The usage guard must stay narrow. Widening it over main() would reduce an
   // unexpected I/O fault to the same bare one-liner and the same exit 2 as a
-  // typo'd flag — losing both the syscall detail and the ability to tell a bug
-  // apart from a usage mistake. A self-referential symlink is the cheapest way
-  // to raise a fault main() does not itself handle.
+  // typo'd flag — losing both the underlying error detail and the ability to
+  // tell a bug apart from a usage mistake. A self-referential symlink is the
+  // cheapest way to raise a fault main() does not itself handle.
   //
-  // Asserted on the *shape* of the dumped error, not on a specific errno: this
-  // suite runs on macOS locally and ubuntu in CI, and pinning the code a
-  // self-symlink produces would couple the guard to the platform rather than to
-  // the behavior under test.
-  it('should keep the syscall detail when the failure is not a usage mistake', async function () {
+  // Both assertions are on this script's own contract — the exit code it picks
+  // and the one-line `Error: <message>` shape its guard emits — not on how the
+  // runtime renders a system error. The errno and the field names in an
+  // uncaught-error dump belong to the platform and to Bun, and this suite runs
+  // on macOS locally and ubuntu in CI. (The offending path is no use here
+  // either: the fault is raised by the Bun.Glob scan, which reports paths
+  // relative to its scan root, so stderr names `Dockerfile`, not the absolute
+  // fixture path.)
+  it('should not reduce a non-usage failure to the guard shape', async function () {
     const dir = await fixture({'app-a': '1.3.14'});
     const dockerfile = join(dir, 'deploy', 'app-a', 'Dockerfile');
     await unlink(dockerfile);
@@ -173,8 +177,7 @@ describe('check-bun-version CLI', function () {
     const stderr = result.stderr.toString();
 
     expect(result.exitCode).not.toBe(2);
-    expect(stderr).toContain('syscall');
-    expect(stderr).toMatch(/code: "E[A-Z]+"/);
+    expect(stderr).not.toMatch(/^Error: /m);
   });
 
   it('should exit non-zero when no deploy Dockerfiles are found', async function () {
