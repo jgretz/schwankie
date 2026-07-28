@@ -80,4 +80,8 @@ Do both, or the new preload is silently skipped in one of the two run modes:
 
 Also add the matching `test:<pkg>` script to the root `package.json` **and** to the
 explicit job list in `"test"`. That list is spelled out rather than globbed as
-`bun:test:*` because the glob would otherwise also fan out `test:isolated`.
+`bun:test:*` because the glob would otherwise also fan out `test:isolated` — a whole
+second repo run nested inside the fan-out. Forget the second edit and `bun run test`
+still reports every job green, with the new package simply absent;
+`tests/test-fan-out.test.ts` fails instead, asserting that every `test:*` script but
+`test:isolated` appears in the list.
