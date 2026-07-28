@@ -41,6 +41,13 @@ describe('readFlag', function () {
     expect(() => readFlag(['--root', '--other'], 'root')).toThrow('--root=<value>');
   });
 
+  // The message above advertises this escape hatch, so it has to work — without
+  // this case, tightening the inline branch to reject `--` values too would turn
+  // the hint into a lie that no test catches.
+  it('should accept a value starting with a double dash in the equals form', function () {
+    expect(readFlag(['--root=--weird'], 'root')).toBe('--weird');
+  });
+
   it('should throw when the equals form carries an empty value', function () {
     expect(() => readFlag(['--root='], 'root')).toThrow('--root requires a value');
   });
