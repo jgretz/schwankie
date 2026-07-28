@@ -35,6 +35,7 @@
     "typecheck:api": "cd apps/api && bun run typecheck",
     "typecheck:domain": "cd packages/domain && bun run typecheck",
     "typecheck:client": "cd packages/client && bun run typecheck",
+    "typecheck:scripts": "bunx tsc --noEmit -p tsconfig.scripts.json",
     "start": "concurrently bun:start:*",
     "start:api": "cd apps/api && bun run start",
     "start:www": "cd apps/www && bun run start",

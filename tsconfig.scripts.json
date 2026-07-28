@@ -1,0 +1,7 @@
+{
+  // Root-level tooling has no package of its own, so it inherits no typecheck job
+  // from the workspace fan-out. Scope the root tsconfig to `scripts/` and its
+  // tests here rather than typechecking the whole repo twice.
+  "extends": "./tsconfig.json",
+  "include": ["scripts/**/*.ts", "tests/**/*.ts"]
+}
