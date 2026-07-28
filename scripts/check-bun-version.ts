@@ -13,6 +13,8 @@
 
 import {join, resolve} from 'node:path';
 
+import {readFlag} from './lib/flags';
+
 const DOCKERFILE_GLOB = 'deploy/*/Dockerfile';
 const PACKAGE_MANAGER_PREFIX = 'bun@';
 const ARG_BUN_VERSION = /^ARG\s+BUN_VERSION=(\S+)/m;
@@ -95,14 +97,21 @@ async function main(root: string): Promise<number> {
 
 /** Throws on a valueless `--root` rather than silently auditing the cwd instead. */
 function readRootFlag(argv: ReadonlyArray<string>): string {
-  const index = argv.indexOf('--root');
-  if (index === -1) return process.cwd();
-
-  const value = argv[index + 1];
-  if (value === undefined || value.startsWith('--'))
-    throw new Error('--root requires a directory path');
-
-  return resolve(value);
+  return resolve(readFlag(argv, 'root', {default: process.cwd(), valueName: 'directory path'}));
 }
 
-if (import.meta.main) process.exit(await main(readRootFlag(Bun.argv.slice(2))));
+if (import.meta.main) {
+  let root: string;
+
+  // Only the flag parse is guarded. A usage mistake deserves a one-line message,
+  // but a genuine failure inside main() — an unreadable Dockerfile, say — must
+  // keep its stack trace to stay diagnosable.
+  try {
+    root = readRootFlag(Bun.argv.slice(2));
+  } catch (error) {
+    console.error(error instanceof Error ? `Error: ${error.message}` : error);
+    process.exit(2);
+  }
+
+  process.exit(await main(root));
+}

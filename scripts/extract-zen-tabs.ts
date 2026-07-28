@@ -13,6 +13,8 @@
 import {readFile} from 'node:fs/promises';
 import {writeFile} from 'node:fs/promises';
 
+import {readFlag} from './lib/flags';
+
 const ZEN_SESSIONS =
   `${process.env.HOME}/Library/Application Support/zen/Profiles/r7aqmu8z.Default (release)/zen-sessions.jsonlz4`;
 
@@ -177,21 +179,19 @@ function extractGroup(data: Record<string, unknown>, groupName: string): TabEntr
 // CLI
 // ---------------------------------------------------------------------------
 
-function parseArgs() {
-  const args = process.argv.slice(2);
-  const get = (flag: string) => {
-    const i = args.indexOf(flag);
-    return i !== -1 ? args[i + 1] : undefined;
-  };
+export type ParsedArgs = {file: string; group: string; out: string | undefined};
+
+/** Throws on a present-but-valueless flag rather than falling back to a default. */
+export function parseArgs(argv: ReadonlyArray<string>): ParsedArgs {
   return {
-    file: get('--file') ?? ZEN_SESSIONS,
-    group: get('--group') ?? 'To Do',
-    out: get('--out'),
+    file: readFlag(argv, 'file', {default: ZEN_SESSIONS, valueName: 'file path'}),
+    group: readFlag(argv, 'group', {default: 'To Do', valueName: 'group name'}),
+    out: readFlag(argv, 'out', {valueName: 'file path'}),
   };
 }
 
 async function main() {
-  const {file, group, out} = parseArgs();
+  const {file, group, out} = parseArgs(process.argv.slice(2));
 
   const buf = await readFile(file);
   const json = decodeMozLz4(new Uint8Array(buf));
@@ -224,7 +224,11 @@ async function main() {
   }
 }
 
-main().catch((err: unknown) => {
-  console.error('Fatal:', err instanceof Error ? err.message : err);
-  process.exit(1);
-});
+// Guarded so `tests/extract-zen-tabs.test.ts` can import `parseArgs` without
+// the CLI running against the real session file on import.
+if (import.meta.main) {
+  main().catch((err: unknown) => {
+    console.error('Fatal:', err instanceof Error ? err.message : err);
+    process.exit(1);
+  });
+}
