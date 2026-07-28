@@ -17,8 +17,8 @@ jobs, so each package gets its own process and failures are attributed per packa
 `bun run test:isolated` is the escape hatch for whole-repo flags the fan-out cannot
 serve (`--coverage`, `-t <pattern>`, `--changed`).
 
-**Never a bare `bun test` from the repo root.** It discovers the same 762 tests but
-reports ~200 failures that do not exist.
+**Never a bare `bun test` from the repo root.** It discovers the same tests as the
+fan-out but reports ~200 failures that do not exist.
 
 ## Why the Bare Root Run Is Broken
 
@@ -53,15 +53,24 @@ It does two things:
   four commands above;
 - otherwise imports both package preloads, making a root `--isolate` run correct.
 
-The sentinel is set by `test:isolated` and by nothing else, which loads the preload
-via `--preload` on the command line.
+`test:isolated` is the only caller that sets the sentinel; it loads the preload via
+`--preload` on the command line. `tests/test-preload.test.ts` covers both branches.
 
-Adding `preload = ["./scripts/test-preload.ts"]` under `[test]` in the **root**
-`bunfig.toml` arms the guard for a bare root `bun test` as well. Because bun reads
-`bunfig.toml` from the cwd only, that entry affects repo-root invocations and
-nothing else — every `bun test --cwd <pkg>` is untouched. **That entry is not
-present yet**; until it is added, a bare root `bun test` still reports ~200 phantom
-failures rather than failing fast.
+### Known gap — the bare-root guard is not armed
+
+Arming the guard for a bare `bun test` needs one entry in the **root** `bunfig.toml`:
+
+```toml
+[test]
+preload = ["./scripts/test-preload.ts"]
+```
+
+Because bun reads `bunfig.toml` from the cwd only, that entry affects repo-root
+invocations and nothing else — every `bun test --cwd <pkg>` stays untouched. **It is
+not present**, so a bare root `bun test` still reports ~200 phantom failures rather
+than failing fast. Add it, then confirm `bun test; echo $?` prints the guidance and
+`1` with no `Ran N tests` summary, and drop the now-redundant `--preload` flag from
+`test:isolated`.
 
 ## Adding a Package That Needs a Preload
 
