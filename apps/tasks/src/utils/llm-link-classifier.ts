@@ -84,7 +84,12 @@ ${userMessage}`;
       if (!result) {
         return {url: link.url, keep: true, confidence: 0, reason: 'missing'};
       }
-      return {url: link.url, keep: result.keep, confidence: result.confidence, reason: result.reason};
+      return {
+        url: link.url,
+        keep: result.keep,
+        confidence: result.confidence,
+        reason: result.reason,
+      };
     });
   } catch (error) {
     console.error('Failed to classify ambiguous links:', error);

@@ -85,22 +85,19 @@ function AdminGmailPage() {
     }
   }, [queryClient]);
 
-  const handleFilterSave = useCallback(
-    async (newFilter: string) => {
-      setFilterLoading(true);
-      try {
-        await setGmailFilterAction({data: {filter: newFilter}});
-        setFilter(newFilter);
-        toast.success('Filter saved');
-      } catch (error) {
-        console.error('Failed to save filter:', error);
-        toast.error('Failed to save filter');
-      } finally {
-        setFilterLoading(false);
-      }
-    },
-    [],
-  );
+  const handleFilterSave = useCallback(async (newFilter: string) => {
+    setFilterLoading(true);
+    try {
+      await setGmailFilterAction({data: {filter: newFilter}});
+      setFilter(newFilter);
+      toast.success('Filter saved');
+    } catch (error) {
+      console.error('Failed to save filter:', error);
+      toast.error('Failed to save filter');
+    } finally {
+      setFilterLoading(false);
+    }
+  }, []);
 
   // The pending debounce timer lives in a ref so it survives re-renders without being
   // hidden inside a closure that useCallback's dependency analysis cannot see through.
@@ -167,11 +164,14 @@ function AdminGmailPage() {
                   </p>
                 )}
                 <p className="font-sans text-[0.85rem] text-text-muted mt-2">
-                  Emails imported (7 days): <span className="font-semibold">{status.recentCount}</span>
+                  Emails imported (7 days):{' '}
+                  <span className="font-semibold">{status.recentCount}</span>
                 </p>
               </div>
             ) : (
-              <p className="text-text-muted font-sans text-[0.9rem]">Gmail is not connected. Connect to start importing emails.</p>
+              <p className="text-text-muted font-sans text-[0.9rem]">
+                Gmail is not connected. Connect to start importing emails.
+              </p>
             )}
           </div>
 
@@ -181,7 +181,9 @@ function AdminGmailPage() {
                 <h3 className="font-serif text-lg text-text mb-4">Filter</h3>
                 <div className="space-y-4">
                   <div>
-                    <label className="block font-sans text-[0.9rem] text-text mb-2">Email Filter (IMAP search query)</label>
+                    <label className="block font-sans text-[0.9rem] text-text mb-2">
+                      Email Filter (IMAP search query)
+                    </label>
                     <textarea
                       value={filter}
                       onChange={(e) => {
@@ -194,18 +196,28 @@ function AdminGmailPage() {
                       rows={3}
                     />
                     <p className="font-sans text-[0.8rem] text-text-muted mt-2">
-                      Use IMAP search syntax to filter which emails are imported. Leave empty to import all emails.
+                      Use IMAP search syntax to filter which emails are imported. Leave empty to
+                      import all emails.
                     </p>
                   </div>
 
-                  <Button size="sm" variant="outline" onClick={handleTestFilter} disabled={!filter.trim()}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleTestFilter}
+                    disabled={!filter.trim()}
+                  >
                     Test Filter
                   </Button>
                 </div>
               </div>
 
               <div className="flex gap-3 pt-4 border-t border-border">
-                <Button variant="outline" onClick={handleTestConnection} disabled={testingConnection}>
+                <Button
+                  variant="outline"
+                  onClick={handleTestConnection}
+                  disabled={testingConnection}
+                >
                   {testingConnection ? 'Testing…' : 'Test Connection'}
                 </Button>
                 <Button variant="destructive" onClick={handleDisconnect}>
@@ -215,9 +227,7 @@ function AdminGmailPage() {
             </>
           )}
 
-          {!status?.connected && (
-            <Button onClick={handleConnect}>Connect Gmail</Button>
-          )}
+          {!status?.connected && <Button onClick={handleConnect}>Connect Gmail</Button>}
         </div>
       </div>
     </div>

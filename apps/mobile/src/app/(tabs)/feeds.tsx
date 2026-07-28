@@ -30,15 +30,8 @@ export default function FeedsScreen() {
   const [pendingPromoteId, setPendingPromoteId] = useState<string | null>(null);
 
   const {data: feedsData} = useListFeeds();
-  const {
-    data,
-    isLoading,
-    error,
-    refetch,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = useAllRssItems({unread, feedId: selectedFeedId ?? undefined});
+  const {data, isLoading, error, refetch, fetchNextPage, hasNextPage, isFetchingNextPage} =
+    useAllRssItems({unread, feedId: selectedFeedId ?? undefined});
   const {mutate: markRead, isPending: isMarkingRead} = useMarkRssItemRead();
   const {mutate: promote, isPending: isPromoting} = usePromoteRssItem();
   const {mutate: markAllRead, isPending: isMarkingAllRead} = useMarkAllRssItemsRead();
@@ -89,8 +82,7 @@ export default function FeedsScreen() {
   const renderItem = ({item}: {item: RssItemWithFeedData}) => {
     const createdMs = new Date(item.createdAt).getTime();
     const publishedMs = item.publishedAt ? new Date(item.publishedAt).getTime() : null;
-    const displayMs =
-      publishedMs !== null && publishedMs <= createdMs ? publishedMs : createdMs;
+    const displayMs = publishedMs !== null && publishedMs <= createdMs ? publishedMs : createdMs;
     const displayDate = new Date(displayMs).toLocaleString();
 
     return (

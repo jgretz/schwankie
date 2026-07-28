@@ -8,7 +8,11 @@ import {useRssItems} from '@www/hooks/use-rss-items';
 import {useFeeds} from '@www/hooks/use-feeds';
 
 const searchSchema = z.object({
-  unread: z.enum(['true', 'false']).optional().catch('true').transform((v) => v === 'true'),
+  unread: z
+    .enum(['true', 'false'])
+    .optional()
+    .catch('true')
+    .transform((v) => v === 'true'),
 });
 
 export const Route = createFileRoute('/feeds/$feedId')({
@@ -138,9 +142,7 @@ function FeedDetailPage() {
         </div>
       ) : visibleItems.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-text-muted font-sans">
-            {unread ? 'No unread items.' : 'No items.'}
-          </p>
+          <p className="text-text-muted font-sans">{unread ? 'No unread items.' : 'No items.'}</p>
         </div>
       ) : (
         <div className="border border-border rounded-lg overflow-hidden">

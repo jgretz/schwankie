@@ -26,7 +26,9 @@ function toRfc822(value: Date | string): string {
 function renderItem(item: LinkWithTags): string {
   const description =
     item.description ?? (item.content ? truncate(item.content, DESCRIPTION_FALLBACK_LIMIT) : '');
-  const categories = item.tags.map((tag) => `    <category>${escapeXml(tag.text)}</category>`).join('\n');
+  const categories = item.tags
+    .map((tag) => `    <category>${escapeXml(tag.text)}</category>`)
+    .join('\n');
 
   const parts = [
     '  <item>',
@@ -43,7 +45,8 @@ function renderItem(item: LinkWithTags): string {
 }
 
 export function renderRss(items: LinkWithTags[]): string {
-  const lastBuildDate = items.length > 0 ? toRfc822(items[0]!.createDate) : new Date().toUTCString();
+  const lastBuildDate =
+    items.length > 0 ? toRfc822(items[0]!.createDate) : new Date().toUTCString();
   const itemsXml = items.map(renderItem).join('\n');
 
   return `<?xml version="1.0" encoding="UTF-8"?>

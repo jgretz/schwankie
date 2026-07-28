@@ -18,11 +18,7 @@ export async function getRelatedByTags(linkId: number, limit = 10): Promise<Rela
     .from(linkTag)
     .innerJoin(link, eq(linkTag.linkId, link.id))
     .where(
-      and(
-        inArray(linkTag.tagId, srcTagIds),
-        ne(linkTag.linkId, linkId),
-        eq(link.status, 'saved'),
-      ),
+      and(inArray(linkTag.tagId, srcTagIds), ne(linkTag.linkId, linkId), eq(link.status, 'saved')),
     );
 
   const overlapByLink = new Map<number, number>();
@@ -30,9 +26,7 @@ export async function getRelatedByTags(linkId: number, limit = 10): Promise<Rela
     overlapByLink.set(row.linkId, (overlapByLink.get(row.linkId) ?? 0) + 1);
   }
 
-  const top = [...overlapByLink.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, limit);
+  const top = [...overlapByLink.entries()].sort((a, b) => b[1] - a[1]).slice(0, limit);
   if (top.length === 0) return [];
 
   const ids = top.map(([id]) => id);

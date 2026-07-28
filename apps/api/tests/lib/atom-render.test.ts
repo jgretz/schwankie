@@ -39,10 +39,7 @@ describe('renderAtom', function () {
   });
 
   it('should emit one entry per input link', function () {
-    const xml = renderAtom([
-      makeLink({id: 1, title: 'First'}),
-      makeLink({id: 2, title: 'Second'}),
-    ]);
+    const xml = renderAtom([makeLink({id: 1, title: 'First'}), makeLink({id: 2, title: 'Second'})]);
 
     const entryMatches = xml.match(/<entry>/g) ?? [];
     expect(entryMatches.length).toBe(2);

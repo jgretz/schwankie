@@ -9,11 +9,14 @@ export async function createWorkRequest(
   db?: Database,
 ): Promise<WorkRequest> {
   const database = db || getDb();
-  const result = await database.insert(workRequest).values({
-    type: input.type,
-    payload: input.payload || {},
-    status: 'pending',
-  }).returning();
+  const result = await database
+    .insert(workRequest)
+    .values({
+      type: input.type,
+      payload: input.payload || {},
+      status: 'pending',
+    })
+    .returning();
 
   return result[0]!;
 }

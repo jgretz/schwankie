@@ -4,7 +4,12 @@ const SERVER_PORT = Number(process.env.PORT ?? 3000);
 const CLIENT_DIRECTORY = './dist/client';
 const SERVER_ENTRY_POINT = './dist/server/server.js';
 const API_URL = process.env.VITE_API_URL ?? 'http://localhost:3001';
-const FORWARDED_REQUEST_HEADERS = ['if-none-match', 'if-modified-since', 'accept', 'accept-encoding'];
+const FORWARDED_REQUEST_HEADERS = [
+  'if-none-match',
+  'if-modified-since',
+  'accept',
+  'accept-encoding',
+];
 
 async function proxyFeed(req: Request, upstreamPath: string): Promise<Response> {
   const headers = new Headers();
@@ -51,7 +56,9 @@ async function initializeServer() {
     },
 
     error(error) {
-      console.error(`Uncaught server error: ${error instanceof Error ? error.message : String(error)}`);
+      console.error(
+        `Uncaught server error: ${error instanceof Error ? error.message : String(error)}`,
+      );
       return new Response('Internal Server Error', {status: 500});
     },
   });

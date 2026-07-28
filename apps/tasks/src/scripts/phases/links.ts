@@ -64,26 +64,22 @@ export async function migrateLinks(
 
       if (links.length === 0) break;
 
-      const settled = await mapLimitSettled(
-        links,
-        CONCURRENCY,
-        async (link) => {
-          if (existingLinks.has(link.url)) {
-            return {skipped: true};
-          }
+      const settled = await mapLimitSettled(links, CONCURRENCY, async (link) => {
+        if (existingLinks.has(link.url)) {
+          return {skipped: true};
+        }
 
-          await createLink({
-            url: link.url,
-            title: link.title,
-            description: link.description || undefined,
-            imageUrl: link.image_url || undefined,
-            status: 'queued',
-            tags: [],
-          });
+        await createLink({
+          url: link.url,
+          title: link.title,
+          description: link.description || undefined,
+          imageUrl: link.image_url || undefined,
+          status: 'queued',
+          tags: [],
+        });
 
-          return {skipped: false};
-        },
-      );
+        return {skipped: false};
+      });
 
       for (const s of settled) {
         if (s.status === 'fulfilled') {

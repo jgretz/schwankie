@@ -36,9 +36,7 @@ export async function checkForUpdates(config: UpdateConfig): Promise<UpdateResul
     return {updated: false};
   }
 
-  const localResult = parse(
-    await Bun.$`git rev-parse HEAD`.cwd(repoDir).quiet().nothrow(),
-  );
+  const localResult = parse(await Bun.$`git rev-parse HEAD`.cwd(repoDir).quiet().nothrow());
   const remoteRef = `${remote}/${branch}`;
   const remoteResult = parse(
     await Bun.$`git rev-parse ${remoteRef}`.cwd(repoDir).quiet().nothrow(),
@@ -76,17 +74,13 @@ export async function applyUpdate(config: UpdateConfig): Promise<void> {
   }
 
   info('Running bun install');
-  const install = parse(
-    await Bun.$`bun install`.cwd(repoDir).quiet().nothrow(),
-  );
+  const install = parse(await Bun.$`bun install`.cwd(repoDir).quiet().nothrow());
   if (install.exitCode !== 0) {
     throw new Error(`bun install failed: ${install.stderr}`);
   }
 
   info('Running type-check');
-  const typecheck = parse(
-    await Bun.$`bun run typecheck`.cwd(repoDir).quiet().nothrow(),
-  );
+  const typecheck = parse(await Bun.$`bun run typecheck`.cwd(repoDir).quiet().nothrow());
   if (typecheck.exitCode !== 0) {
     throw new Error(`type-check failed: ${typecheck.stdout || typecheck.stderr}`);
   }
@@ -106,9 +100,7 @@ export async function rollback(config: UpdateConfig, sha: string): Promise<void>
     error('Rollback checkout failed', {stderr: checkout.stderr});
   }
 
-  const install = parse(
-    await Bun.$`bun install`.cwd(repoDir).quiet().nothrow(),
-  );
+  const install = parse(await Bun.$`bun install`.cwd(repoDir).quiet().nothrow());
   if (install.exitCode !== 0) {
     error('Rollback bun install failed', {stderr: install.stderr});
   }

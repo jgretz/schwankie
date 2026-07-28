@@ -5,10 +5,7 @@ import {eq} from 'drizzle-orm';
 import {getDb} from '../db';
 import type {WorkRequest} from '../types';
 
-export async function markWorkRequestCompleted(
-  id: string,
-  db?: Database,
-): Promise<WorkRequest> {
+export async function markWorkRequestCompleted(id: string, db?: Database): Promise<WorkRequest> {
   const database = db || getDb();
   const result = await database
     .update(workRequest)

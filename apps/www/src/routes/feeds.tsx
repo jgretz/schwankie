@@ -7,10 +7,7 @@ export const Route = createFileRoute('/feeds')({
     }
   },
   head: () => ({
-    meta: [
-      {title: 'Feeds — schwankie'},
-      {name: 'description', content: 'Your RSS feeds.'},
-    ],
+    meta: [{title: 'Feeds — schwankie'}, {name: 'description', content: 'Your RSS feeds.'}],
   }),
   component: FeedsLayout,
 });

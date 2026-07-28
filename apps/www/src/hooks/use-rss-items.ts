@@ -26,8 +26,7 @@ export function useRssItems(feedId: string, unread = true) {
   });
 
   const markReadMutation = useMutation({
-    mutationFn: (itemId: string) =>
-      markRssItemReadAction({data: {feedId, itemId}}),
+    mutationFn: (itemId: string) => markRssItemReadAction({data: {feedId, itemId}}),
     onSuccess: () => {
       queryClient.invalidateQueries({queryKey: ['rss-items', feedId]});
     },
@@ -37,8 +36,7 @@ export function useRssItems(feedId: string, unread = true) {
   });
 
   const promoteMutation = useMutation({
-    mutationFn: (itemId: string) =>
-      promoteRssItemAction({data: {feedId, itemId}}),
+    mutationFn: (itemId: string) => promoteRssItemAction({data: {feedId, itemId}}),
     onSuccess: () => {
       queryClient.invalidateQueries({queryKey: ['rss-items', feedId]});
     },

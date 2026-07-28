@@ -13,6 +13,9 @@ export const workRequest = pgTable(
     completedAt: timestamp('completed_at', {precision: 6, withTimezone: true}),
   },
   (table) => ({
-    statusCreatedAtIdx: index('idx_work_request_status_created_at').on(table.status, table.createdAt),
+    statusCreatedAtIdx: index('idx_work_request_status_created_at').on(
+      table.status,
+      table.createdAt,
+    ),
   }),
 );

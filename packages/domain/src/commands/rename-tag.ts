@@ -10,7 +10,11 @@ export async function renameTag(input: RenameTagInput): Promise<boolean> {
 
   if (normalized === null) return false;
 
-  const rows = await db.update(tag).set({text: normalized}).where(eq(tag.id, input.id)).returning({id: tag.id});
+  const rows = await db
+    .update(tag)
+    .set({text: normalized})
+    .where(eq(tag.id, input.id))
+    .returning({id: tag.id});
 
   return rows.length > 0;
 }

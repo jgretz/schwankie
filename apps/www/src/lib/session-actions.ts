@@ -8,4 +8,3 @@ export const getAuthState = createServerFn({method: 'GET'}).handler(async () => 
   }
   return {authenticated: true as const, email: session.email};
 });
-

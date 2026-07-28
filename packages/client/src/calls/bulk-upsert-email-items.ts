@@ -11,7 +11,9 @@ export interface BulkUpsertEmailItemsInput {
   }>;
 }
 
-export async function bulkUpsertEmailItems(input: BulkUpsertEmailItemsInput): Promise<{inserted: number}> {
+export async function bulkUpsertEmailItems(
+  input: BulkUpsertEmailItemsInput,
+): Promise<{inserted: number}> {
   return apiFetch<{inserted: number}>('/api/emails/bulk-upsert', {
     method: 'POST',
     body: JSON.stringify(input),

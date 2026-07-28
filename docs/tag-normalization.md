@@ -1,4 +1,5 @@
 # Tag Normalization Strategy
+
 <!-- Adding an incidental implementation note (dependency override, workaround, gotcha)? It goes in the top-level "## Implementation Notes" section — never nested under a tier/layer/phase heading. See .claude/rules/doc-structure.md. -->
 
 ## Problem Statement

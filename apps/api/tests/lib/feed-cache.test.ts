@@ -1,10 +1,6 @@
 import {mock, describe, it, expect, beforeEach} from 'bun:test';
 import type {LinkWithTags} from '@domain';
-import {
-  createFeedHandler,
-  evaluateConditional,
-  resetFeedCache,
-} from '../../src/lib/feed-cache';
+import {createFeedHandler, evaluateConditional, resetFeedCache} from '../../src/lib/feed-cache';
 
 beforeEach(function () {
   resetFeedCache();
@@ -151,7 +147,9 @@ describe('createFeedHandler', function () {
     expect(res.headers.get('content-type')).toBe('application/atom+xml; charset=utf-8');
     expect(res.headers.get('etag')).toBe('W/"atom-2026-04-27T10:00:00.000Z"');
     expect(res.headers.get('cache-control')).toBe('public, max-age=300');
-    expect(res.headers.get('last-modified')).toBe(new Date('2026-04-27T10:00:00.000Z').toUTCString());
+    expect(res.headers.get('last-modified')).toBe(
+      new Date('2026-04-27T10:00:00.000Z').toUTCString(),
+    );
   });
 
   it('should omit Last-Modified when version is null', async function () {

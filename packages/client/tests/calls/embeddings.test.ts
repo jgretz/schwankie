@@ -38,8 +38,7 @@ describe('getRelatedLinks', function () {
   });
 
   it('throws on HTTP error', async function () {
-    global.fetch = (async () =>
-      new Response('nope', {status: 500})) as unknown as typeof fetch;
+    global.fetch = (async () => new Response('nope', {status: 500})) as unknown as typeof fetch;
 
     expect(async function () {
       await getRelatedLinks(42);

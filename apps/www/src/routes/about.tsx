@@ -15,13 +15,7 @@ const feedLinkClass =
 
 function RssIcon() {
   return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden="true"
-    >
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
       <path d="M6.18 15.64a2.18 2.18 0 1 1 0 4.36 2.18 2.18 0 0 1 0-4.36zM4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44zm0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1z" />
     </svg>
   );
@@ -75,8 +69,8 @@ function AboutPage() {
         <h2 className="font-serif text-xl font-semibold text-text">Feeds</h2>
         <div className="mt-3 space-y-3 font-sans text-[0.95rem] leading-relaxed text-text-muted">
           <p>
-            The compendium is also available as a feed. Subscribe in the reader of your choice
-            to get new public links as they&rsquo;re added.
+            The compendium is also available as a feed. Subscribe in the reader of your choice to
+            get new public links as they&rsquo;re added.
           </p>
           <ul className="mt-4 space-y-3">
             <li>

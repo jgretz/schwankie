@@ -37,7 +37,9 @@ gmailRouter.get('/api/email/oauth/callback', async (c) => {
     return c.redirect(`${WWW_URL}/admin/gmail?error=${encodeURIComponent(error)}`);
   }
   if (!code) {
-    return c.redirect(`${WWW_URL}/admin/gmail?error=${encodeURIComponent('No authorization code received')}`);
+    return c.redirect(
+      `${WWW_URL}/admin/gmail?error=${encodeURIComponent('No authorization code received')}`,
+    );
   }
 
   try {
@@ -105,8 +107,7 @@ gmailRouter.get('/api/gmail/tokens', auth, async (c) => {
     if (error instanceof GmailTokenRevokedError) {
       return c.json({error: 'Token revoked'}, 410);
     }
-    const message =
-      error instanceof Error ? error.message : 'Failed to refresh tokens';
+    const message = error instanceof Error ? error.message : 'Failed to refresh tokens';
     return c.json({error: message}, 400);
   }
 });

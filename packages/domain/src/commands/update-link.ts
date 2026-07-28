@@ -15,8 +15,12 @@ export async function updateLink(id: number, input: UpdateLinkInput): Promise<Li
     ...(fields.imageUrl !== undefined && {imageUrl: fields.imageUrl}),
     ...(fields.content !== undefined && {content: fields.content}),
     ...(fields.status !== undefined && {status: fields.status}),
-    ...(fields.enrichmentFailCount !== undefined && {enrichmentFailCount: fields.enrichmentFailCount}),
-    ...(fields.enrichmentLastError !== undefined && {enrichmentLastError: fields.enrichmentLastError}),
+    ...(fields.enrichmentFailCount !== undefined && {
+      enrichmentFailCount: fields.enrichmentFailCount,
+    }),
+    ...(fields.enrichmentLastError !== undefined && {
+      enrichmentLastError: fields.enrichmentLastError,
+    }),
     ...(fields.embeddingFailCount !== undefined && {embeddingFailCount: fields.embeddingFailCount}),
     ...(fields.embeddingLastError !== undefined && {embeddingLastError: fields.embeddingLastError}),
     ...(fields.score !== undefined && {score: fields.score}),

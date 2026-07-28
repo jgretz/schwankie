@@ -1,5 +1,5 @@
-import { View, Text } from 'react-native';
-import type { FeedData } from 'client';
+import {View, Text} from 'react-native';
+import type {FeedData} from 'client';
 
 type FeedRowProps = {
   feed: FeedData;
@@ -12,7 +12,7 @@ type FeedRowProps = {
   };
 };
 
-export function FeedRow({ feed, colors }: FeedRowProps) {
+export function FeedRow({feed, colors}: FeedRowProps) {
   const date = new Date(feed.createdAt).toLocaleDateString();
 
   return (
@@ -36,7 +36,7 @@ export function FeedRow({ feed, colors }: FeedRowProps) {
       >
         {feed.name}
       </Text>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+      <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
         <Text
           style={{
             fontSize: 12,

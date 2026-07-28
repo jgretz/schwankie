@@ -139,10 +139,10 @@ export async function waitForReady(maxWaitMs: number = 30000): Promise<void> {
 
   while (Date.now() - startTime < maxWaitMs) {
     try {
-      execSync(
-        `docker exec ${config.containerName} pg_isready -U postgres -d ${config.database}`,
-        {encoding: 'utf-8', stdio: 'pipe'},
-      );
+      execSync(`docker exec ${config.containerName} pg_isready -U postgres -d ${config.database}`, {
+        encoding: 'utf-8',
+        stdio: 'pipe',
+      });
       console.log('Postgres is ready');
       return;
     } catch {

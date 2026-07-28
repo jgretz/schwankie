@@ -1,4 +1,4 @@
-import { View, Text } from 'react-native';
+import {View, Text} from 'react-native';
 
 type EmptyStateProps = {
   title: string;
@@ -10,7 +10,7 @@ type EmptyStateProps = {
   };
 };
 
-export function EmptyState({ title, message, colors }: EmptyStateProps) {
+export function EmptyState({title, message, colors}: EmptyStateProps) {
   return (
     <View
       style={{

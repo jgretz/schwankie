@@ -1,5 +1,10 @@
 import {useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
-import {deleteTagAction, fetchTagsAction, mergeTagAction, renameTagAction} from '@www/lib/tag-actions';
+import {
+  deleteTagAction,
+  fetchTagsAction,
+  mergeTagAction,
+  renameTagAction,
+} from '@www/lib/tag-actions';
 
 export function useAdminTags() {
   const queryClient = useQueryClient();
@@ -10,8 +15,7 @@ export function useAdminTags() {
   });
 
   const renameMutation = useMutation({
-    mutationFn: ({id, text}: {id: number; text: string}) =>
-      renameTagAction({data: {id, text}}),
+    mutationFn: ({id, text}: {id: number; text: string}) => renameTagAction({data: {id, text}}),
     onSuccess: () => {
       queryClient.invalidateQueries({queryKey: ['admin-tags']});
       queryClient.invalidateQueries({queryKey: ['tags']});

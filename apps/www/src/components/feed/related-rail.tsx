@@ -32,9 +32,7 @@ export function RelatedRail({linkId}: RelatedRailProps) {
 
   if (isError) {
     return (
-      <p className="font-sans text-[0.75rem] text-text-faint">
-        Couldn&apos;t load related links.
-      </p>
+      <p className="font-sans text-[0.75rem] text-text-faint">Couldn&apos;t load related links.</p>
     );
   }
 

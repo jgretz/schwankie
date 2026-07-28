@@ -33,7 +33,11 @@ function isNotModified(
   return false;
 }
 
-function feedHeaders(contentType: string, etag: string, version: string | null): Record<string, string> {
+function feedHeaders(
+  contentType: string,
+  etag: string,
+  version: string | null,
+): Record<string, string> {
   const headers: Record<string, string> = {
     'Content-Type': contentType,
     'Cache-Control': CACHE_CONTROL,

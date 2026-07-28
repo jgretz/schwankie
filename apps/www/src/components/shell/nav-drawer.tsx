@@ -156,11 +156,7 @@ export function NavDrawer({
             </div>
           )}
 
-          <div
-            className={cn(
-              (isAuthenticated || showTags) && 'mt-5 border-t border-border pt-5',
-            )}
-          >
+          <div className={cn((isAuthenticated || showTags) && 'mt-5 border-t border-border pt-5')}>
             <Link
               to="/about"
               onClick={onClose}

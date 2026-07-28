@@ -1,6 +1,6 @@
-import { View, TouchableOpacity, Text, ActivityIndicator } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
-import { openLink } from '../services/open-link';
+import {View, TouchableOpacity, Text, ActivityIndicator} from 'react-native';
+import {MaterialIcons} from '@expo/vector-icons';
+import {openLink} from '../services/open-link';
 
 type ItemActionsProps = {
   url: string;
@@ -24,7 +24,7 @@ export function ItemActions({
   isPromoting,
   colors,
 }: ItemActionsProps) {
-  const handleOpen = () => openLink({ url, colors, source: 'ItemActions' });
+  const handleOpen = () => openLink({url, colors, source: 'ItemActions'});
 
   return (
     <View
@@ -47,7 +47,7 @@ export function ItemActions({
         }}
       >
         <MaterialIcons name="open-in-new" size={16} color={colors.accent} />
-        <Text style={{ fontSize: 12, color: colors.accent }}>Open</Text>
+        <Text style={{fontSize: 12, color: colors.accent}}>Open</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
@@ -67,7 +67,7 @@ export function ItemActions({
         ) : (
           <MaterialIcons name="done" size={16} color={colors.accent} />
         )}
-        <Text style={{ fontSize: 12, color: colors.accent }}>Read</Text>
+        <Text style={{fontSize: 12, color: colors.accent}}>Read</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
@@ -87,7 +87,7 @@ export function ItemActions({
         ) : (
           <MaterialIcons name="arrow-upward" size={16} color={colors.accent} />
         )}
-        <Text style={{ fontSize: 12, color: colors.accent }}>Promote</Text>
+        <Text style={{fontSize: 12, color: colors.accent}}>Promote</Text>
       </TouchableOpacity>
     </View>
   );

@@ -41,9 +41,7 @@ export interface ExchangeCodeResult {
   email: string;
 }
 
-export async function exchangeGmailCodeWithGoogle(
-  code: string,
-): Promise<ExchangeCodeResult> {
+export async function exchangeGmailCodeWithGoogle(code: string): Promise<ExchangeCodeResult> {
   const auth = getOAuth2Client();
 
   try {

@@ -29,15 +29,8 @@ export default function EmailsScreen() {
   const [pendingMarkReadId, setPendingMarkReadId] = useState<string | null>(null);
   const [pendingPromoteId, setPendingPromoteId] = useState<string | null>(null);
 
-  const {
-    data,
-    isLoading,
-    error,
-    refetch,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = useEmailItems({unread, from: selectedFrom ?? undefined});
+  const {data, isLoading, error, refetch, fetchNextPage, hasNextPage, isFetchingNextPage} =
+    useEmailItems({unread, from: selectedFrom ?? undefined});
   const {mutate: markRead, isPending: isMarkingRead} = useMarkEmailItemRead();
   const {mutate: promote, isPending: isPromoting} = usePromoteEmailItem();
   const {mutate: markAllRead, isPending: isMarkingAllRead} = useMarkAllEmailItemsRead();

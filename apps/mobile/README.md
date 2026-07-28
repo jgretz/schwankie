@@ -5,12 +5,14 @@ Native iOS/Android app built with Expo (SDK 55, React 19, React Native 0.83).
 ## Setup
 
 1. Copy `.env.example` to `.env` and fill in environment variables:
+
    ```bash
    EXPO_PUBLIC_API_URL=http://localhost:3001  # or production URL
    EXPO_PUBLIC_API_KEY=your-bearer-token
    ```
 
 2. From the monorepo root:
+
    ```bash
    bun install
    bun run dev:mobile
@@ -34,6 +36,7 @@ Native iOS/Android app built with Expo (SDK 55, React 19, React Native 0.83).
 ## EAS Deployment
 
 Build profiles are defined in `eas.json`:
+
 - **development**: Internal build with dev client
 - **preview**: Internal TestFlight build
 - **production**: App Store production build

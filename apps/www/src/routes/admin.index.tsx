@@ -48,7 +48,9 @@ function AdminHub() {
     <div className="px-6 py-6">
       <div className="mb-8">
         <h2 className="font-serif text-[1.35rem] font-semibold text-text mb-1">Admin</h2>
-        <p className="text-text-muted font-sans text-[0.9rem]">Manage your schwankie settings and data</p>
+        <p className="text-text-muted font-sans text-[0.9rem]">
+          Manage your schwankie settings and data
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

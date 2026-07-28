@@ -11,7 +11,10 @@ export interface EmailItemInput {
   description?: string;
 }
 
-export async function bulkUpsertEmailItems(items: EmailItemInput[], db?: Database): Promise<number> {
+export async function bulkUpsertEmailItems(
+  items: EmailItemInput[],
+  db?: Database,
+): Promise<number> {
   if (items.length === 0) return 0;
 
   const database = db || getDb();

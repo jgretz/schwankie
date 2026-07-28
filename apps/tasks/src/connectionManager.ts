@@ -104,7 +104,9 @@ async function createTaskRunner(setupCallback: SetupCallback): Promise<TaskRunne
         }
 
         const retryMsg =
-          config.maxRetries > 0 ? `(attempt ${retryCount}/${config.maxRetries})` : `(attempt ${retryCount})`;
+          config.maxRetries > 0
+            ? `(attempt ${retryCount}/${config.maxRetries})`
+            : `(attempt ${retryCount})`;
 
         console.error(`Connection failed ${retryMsg}:`, error);
         console.log(`Waiting ${config.retryIntervalMs / 1000}s before retry...`);

@@ -1,12 +1,4 @@
-import {
-  Modal,
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
-  Pressable,
-} from 'react-native';
+import {Modal, View, Text, TextInput, TouchableOpacity, ScrollView, Pressable} from 'react-native';
 import {MaterialIcons} from '@expo/vector-icons';
 import {useMemo, useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';

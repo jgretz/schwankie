@@ -1,19 +1,28 @@
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert, ScrollView, Keyboard } from 'react-native';
-import { useState } from 'react';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useColors } from '../theme/use-colors';
-import { useCreateLink } from '../services/links';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  Keyboard,
+} from 'react-native';
+import {useState} from 'react';
+import {useRouter, useLocalSearchParams} from 'expo-router';
+import {useColors} from '../theme/use-colors';
+import {useCreateLink} from '../services/links';
 
 export default function AddLinkScreen() {
   const colors = useColors();
   const router = useRouter();
-  const params = useLocalSearchParams<{ status?: string }>();
+  const params = useLocalSearchParams<{status?: string}>();
   const targetStatus: 'saved' | 'queued' = params.status === 'saved' ? 'saved' : 'queued';
   const [url, setUrl] = useState('');
   const [tags, setTags] = useState('');
   const [title, setTitle] = useState('');
 
-  const { mutate: createLink, isPending } = useCreateLink();
+  const {mutate: createLink, isPending} = useCreateLink();
 
   const handleCreate = async () => {
     if (!url.trim()) {
@@ -45,7 +54,7 @@ export default function AddLinkScreen() {
             Alert.alert(
               'Success',
               targetStatus === 'saved' ? 'Added to Compendium' : 'Link added to queue',
-              [{ text: 'OK', onPress: () => router.back() }],
+              [{text: 'OK', onPress: () => router.back()}],
             );
           },
           onError: (error) => {
@@ -59,10 +68,12 @@ export default function AddLinkScreen() {
   };
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: colors.bg }}>
-      <View style={{ padding: 16, gap: 16 }}>
+    <ScrollView style={{flex: 1, backgroundColor: colors.bg}}>
+      <View style={{padding: 16, gap: 16}}>
         <View>
-          <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text, marginBottom: 8 }}>URL *</Text>
+          <Text style={{fontSize: 14, fontWeight: '600', color: colors.text, marginBottom: 8}}>
+            URL *
+          </Text>
           <TextInput
             placeholder="https://example.com"
             placeholderTextColor={colors.textMuted}
@@ -85,7 +96,9 @@ export default function AddLinkScreen() {
         </View>
 
         <View>
-          <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text, marginBottom: 8 }}>Title</Text>
+          <Text style={{fontSize: 14, fontWeight: '600', color: colors.text, marginBottom: 8}}>
+            Title
+          </Text>
           <TextInput
             placeholder="Optional title"
             placeholderTextColor={colors.textMuted}
@@ -108,7 +121,9 @@ export default function AddLinkScreen() {
         </View>
 
         <View>
-          <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text, marginBottom: 8 }}>Tags</Text>
+          <Text style={{fontSize: 14, fontWeight: '600', color: colors.text, marginBottom: 8}}>
+            Tags
+          </Text>
           <TextInput
             placeholder="Comma-separated tags"
             placeholderTextColor={colors.textMuted}
@@ -142,11 +157,13 @@ export default function AddLinkScreen() {
           {isPending ? (
             <ActivityIndicator color={colors.accentForeground} />
           ) : (
-            <Text style={{ color: colors.accentForeground, fontSize: 16, fontWeight: '600' }}>Add Link</Text>
+            <Text style={{color: colors.accentForeground, fontSize: 16, fontWeight: '600'}}>
+              Add Link
+            </Text>
           )}
         </TouchableOpacity>
 
-        <Text style={{ fontSize: 12, color: colors.textMuted, textAlign: 'center' }}>
+        <Text style={{fontSize: 12, color: colors.textMuted, textAlign: 'center'}}>
           * Required fields
         </Text>
       </View>

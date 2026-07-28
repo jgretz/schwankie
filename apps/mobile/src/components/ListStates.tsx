@@ -1,4 +1,4 @@
-import { View, Text, ActivityIndicator } from 'react-native';
+import {View, Text, ActivityIndicator} from 'react-native';
 
 type StateProps = {
   title: string;
@@ -11,7 +11,7 @@ type StateProps = {
   };
 };
 
-export function LoadingState({ colors }: Omit<StateProps, 'title' | 'message'>) {
+export function LoadingState({colors}: Omit<StateProps, 'title' | 'message'>) {
   return (
     <View
       style={{
@@ -26,7 +26,7 @@ export function LoadingState({ colors }: Omit<StateProps, 'title' | 'message'>) 
   );
 }
 
-export function ErrorState({ title, message, colors }: StateProps) {
+export function ErrorState({title, message, colors}: StateProps) {
   return (
     <View
       style={{
@@ -61,7 +61,7 @@ export function ErrorState({ title, message, colors }: StateProps) {
   );
 }
 
-export function EmptyState({ title, message, colors }: StateProps) {
+export function EmptyState({title, message, colors}: StateProps) {
   return (
     <View
       style={{
