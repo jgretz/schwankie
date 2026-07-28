@@ -13,7 +13,7 @@
 
 import {join, resolve} from 'node:path';
 
-import {readFlag} from './lib/flags.ts';
+import {readFlag} from './lib/flags';
 
 const DOCKERFILE_GLOB = 'deploy/*/Dockerfile';
 const PACKAGE_MANAGER_PREFIX = 'bun@';

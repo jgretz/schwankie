@@ -13,7 +13,7 @@
 import {readFile} from 'node:fs/promises';
 import {writeFile} from 'node:fs/promises';
 
-import {readFlag} from './lib/flags.ts';
+import {readFlag} from './lib/flags';
 
 const ZEN_SESSIONS =
   `${process.env.HOME}/Library/Application Support/zen/Profiles/r7aqmu8z.Default (release)/zen-sessions.jsonlz4`;
