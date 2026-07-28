@@ -18,11 +18,14 @@ async function readScripts(): Promise<Record<string, string>> {
 describe('root test fan-out', function () {
   it('should fan out every test script except the isolated whole-repo run', async function () {
     const scripts = await readScripts();
-    const fannedOut = scripts.test!;
+    // Tokenised, not substring-matched: `bun:test:tasks` contains `bun:test:task`, so
+    // a new `test:task` script would read as already fanned out and never run — the
+    // one drift this test exists to catch.
+    const fannedOut = new Set(scripts.test!.split(/\s+/));
 
     const missing = Object.keys(scripts)
       .filter((name) => name.startsWith('test:') && !NOT_FANNED_OUT.includes(name))
-      .filter((name) => !fannedOut.includes(`bun:${name}`));
+      .filter((name) => !fannedOut.has(`bun:${name}`));
 
     expect(missing).toEqual([]);
   });
