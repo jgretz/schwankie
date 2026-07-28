@@ -66,17 +66,14 @@ export function NavDrawer({
 
   return (
     <>
-      {/* Click-outside backdrop. It has to be a real <button>: biome 1.5.3's
-          useKeyWithClickEvents offers no exemption for a decorative click target, and
-          aria-hidden is not allowed on a focusable one. So it carries a name and is
-          exposed while open — redundant with the Close button below, but harmless —
-          and is hidden from assistive tech while closed, since it stays mounted (at
-          opacity 0) for the fade transition. tabIndex={-1} keeps it out of the tab
-          order; keyboard users close via Escape or that Close button. */}
+      {/* Click-outside backdrop. A real <button> so the dismiss affordance carries a
+          name and native keyboard semantics. It stays mounted at opacity 0 for the
+          fade-out, so `disabled` is what keeps it out of the tab order and the a11y
+          tree while closed. `pointer-events-none` is not redundant with it: a disabled
+          button still hit-tests, and would swallow clicks meant for the page beneath. */}
       <button
         type="button"
-        tabIndex={-1}
-        aria-hidden={isOpen ? undefined : true}
+        disabled={!isOpen}
         aria-label="Close navigation"
         className={cn(
           'fixed inset-0 z-[200] bg-black/40 dark:bg-black/60 transition-opacity duration-200',
