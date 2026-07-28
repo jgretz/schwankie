@@ -68,12 +68,16 @@ export function NavDrawer({
     <>
       {/* Click-outside backdrop. A real <button> so the dismiss affordance carries a
           name and native keyboard semantics. It stays mounted at opacity 0 for the
-          fade-out, so `disabled` is what keeps it out of the tab order and the a11y
-          tree while closed. `pointer-events-none` is not redundant with it: a disabled
-          button still hit-tests, and would swallow clicks meant for the page beneath. */}
+          fade-out, so three attributes each hide one facet while closed: `disabled`
+          removes it from the tab order and suppresses activation, `aria-hidden` removes
+          it from the a11y tree (a disabled button is still exposed, as a dimmed control
+          — and aria-hidden is safe here only because `disabled` already made it
+          unfocusable), and `pointer-events-none` stops it hit-testing clicks meant for
+          the page beneath, which a disabled button would otherwise swallow. */}
       <button
         type="button"
         disabled={!isOpen}
+        aria-hidden={!isOpen || undefined}
         aria-label="Close navigation"
         className={cn(
           'fixed inset-0 z-[200] bg-black/40 dark:bg-black/60 transition-opacity duration-200',
