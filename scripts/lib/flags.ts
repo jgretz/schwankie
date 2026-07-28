@@ -7,7 +7,8 @@
  * `readFlag` returns the default only when the flag is *absent*; a flag that is
  * present but carries no usable value throws.
  *
- * Enforced by `tests/script-flag-parsing.test.ts`.
+ * Convention: `.claude/rules/script-flags.md`. Enforced by
+ * `tests/script-flag-parsing.test.ts`.
  */
 
 export type ReadFlagOptions = {
