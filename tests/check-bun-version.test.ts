@@ -159,14 +159,21 @@ describe('check-bun-version CLI', function () {
   // tell a bug apart from a usage mistake. A self-referential symlink is the
   // cheapest way to raise a fault main() does not itself handle.
   //
-  // Both assertions are on this script's own contract — the exit code it picks
-  // and the one-line `Error: <message>` shape its guard emits — not on how the
-  // runtime renders a system error. The errno and the field names in an
-  // uncaught-error dump belong to the platform and to Bun, and this suite runs
-  // on macOS locally and ubuntu in CI. (The offending path is no use here
-  // either: the fault is raised by the Bun.Glob scan, which reports paths
-  // relative to its scan root, so stderr names `Dockerfile`, not the absolute
-  // fixture path.)
+  // Every assertion is on this script's own contract — the exit codes it picks
+  // and the two messages it emits itself — not on how the runtime renders a
+  // system error. The errno and the field names in an uncaught-error dump
+  // belong to the platform and to Bun, and this suite runs on macOS locally and
+  // ubuntu in CI. (The offending path is no use here either: the fault is
+  // raised by the Bun.Glob scan, which reports paths relative to its scan root,
+  // so stderr names `Dockerfile`, not the absolute fixture path.)
+  //
+  // The two negative exit-code checks are not redundant. `not.toBe(2)` is the
+  // claim under test, but on its own it passes vacuously if the fault never
+  // fires at all — a green that means nothing, which is the same false-green
+  // failure mode this whole guard exists to prevent. `not.toBe(0)` proves the
+  // run really did fail, and ruling out `No files matched` proves it failed at
+  // the fault rather than degenerating into the empty-glob branch, which also
+  // exits non-zero and would otherwise satisfy every other assertion here.
   it('should not reduce a non-usage failure to the guard shape', async function () {
     const dir = await fixture({'app-a': '1.3.14'});
     const dockerfile = join(dir, 'deploy', 'app-a', 'Dockerfile');
@@ -176,7 +183,9 @@ describe('check-bun-version CLI', function () {
     const result = await Bun.$`bun run ${SCRIPT} --root ${dir}`.nothrow().quiet();
     const stderr = result.stderr.toString();
 
+    expect(result.exitCode).not.toBe(0);
     expect(result.exitCode).not.toBe(2);
+    expect(stderr).not.toContain('No files matched');
     expect(stderr).not.toMatch(/^Error: /m);
   });
 
