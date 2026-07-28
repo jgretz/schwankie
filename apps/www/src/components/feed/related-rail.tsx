@@ -5,6 +5,10 @@ type RelatedRailProps = {
   linkId: number | null;
 };
 
+// Static placeholder bars — they never reorder, so positional identity is the correct
+// identity; the literal keys say so without handing React a bare array index.
+const SKELETON_BARS = ['bar-1', 'bar-2', 'bar-3'];
+
 function formatBadge(item: RelatedLinkData): string {
   if (item.similarity != null) return `~${Math.round(item.similarity * 100)}%`;
   if (item.overlap != null) return `${item.overlap} tag${item.overlap === 1 ? '' : 's'}`;
@@ -19,8 +23,8 @@ export function RelatedRail({linkId}: RelatedRailProps) {
   if (isLoading) {
     return (
       <div className="space-y-2">
-        {Array.from({length: 3}, (_, i) => (
-          <div key={i} className="h-4 w-2/3 animate-pulse rounded bg-border" />
+        {SKELETON_BARS.map((key) => (
+          <div key={key} className="h-4 w-2/3 animate-pulse rounded bg-border" />
         ))}
       </div>
     );

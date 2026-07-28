@@ -7,7 +7,7 @@ import {
 
 const PAGE_SIZE = 50;
 
-export function useRssItems(feedId: string, unread: boolean = true) {
+export function useRssItems(feedId: string, unread = true) {
   const queryClient = useQueryClient();
 
   const query = useInfiniteQuery({

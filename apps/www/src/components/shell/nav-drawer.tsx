@@ -66,13 +66,20 @@ export function NavDrawer({
 
   return (
     <>
-      <div
+      {/* Click-outside backdrop. A real <button> so the dismiss affordance carries a
+          name and native keyboard semantics. It stays mounted at opacity 0 for the
+          fade-out, so `disabled` is what keeps it out of the tab order and the a11y
+          tree while closed. `pointer-events-none` is not redundant with it: a disabled
+          button still hit-tests, and would swallow clicks meant for the page beneath. */}
+      <button
+        type="button"
+        disabled={!isOpen}
+        aria-label="Close navigation"
         className={cn(
           'fixed inset-0 z-[200] bg-black/40 dark:bg-black/60 transition-opacity duration-200',
           isOpen ? 'opacity-100' : 'pointer-events-none opacity-0',
         )}
         onClick={onClose}
-        aria-hidden="true"
       />
 
       <div
@@ -102,6 +109,8 @@ export function NavDrawer({
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
+              aria-hidden="true"
+              focusable="false"
             >
               <path d="M18 6 6 18M6 6l12 12" />
             </svg>

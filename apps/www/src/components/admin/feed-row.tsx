@@ -1,4 +1,4 @@
-import {memo, useState} from 'react';
+import {memo, useEffect, useRef, useState} from 'react';
 import {MoreVertical} from 'lucide-react';
 import type {FeedData} from 'client';
 import {Button} from '@www/components/ui/button';
@@ -46,6 +46,12 @@ export const FeedRow = memo(function FeedRow({
 }: FeedRowProps) {
   const [editName, setEditName] = useState(feed.name);
   const [wasEditing, setWasEditing] = useState(isEditing);
+  const editNameRef = useRef<HTMLInputElement>(null);
+
+  // Focus on entering edit mode rather than `autoFocus` so the focus move is deliberate.
+  useEffect(() => {
+    if (isEditing) editNameRef.current?.focus();
+  }, [isEditing]);
 
   // Reseed the draft on each entry into edit mode so an abandoned edit never
   // leaks into the next one. Done during render rather than in an effect so the
@@ -61,11 +67,11 @@ export const FeedRow = memo(function FeedRow({
         {isEditing ? (
           <div className="flex gap-2">
             <input
+              ref={editNameRef}
               type="text"
               value={editName}
               onChange={(e) => setEditName(e.target.value)}
               className="min-w-0 flex-1 px-2 py-1 border border-border rounded font-sans text-[0.9rem]"
-              autoFocus
             />
             <Button
               size="sm"
@@ -127,7 +133,7 @@ export const FeedRow = memo(function FeedRow({
               disabled={isAnyRowEditing}
               className="inline-flex h-8 w-8 items-center justify-center rounded-md text-text-muted transition-colors hover:bg-bg-subtle hover:text-text disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              <MoreVertical className="h-4 w-4" />
+              <MoreVertical className="h-4 w-4" aria-hidden="true" focusable="false" />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-40">

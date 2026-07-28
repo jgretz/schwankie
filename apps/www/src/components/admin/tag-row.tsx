@@ -69,12 +69,14 @@ export const TagRow = memo(function TagRow({
               </Button>
             </div>
           ) : (
-            <span
+            <button
+              type="button"
               onClick={() => setIsRenaming(true)}
-              className="cursor-pointer hover:text-accent transition-colors"
+              title="Rename tag"
+              className="cursor-pointer text-left transition-colors hover:text-accent"
             >
               {tag.text}
-            </span>
+            </button>
           )}
         </td>
         <td className="py-3 px-4 text-center font-sans text-[0.9rem] text-text-muted">

@@ -83,8 +83,9 @@ function EmailsPage() {
   const grouped = useMemo(() => {
     const groups: Record<string, EmailItemData[]> = {};
     for (const item of visibleItems) {
-      if (!groups[item.emailFrom]) groups[item.emailFrom] = [];
-      groups[item.emailFrom]!.push(item);
+      const group = groups[item.emailFrom] ?? [];
+      group.push(item);
+      groups[item.emailFrom] = group;
     }
     return Object.entries(groups).sort((a, b) => a[0].localeCompare(b[0]));
   }, [visibleItems]);

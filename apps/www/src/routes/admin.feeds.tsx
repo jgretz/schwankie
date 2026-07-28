@@ -8,6 +8,7 @@ import {Input} from '@www/components/ui/input';
 import {filterFeeds} from '@www/lib/filter-feeds';
 import {sortFeedsByUpdatedAt} from '@www/lib/sort-feeds';
 import {useFeeds} from '@www/hooks/use-feeds';
+import {SkeletonList} from '@www/components/skeleton-list';
 
 export const Route = createFileRoute('/admin/feeds')({
   beforeLoad: ({context}) => {
@@ -154,16 +155,7 @@ function AdminFeedsPage() {
         />
       </div>
 
-      {query.isLoading && (
-        <div className="animate-pulse space-y-4">
-          {Array.from({length: 3}, (_, i) => (
-            <div key={i} className="space-y-2">
-              <div className="h-4 w-3/4 rounded bg-border" />
-              <div className="h-3 w-1/2 rounded bg-border" />
-            </div>
-          ))}
-        </div>
-      )}
+      {query.isLoading && <SkeletonList rows={3} />}
 
       {query.isError && (
         <p className="py-12 text-center font-sans text-[0.9rem] text-red-600">

@@ -11,6 +11,7 @@ import {BulkDeleteDialog} from './bulk-delete-dialog';
 import {useInfiniteLinks} from '@www/hooks/use-infinite-links';
 import {useTags} from '@www/hooks/use-tags';
 import {parseTagSlugs} from '@www/lib/parse-tag-slugs';
+import {SkeletonList} from '@www/components/skeleton-list';
 
 type FeedPageProps = {
   status: LinkStatus;
@@ -75,10 +76,17 @@ export function FeedPage({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Reset selection when the visible set changes (filter, sort, search, status)
-  useEffect(() => {
+  // Drop the selection whenever the visible set changes, since the selected ids may no
+  // longer be on screen. Adjusted during render rather than in an effect so the stale
+  // selection never reaches a paint and there is no redundant reset on mount.
+  // Keyed via JSON because `q` and `tagsParam` are free text — any literal separator
+  // could be forged across the two fields and hide a real filter change.
+  const filterKey = JSON.stringify([status, tagsParam, q, sort]);
+  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
+  if (filterKey !== prevFilterKey) {
+    setPrevFilterKey(filterKey);
     setSelected(new Set());
-  }, [status, tagsParam, q, sort]);
+  }
 
   const toggleSelect = useCallback((id: number) => {
     setSelected((prev) => {
@@ -163,14 +171,7 @@ export function FeedPage({
   if (isLoading) {
     return (
       <div className="px-6 py-10">
-        <div className="animate-pulse space-y-4">
-          {Array.from({length: 5}, (_, i) => (
-            <div key={i} className="space-y-2">
-              <div className="h-4 w-3/4 rounded bg-border" />
-              <div className="h-3 w-1/2 rounded bg-border" />
-            </div>
-          ))}
-        </div>
+        <SkeletonList rows={5} />
       </div>
     );
   }

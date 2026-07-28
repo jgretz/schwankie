@@ -159,7 +159,7 @@ describe('validateAll', () => {
     const schema: SchemaConfig<{name: string}> = {
       name: {required: true},
     };
-    const values = {name: 'John', extraField: 'ignored'} as any;
+    const values = {name: 'John', extraField: 'ignored'};
     const result = validateAll(schema, values);
     expect(result.isValid).toBe(true);
     expect(result.errors).toEqual({});

@@ -5,6 +5,7 @@ import {Button} from '@www/components/ui/button';
 import {Input} from '@www/components/ui/input';
 import {TagRow} from '@www/components/admin/tag-row';
 import {MergeDialog} from '@www/components/admin/merge-dialog';
+import {SkeletonList} from '@www/components/skeleton-list';
 import {filterTags} from '@www/lib/filter-tags';
 import {sortTagsByCount} from '@www/lib/sort-tags';
 import type {TagItem} from '@www/lib/types';
@@ -105,16 +106,7 @@ function AdminTagsPage() {
         )}
       </div>
 
-      {isLoading && (
-        <div className="animate-pulse space-y-4">
-          {Array.from({length: 3}, (_, i) => (
-            <div key={i} className="space-y-2">
-              <div className="h-4 w-3/4 rounded bg-border" />
-              <div className="h-3 w-1/2 rounded bg-border" />
-            </div>
-          ))}
-        </div>
-      )}
+      {isLoading && <SkeletonList rows={3} />}
 
       {isError && (
         <p className="py-12 text-center font-sans text-[0.9rem] text-red-600">
