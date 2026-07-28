@@ -77,7 +77,7 @@ export function NavDrawer({
       <button
         type="button"
         disabled={!isOpen}
-        aria-hidden={!isOpen || undefined}
+        aria-hidden={isOpen ? undefined : true}
         aria-label="Close navigation"
         className={cn(
           'fixed inset-0 z-[200] bg-black/40 dark:bg-black/60 transition-opacity duration-200',
@@ -86,14 +86,20 @@ export function NavDrawer({
         onClick={onClose}
       />
 
+      {/* The panel stays mounted so the slide can animate, but `-translate-x-full` is
+          purely visual — a transformed node keeps its links in the tab order and the
+          a11y tree. `invisible` (visibility: hidden) removes both. Keeping visibility
+          in the transition list is what preserves the closing slide: it interpolates
+          discretely, holding `visible` for the full duration and flipping to `hidden`
+          only at the end, while the reverse direction turns visible immediately. */}
       <div
         ref={drawerRef}
         role="dialog"
         aria-modal="true"
         aria-label="Navigation"
         className={cn(
-          'fixed left-0 top-0 z-[201] h-full w-[280px] overflow-y-auto bg-bg shadow-lg transition-transform duration-200',
-          isOpen ? 'translate-x-0' : '-translate-x-full',
+          'fixed left-0 top-0 z-[201] h-full w-[280px] overflow-y-auto bg-bg shadow-lg transition-[transform,visibility] duration-200',
+          isOpen ? 'visible translate-x-0' : 'invisible -translate-x-full',
         )}
       >
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
