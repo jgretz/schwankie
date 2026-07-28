@@ -102,10 +102,8 @@ function AdminGmailPage() {
     [],
   );
 
-  // The pending timeout lives in a ref rather than in a closure built by a per-render
-  // IIFE (`useCallback((() => {let timeout; return …})(), […])`). That IIFE re-ran on
-  // every render only for useCallback to throw the result away, and it hid the real
-  // `handleFilterSave` capture from biome's dependency analysis.
+  // The pending debounce timer lives in a ref so it survives re-renders without being
+  // hidden inside a closure that useCallback's dependency analysis cannot see through.
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
