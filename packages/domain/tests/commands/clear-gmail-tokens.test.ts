@@ -10,9 +10,7 @@ describe('clearGmailTokens', function () {
   setupDb();
 
   beforeEach(function () {
-    process.env.TOKEN_ENCRYPTION_KEY = Buffer.from(
-      new Uint8Array(32).fill(0),
-    ).toString('base64');
+    process.env.TOKEN_ENCRYPTION_KEY = Buffer.from(new Uint8Array(32).fill(0)).toString('base64');
   });
 
   it('should clear all gmail tokens', async function () {
@@ -47,9 +45,7 @@ describe('clearGmailAuthTokens', function () {
   setupDb();
 
   beforeEach(function () {
-    process.env.TOKEN_ENCRYPTION_KEY = Buffer.from(
-      new Uint8Array(32).fill(0),
-    ).toString('base64');
+    process.env.TOKEN_ENCRYPTION_KEY = Buffer.from(new Uint8Array(32).fill(0)).toString('base64');
   });
 
   it('should clear auth tokens but preserve gmail_filter', async function () {

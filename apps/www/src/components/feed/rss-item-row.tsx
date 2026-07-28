@@ -54,8 +54,7 @@ export function RssItemRow({item, sourceLabel, onMarkRead, onPromote, onRemove}:
   // earlier of the two.
   const createdMs = new Date(item.createdAt).getTime();
   const publishedMs = item.publishedAt ? new Date(item.publishedAt).getTime() : null;
-  const displayMs =
-    publishedMs !== null && publishedMs <= createdMs ? publishedMs : createdMs;
+  const displayMs = publishedMs !== null && publishedMs <= createdMs ? publishedMs : createdMs;
   const d = new Date(displayMs);
   const datePart = d.toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'});
   const timePart = d.toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
@@ -73,7 +72,9 @@ export function RssItemRow({item, sourceLabel, onMarkRead, onPromote, onRemove}:
           {item.title}
         </a>
         {item.summary && (
-          <p className="text-text-muted font-sans text-[0.85rem] line-clamp-2 mt-1">{item.summary}</p>
+          <p className="text-text-muted font-sans text-[0.85rem] line-clamp-2 mt-1">
+            {item.summary}
+          </p>
         )}
         <span className="text-text-faint font-sans text-[0.8rem] mt-1 block">
           {sourceLabel ? `${sourceLabel} · ${publishDate}` : publishDate}

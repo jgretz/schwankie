@@ -7,9 +7,7 @@ describe('getGmailTokens', function () {
   setupDb();
 
   beforeEach(function () {
-    process.env.TOKEN_ENCRYPTION_KEY = Buffer.from(
-      new Uint8Array(32).fill(0),
-    ).toString('base64');
+    process.env.TOKEN_ENCRYPTION_KEY = Buffer.from(new Uint8Array(32).fill(0)).toString('base64');
   });
 
   it('should return null when tokens not set', async function () {

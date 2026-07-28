@@ -29,10 +29,7 @@ export const Route = createFileRoute('/emails/')({
   },
   validateSearch: searchSchema,
   head: () => ({
-    meta: [
-      {title: 'Emails — schwankie'},
-      {name: 'description', content: 'Your email items.'},
-    ],
+    meta: [{title: 'Emails — schwankie'}, {name: 'description', content: 'Your email items.'}],
   }),
   component: EmailsPage,
 });
@@ -195,102 +192,102 @@ function EmailsPage() {
       </div>
 
       <div className="space-y-6 px-6 py-6">
-      <div className="flex flex-wrap items-center gap-2">
-        <button
-          type="button"
-          onClick={handleToggleUnread}
-          className={`px-3 py-1 rounded-full font-sans text-[0.85rem] transition-colors ${
-            search.unread
-              ? 'bg-accent text-accent-foreground'
-              : 'bg-bg-subtle text-text hover:bg-border'
-          }`}
-        >
-          {search.unread ? 'Unread' : 'All'}
-        </button>
-
-        <button
-          type="button"
-          onClick={handleToggleGroup}
-          disabled={Boolean(search.from)}
-          className={`px-3 py-1 rounded-full font-sans text-[0.85rem] transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
-            search.group && !search.from
-              ? 'bg-accent text-accent-foreground'
-              : 'bg-bg-subtle text-text hover:bg-border'
-          }`}
-        >
-          Group by sender
-        </button>
-
-        {senderOptions.length > 1 && (
-          <select
-            value={search.from ?? ''}
-            onChange={(e) => handleSenderFilter(e.target.value)}
-            className="rounded-md border border-border bg-bg px-3 py-1 font-sans text-[0.85rem] text-text max-w-[320px]"
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={handleToggleUnread}
+            className={`px-3 py-1 rounded-full font-sans text-[0.85rem] transition-colors ${
+              search.unread
+                ? 'bg-accent text-accent-foreground'
+                : 'bg-bg-subtle text-text hover:bg-border'
+            }`}
           >
-            <option value="">All senders</option>
-            {senderOptions.map((sender) => (
-              <option key={sender} value={sender}>
-                {sender}
-              </option>
+            {search.unread ? 'Unread' : 'All'}
+          </button>
+
+          <button
+            type="button"
+            onClick={handleToggleGroup}
+            disabled={Boolean(search.from)}
+            className={`px-3 py-1 rounded-full font-sans text-[0.85rem] transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+              search.group && !search.from
+                ? 'bg-accent text-accent-foreground'
+                : 'bg-bg-subtle text-text hover:bg-border'
+            }`}
+          >
+            Group by sender
+          </button>
+
+          {senderOptions.length > 1 && (
+            <select
+              value={search.from ?? ''}
+              onChange={(e) => handleSenderFilter(e.target.value)}
+              className="rounded-md border border-border bg-bg px-3 py-1 font-sans text-[0.85rem] text-text max-w-[320px]"
+            >
+              <option value="">All senders</option>
+              {senderOptions.map((sender) => (
+                <option key={sender} value={sender}>
+                  {sender}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+
+        {emailsQuery.isLoading ? (
+          <div className="text-center py-12 text-text-muted">Loading emails…</div>
+        ) : emailsQuery.isError ? (
+          <div className="text-center py-12 text-destructive">Failed to load emails.</div>
+        ) : visibleItems.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-text-muted font-sans">
+              {search.unread ? 'No unread emails.' : 'No emails.'}
+            </p>
+          </div>
+        ) : showGrouped ? (
+          <div className="space-y-6">
+            {grouped.map(([sender, senderItems]) => (
+              <section key={sender}>
+                <div className="mb-2 flex items-baseline justify-between">
+                  <h2 className="font-serif text-lg text-text truncate">{sender}</h2>
+                  <span className="font-sans text-[0.8rem] text-text-faint">
+                    {senderItems.length} item{senderItems.length !== 1 ? 's' : ''}
+                  </span>
+                </div>
+                <div className="border border-border rounded-lg overflow-hidden">
+                  {senderItems.map((item) => (
+                    <EmailRow
+                      key={item.id}
+                      item={item}
+                      onMarkRead={handleMarkRead(item.id)}
+                      onPromote={handlePromote(item.id)}
+                    />
+                  ))}
+                </div>
+              </section>
             ))}
-          </select>
+          </div>
+        ) : (
+          <div className="border border-border rounded-lg overflow-hidden">
+            {visibleItems.map((item) => (
+              <EmailRow
+                key={item.id}
+                item={item}
+                showSender
+                onMarkRead={handleMarkRead(item.id)}
+                onPromote={handlePromote(item.id)}
+              />
+            ))}
+          </div>
         )}
-      </div>
 
-      {emailsQuery.isLoading ? (
-        <div className="text-center py-12 text-text-muted">Loading emails…</div>
-      ) : emailsQuery.isError ? (
-        <div className="text-center py-12 text-destructive">Failed to load emails.</div>
-      ) : visibleItems.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-text-muted font-sans">
-            {search.unread ? 'No unread emails.' : 'No emails.'}
-          </p>
-        </div>
-      ) : showGrouped ? (
-        <div className="space-y-6">
-          {grouped.map(([sender, senderItems]) => (
-            <section key={sender}>
-              <div className="mb-2 flex items-baseline justify-between">
-                <h2 className="font-serif text-lg text-text truncate">{sender}</h2>
-                <span className="font-sans text-[0.8rem] text-text-faint">
-                  {senderItems.length} item{senderItems.length !== 1 ? 's' : ''}
-                </span>
-              </div>
-              <div className="border border-border rounded-lg overflow-hidden">
-                {senderItems.map((item) => (
-                  <EmailRow
-                    key={item.id}
-                    item={item}
-                    onMarkRead={handleMarkRead(item.id)}
-                    onPromote={handlePromote(item.id)}
-                  />
-                ))}
-              </div>
-            </section>
-          ))}
-        </div>
-      ) : (
-        <div className="border border-border rounded-lg overflow-hidden">
-          {visibleItems.map((item) => (
-            <EmailRow
-              key={item.id}
-              item={item}
-              showSender
-              onMarkRead={handleMarkRead(item.id)}
-              onPromote={handlePromote(item.id)}
-            />
-          ))}
-        </div>
-      )}
+        <div ref={sentinelRef} className="h-1" />
 
-      <div ref={sentinelRef} className="h-1" />
-
-      {emailsQuery.isFetchingNextPage && (
-        <div className="flex justify-center py-6">
-          <div className="h-5 w-5 animate-spin rounded-full border-2 border-border border-t-accent" />
-        </div>
-      )}
+        {emailsQuery.isFetchingNextPage && (
+          <div className="flex justify-center py-6">
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-border border-t-accent" />
+          </div>
+        )}
       </div>
     </div>
   );

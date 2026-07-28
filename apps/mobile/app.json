@@ -33,9 +33,7 @@
       "bundleIdentifier": "com.schwankie.app",
       "appleTeamId": "B8L5W4A275",
       "entitlements": {
-        "com.apple.security.application-groups": [
-          "group.com.schwankie.app"
-        ]
+        "com.apple.security.application-groups": ["group.com.schwankie.app"]
       },
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
@@ -62,9 +60,7 @@
                   "bundleIdentifier": "com.schwankie.app.share",
                   "targetName": "SchwankieShare",
                   "entitlements": {
-                    "com.apple.security.application-groups": [
-                      "group.com.schwankie.app"
-                    ]
+                    "com.apple.security.application-groups": ["group.com.schwankie.app"]
                   }
                 }
               ]

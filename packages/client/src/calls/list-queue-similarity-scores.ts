@@ -13,7 +13,5 @@ export function listQueueSimilarityScores(
     k: String(k),
     minSimilarity: String(minSimilarity),
   });
-  return apiFetch<QueueSimilarityScoresResponse>(
-    `/api/links/queue-similarity-scores?${params}`,
-  );
+  return apiFetch<QueueSimilarityScoresResponse>(`/api/links/queue-similarity-scores?${params}`);
 }

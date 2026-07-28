@@ -18,11 +18,7 @@ export async function updateFeed(id: string, input: UpdateFeedInput): Promise<Fe
     updatedAt: new Date(),
   };
 
-  const [updated] = await db
-    .update(feed)
-    .set(updateValues)
-    .where(eq(feed.id, id))
-    .returning();
+  const [updated] = await db.update(feed).set(updateValues).where(eq(feed.id, id)).returning();
 
   return updated || null;
 }

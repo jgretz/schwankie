@@ -19,6 +19,8 @@ bun run dev:tasks           # Task runner
 bun run typecheck           # Typecheck all
 bun run typecheck:mobile    # Typecheck mobile only
 cd apps/www && bun run lint # Biome lint
+bun run format              # Prettier write, whole repo
+bun run format:check        # Prettier check (CI gate)
 
 bun run test                    # all packages (per-package processes)
 bun run test:isolated           # all packages, one process (--isolate)
@@ -57,3 +59,10 @@ process-globally, so `apps/api`'s partial `@domain` stubs leak into
 ## Prettier
 
 Config in `.prettierrc`: single quotes, semicolons, trailing commas, no bracket spacing, 100 char width.
+
+Prettier owns formatting repo-wide and `bun run format:check` gates every PR (the `format`
+job in `.github/workflows/checks.yml`); biome is a linter only. `.prettierignore` exempts
+generated output (`packages/database/drizzle/`, `routeTree.gen.ts`, the Xcode asset
+catalog) and agent-owned paths (`.claude/`, `.toryo/`) — each entry carries its reason
+inline. The version is pinned exactly so a lockfile refresh cannot redden CI on an
+unrelated PR; `tests/format-gate.test.ts` guards all of that against silent drift.

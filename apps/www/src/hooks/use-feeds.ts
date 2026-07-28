@@ -26,8 +26,17 @@ export function useFeeds() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({id, name, sourceUrl, disabled}: {id: string; name?: string; sourceUrl?: string; disabled?: boolean}) =>
-      updateFeedAction({data: {id, name, sourceUrl, disabled}}),
+    mutationFn: ({
+      id,
+      name,
+      sourceUrl,
+      disabled,
+    }: {
+      id: string;
+      name?: string;
+      sourceUrl?: string;
+      disabled?: boolean;
+    }) => updateFeedAction({data: {id, name, sourceUrl, disabled}}),
     onSuccess: () => {
       queryClient.invalidateQueries({queryKey: ['feeds']});
     },

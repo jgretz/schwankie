@@ -1,6 +1,10 @@
 import {describe, it, expect, beforeEach, afterAll} from 'bun:test';
 import {mock} from 'bun:test';
-import {classifyAmbiguousLinks, type EmailContext, type LinkClassification} from '../../src/utils/llm-link-classifier';
+import {
+  classifyAmbiguousLinks,
+  type EmailContext,
+  type LinkClassification,
+} from '../../src/utils/llm-link-classifier';
 import type {ScoredLink} from '../../src/utils/email-parser';
 
 describe('LLM Link Classifier', () => {
@@ -16,7 +20,12 @@ describe('LLM Link Classifier', () => {
 
   describe('classifyAmbiguousLinks', () => {
     it('should return empty array for empty input', async () => {
-      const result = await classifyAmbiguousLinks([], {from: 'test@example.com', subject: 'Test'}, 'http://localhost:11434', 'llama3.2:3b');
+      const result = await classifyAmbiguousLinks(
+        [],
+        {from: 'test@example.com', subject: 'Test'},
+        'http://localhost:11434',
+        'llama3.2:3b',
+      );
       expect(result).toEqual([]);
     });
 
@@ -35,14 +44,23 @@ describe('LLM Link Classifier', () => {
         subject: 'Weekly Newsletter',
       };
 
-      global.fetch = mock(async () =>
-        ({
-          ok: true,
-          json: async () => ({response: '{"results":[{"index":1,"keep":true,"confidence":0.9,"reason":"tech article"}]}'}),
-        }) as unknown as Response,
+      global.fetch = mock(
+        async () =>
+          ({
+            ok: true,
+            json: async () => ({
+              response:
+                '{"results":[{"index":1,"keep":true,"confidence":0.9,"reason":"tech article"}]}',
+            }),
+          }) as unknown as Response,
       ) as unknown as typeof fetch;
 
-      const result = await classifyAmbiguousLinks(links, emailContext, 'http://localhost:11434', 'llama3.2:3b');
+      const result = await classifyAmbiguousLinks(
+        links,
+        emailContext,
+        'http://localhost:11434',
+        'llama3.2:3b',
+      );
       expect(result).toHaveLength(1);
       expect(result[0].url).toBe('https://example.com/article');
       expect(result[0].keep).toBe(true);
@@ -72,14 +90,23 @@ describe('LLM Link Classifier', () => {
         subject: 'Test Newsletter',
       };
 
-      global.fetch = mock(async () =>
-        ({
-          ok: true,
-          json: async () => ({response: '{"results":[{"index":1,"keep":true,"confidence":0.8,"reason":"article"},{"index":2,"keep":false,"confidence":0.7,"reason":"ad"}]}'}),
-        }) as unknown as Response,
+      global.fetch = mock(
+        async () =>
+          ({
+            ok: true,
+            json: async () => ({
+              response:
+                '{"results":[{"index":1,"keep":true,"confidence":0.8,"reason":"article"},{"index":2,"keep":false,"confidence":0.7,"reason":"ad"}]}',
+            }),
+          }) as unknown as Response,
       ) as unknown as typeof fetch;
 
-      const result = await classifyAmbiguousLinks(links, emailContext, 'http://localhost:11434', 'llama3.2:3b');
+      const result = await classifyAmbiguousLinks(
+        links,
+        emailContext,
+        'http://localhost:11434',
+        'llama3.2:3b',
+      );
       expect(result).toHaveLength(2);
       expect(result[0].url).toBe('https://example.com/article1');
       expect(result[0].keep).toBe(true);
@@ -141,14 +168,23 @@ describe('LLM Link Classifier', () => {
         subject: 'Long Context Test',
       };
 
-      global.fetch = mock(async () =>
-        ({
-          ok: true,
-          json: async () => ({response: '{"results":[{"index":1,"keep":true,"confidence":0.85,"reason":"informative"}]}'}),
-        }) as unknown as Response,
+      global.fetch = mock(
+        async () =>
+          ({
+            ok: true,
+            json: async () => ({
+              response:
+                '{"results":[{"index":1,"keep":true,"confidence":0.85,"reason":"informative"}]}',
+            }),
+          }) as unknown as Response,
       ) as unknown as typeof fetch;
 
-      const result = await classifyAmbiguousLinks(links, emailContext, 'http://localhost:11434', 'llama3.2:3b');
+      const result = await classifyAmbiguousLinks(
+        links,
+        emailContext,
+        'http://localhost:11434',
+        'llama3.2:3b',
+      );
       expect(result).toHaveLength(1);
       expect(result[0].url).toBe('https://example.com/article');
       expect(result[0].keep).toBe(true);
@@ -194,14 +230,23 @@ describe('LLM Link Classifier', () => {
         subject: 'Test',
       };
 
-      global.fetch = mock(async () =>
-        ({
-          ok: true,
-          json: async () => ({response: '{"results":[{"index":1,"keep":true,"confidence":0.75,"reason":"context relevant"}]}'}),
-        }) as unknown as Response,
+      global.fetch = mock(
+        async () =>
+          ({
+            ok: true,
+            json: async () => ({
+              response:
+                '{"results":[{"index":1,"keep":true,"confidence":0.75,"reason":"context relevant"}]}',
+            }),
+          }) as unknown as Response,
       ) as unknown as typeof fetch;
 
-      const result = await classifyAmbiguousLinks(links, emailContext, 'http://localhost:11434', 'llama3.2:3b');
+      const result = await classifyAmbiguousLinks(
+        links,
+        emailContext,
+        'http://localhost:11434',
+        'llama3.2:3b',
+      );
       expect(result).toHaveLength(1);
       expect(result[0].url).toBe('https://example.com/article');
       expect(result[0].keep).toBe(true);
@@ -222,14 +267,23 @@ describe('LLM Link Classifier', () => {
         subject: 'Test with émojis 🚀',
       };
 
-      global.fetch = mock(async () =>
-        ({
-          ok: true,
-          json: async () => ({response: '{"results":[{"index":1,"keep":true,"confidence":0.88,"reason":"quality article"}]}'}),
-        }) as unknown as Response,
+      global.fetch = mock(
+        async () =>
+          ({
+            ok: true,
+            json: async () => ({
+              response:
+                '{"results":[{"index":1,"keep":true,"confidence":0.88,"reason":"quality article"}]}',
+            }),
+          }) as unknown as Response,
       ) as unknown as typeof fetch;
 
-      const result = await classifyAmbiguousLinks(links, emailContext, 'http://localhost:11434', 'llama3.2:3b');
+      const result = await classifyAmbiguousLinks(
+        links,
+        emailContext,
+        'http://localhost:11434',
+        'llama3.2:3b',
+      );
       expect(result).toHaveLength(1);
       expect(result[0].url).toBe('https://example.com/article?id=123&name=test%20article');
       expect(result[0].keep).toBe(true);
@@ -281,14 +335,23 @@ describe('LLM Link Classifier', () => {
         subject: 'Test',
       };
 
-      global.fetch = mock(async () =>
-        ({
-          ok: true,
-          json: async () => ({response: '{"results":[{"index":1,"keep":true,"confidence":0.82,"reason":"from trusted source"}]}'}),
-        }) as unknown as Response,
+      global.fetch = mock(
+        async () =>
+          ({
+            ok: true,
+            json: async () => ({
+              response:
+                '{"results":[{"index":1,"keep":true,"confidence":0.82,"reason":"from trusted source"}]}',
+            }),
+          }) as unknown as Response,
       ) as unknown as typeof fetch;
 
-      const result = await classifyAmbiguousLinks(links, emailContext, 'http://localhost:11434', 'llama3.2:3b');
+      const result = await classifyAmbiguousLinks(
+        links,
+        emailContext,
+        'http://localhost:11434',
+        'llama3.2:3b',
+      );
       expect(result).toHaveLength(1);
       expect(result[0].url).toBe('https://example.com/article');
       expect(result[0].keep).toBe(true);
@@ -330,12 +393,13 @@ describe('LLM Link Classifier', () => {
         }
       });
 
-      global.fetch = mock(async () =>
-        ({
-          ok: false,
-          status: 500,
-          json: async () => ({}),
-        }) as unknown as Response,
+      global.fetch = mock(
+        async () =>
+          ({
+            ok: false,
+            status: 500,
+            json: async () => ({}),
+          }) as unknown as Response,
       ) as unknown as typeof fetch;
 
       const result = await classifyAmbiguousLinks(
@@ -459,9 +523,13 @@ describe('LLM Link Classifier', () => {
       expect(callCount).toBe(2);
       expect(result).toHaveLength(15);
       // Failed chunk falls back to keep-all with confidence 0
-      expect(result.slice(0, 10).every((r) => r.confidence === 0 && r.reason === 'fallback')).toBe(true);
+      expect(result.slice(0, 10).every((r) => r.confidence === 0 && r.reason === 'fallback')).toBe(
+        true,
+      );
       // Second chunk completes normally
-      expect(result.slice(10).every((r) => r.confidence === 0.95 && r.reason === 'sponsor')).toBe(true);
+      expect(result.slice(10).every((r) => r.confidence === 0.95 && r.reason === 'sponsor')).toBe(
+        true,
+      );
     });
   });
 });

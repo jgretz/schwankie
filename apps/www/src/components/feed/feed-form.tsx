@@ -27,7 +27,9 @@ export function FeedForm({open, onOpenChange, feed, onSuccess}: FeedFormProps) {
     setIsPending(true);
     try {
       if (feed) {
-        await updateFeedAction({data: {id: feed.id, name: name.trim(), sourceUrl: sourceUrl.trim()}});
+        await updateFeedAction({
+          data: {id: feed.id, name: name.trim(), sourceUrl: sourceUrl.trim()},
+        });
         toast.success('Feed updated successfully');
       } else {
         await createFeedAction({data: {name: name.trim(), sourceUrl: sourceUrl.trim()}});

@@ -15,11 +15,7 @@ const CONCURRENCY = 5;
 
 type Link = {url: string; title: string};
 
-async function postLink(
-  link: Link,
-  apiUrl: string,
-  apiKey: string,
-): Promise<void> {
+async function postLink(link: Link, apiUrl: string, apiKey: string): Promise<void> {
   const res = await fetch(`${apiUrl}/api/links`, {
     method: 'POST',
     headers: {
@@ -60,9 +56,7 @@ async function main() {
 
   for (let i = 0; i < links.length; i += CONCURRENCY) {
     const chunk = links.slice(i, i + CONCURRENCY);
-    const results = await Promise.allSettled(
-      chunk.map((link) => postLink(link, apiUrl, apiKey)),
-    );
+    const results = await Promise.allSettled(chunk.map((link) => postLink(link, apiUrl, apiKey)));
 
     for (let j = 0; j < results.length; j++) {
       const result = results[j];

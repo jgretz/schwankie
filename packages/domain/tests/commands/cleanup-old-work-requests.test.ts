@@ -1,7 +1,12 @@
 import {describe, expect, it} from 'bun:test';
 import {setupDb} from '../helpers/setup';
 import {makeWorkRequest} from '../helpers/factory';
-import {cleanupOldWorkRequests, markWorkRequestCompleted, markWorkRequestFailed, markWorkRequestProcessing} from '../../src/index';
+import {
+  cleanupOldWorkRequests,
+  markWorkRequestCompleted,
+  markWorkRequestFailed,
+  markWorkRequestProcessing,
+} from '../../src/index';
 import {getDb} from '../../src/db';
 import {workRequest} from 'database';
 import {eq} from 'drizzle-orm';

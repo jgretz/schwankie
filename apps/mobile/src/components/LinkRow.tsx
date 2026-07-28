@@ -1,5 +1,5 @@
-import { View, Text } from 'react-native';
-import type { LinkData } from 'client';
+import {View, Text} from 'react-native';
+import type {LinkData} from 'client';
 
 type LinkRowProps = {
   link: LinkData;
@@ -12,7 +12,7 @@ type LinkRowProps = {
   };
 };
 
-export function LinkRow({ link, colors }: LinkRowProps) {
+export function LinkRow({link, colors}: LinkRowProps) {
   const date = new Date(link.createDate).toLocaleDateString();
   const url = (() => {
     try {
@@ -43,7 +43,7 @@ export function LinkRow({ link, colors }: LinkRowProps) {
       >
         {link.title}
       </Text>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+      <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
         <Text
           style={{
             fontSize: 12,

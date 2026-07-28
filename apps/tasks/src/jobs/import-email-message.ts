@@ -118,7 +118,9 @@ async function processOne(job: PgBoss.Job<ImportEmailMessageData>): Promise<void
       const {inserted} = await bulkUpsertEmailItems({items});
       console.log(`[import-email-message] ${messageId}: inserted ${inserted}`);
     } else {
-      console.log(`[import-email-message] ${messageId}: no links extracted (${scoredLinks.length} candidates filtered)`);
+      console.log(
+        `[import-email-message] ${messageId}: no links extracted (${scoredLinks.length} candidates filtered)`,
+      );
     }
 
     await gmail.markAsRead(messageId);

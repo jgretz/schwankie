@@ -1,4 +1,13 @@
-import {customType, index, integer, pgTable, serial, timestamp, uniqueIndex, varchar} from 'drizzle-orm/pg-core';
+import {
+  customType,
+  index,
+  integer,
+  pgTable,
+  serial,
+  timestamp,
+  uniqueIndex,
+  varchar,
+} from 'drizzle-orm/pg-core';
 
 import {link} from './link.schema';
 
@@ -29,9 +38,7 @@ export const linkEmbedding = pgTable(
       .references(() => link.id, {onDelete: 'cascade'}),
     embedding: vector('embedding', {dimensions: 768}).notNull(),
     model: varchar('model', {length: 100}).notNull(),
-    computedAt: timestamp('computed_at', {precision: 6, withTimezone: true})
-      .notNull()
-      .defaultNow(),
+    computedAt: timestamp('computed_at', {precision: 6, withTimezone: true}).notNull().defaultNow(),
   },
   (table) => ({
     linkIdIdx: uniqueIndex('idx_link_embedding_link_id').on(table.linkId),

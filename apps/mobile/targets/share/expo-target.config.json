@@ -7,11 +7,5 @@
   "entitlements": {
     "com.apple.security.application-groups": ["group.com.schwankie.app"]
   },
-  "frameworks": [
-    "UIKit",
-    "SwiftUI",
-    "Social",
-    "MobileCoreServices",
-    "UniformTypeIdentifiers"
-  ]
+  "frameworks": ["UIKit", "SwiftUI", "Social", "MobileCoreServices", "UniformTypeIdentifiers"]
 }

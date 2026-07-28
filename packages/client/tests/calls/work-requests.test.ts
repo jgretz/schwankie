@@ -32,7 +32,10 @@ describe('Work Request Client Calls', () => {
         createdAt: '2026-04-22T00:00:00Z',
       };
       global.fetch = (async () =>
-        new Response(JSON.stringify(mockWorkRequest), {status: 200, headers: {'Content-Type': 'application/json'}})) as any;
+        new Response(JSON.stringify(mockWorkRequest), {
+          status: 200,
+          headers: {'Content-Type': 'application/json'},
+        })) as any;
 
       const result = await startWorkRequest('wr-1');
       expect(result?.id).toBe('wr-1');
@@ -41,7 +44,10 @@ describe('Work Request Client Calls', () => {
 
     it('should return null on 409 conflict (race condition)', async () => {
       global.fetch = (async () =>
-        new Response(JSON.stringify({error: 'Conflict'}), {status: 409, headers: {'Content-Type': 'application/json'}})) as any;
+        new Response(JSON.stringify({error: 'Conflict'}), {
+          status: 409,
+          headers: {'Content-Type': 'application/json'},
+        })) as any;
 
       const result = await startWorkRequest('wr-1');
       expect(result).toBeNull();
@@ -49,7 +55,10 @@ describe('Work Request Client Calls', () => {
 
     it('should throw on non-409 HTTP error', async () => {
       global.fetch = (async () =>
-        new Response(JSON.stringify({error: 'Not found'}), {status: 404, headers: {'Content-Type': 'application/json'}})) as any;
+        new Response(JSON.stringify({error: 'Not found'}), {
+          status: 404,
+          headers: {'Content-Type': 'application/json'},
+        })) as any;
 
       expect(async () => {
         await startWorkRequest('nonexistent');
@@ -70,11 +79,19 @@ describe('Work Request Client Calls', () => {
   describe('listPendingWorkRequests', () => {
     it('should list pending work requests', async () => {
       const mockList = [
-        {id: 'wr-1', type: 'refresh-all-feeds', status: 'pending', createdAt: '2026-04-22T00:00:00Z'},
+        {
+          id: 'wr-1',
+          type: 'refresh-all-feeds',
+          status: 'pending',
+          createdAt: '2026-04-22T00:00:00Z',
+        },
         {id: 'wr-2', type: 'refresh-emails', status: 'pending', createdAt: '2026-04-22T00:01:00Z'},
       ];
       global.fetch = (async () =>
-        new Response(JSON.stringify(mockList), {status: 200, headers: {'Content-Type': 'application/json'}})) as any;
+        new Response(JSON.stringify(mockList), {
+          status: 200,
+          headers: {'Content-Type': 'application/json'},
+        })) as any;
 
       const result = await listPendingWorkRequests();
       expect(Array.isArray(result)).toBe(true);
@@ -84,7 +101,10 @@ describe('Work Request Client Calls', () => {
 
     it('should return empty array when no pending work requests', async () => {
       global.fetch = (async () =>
-        new Response(JSON.stringify([]), {status: 200, headers: {'Content-Type': 'application/json'}})) as any;
+        new Response(JSON.stringify([]), {
+          status: 200,
+          headers: {'Content-Type': 'application/json'},
+        })) as any;
 
       const result = await listPendingWorkRequests();
       expect(Array.isArray(result)).toBe(true);
@@ -93,7 +113,10 @@ describe('Work Request Client Calls', () => {
 
     it('should throw on HTTP error', async () => {
       global.fetch = (async () =>
-        new Response(JSON.stringify({error: 'Server error'}), {status: 500, headers: {'Content-Type': 'application/json'}})) as any;
+        new Response(JSON.stringify({error: 'Server error'}), {
+          status: 500,
+          headers: {'Content-Type': 'application/json'},
+        })) as any;
 
       expect(async () => {
         await listPendingWorkRequests();
@@ -111,7 +134,10 @@ describe('Work Request Client Calls', () => {
         createdAt: '2026-04-22T00:00:00Z',
       };
       global.fetch = (async () =>
-        new Response(JSON.stringify(mockCompleted), {status: 200, headers: {'Content-Type': 'application/json'}})) as any;
+        new Response(JSON.stringify(mockCompleted), {
+          status: 200,
+          headers: {'Content-Type': 'application/json'},
+        })) as any;
 
       const result = await completeWorkRequest('wr-1');
       expect(result.id).toBe('wr-1');
@@ -121,7 +147,10 @@ describe('Work Request Client Calls', () => {
 
     it('should throw on error', async () => {
       global.fetch = (async () =>
-        new Response(JSON.stringify({error: 'Not found'}), {status: 404, headers: {'Content-Type': 'application/json'}})) as any;
+        new Response(JSON.stringify({error: 'Not found'}), {
+          status: 404,
+          headers: {'Content-Type': 'application/json'},
+        })) as any;
 
       expect(async () => {
         await completeWorkRequest('nonexistent');
@@ -140,7 +169,10 @@ describe('Work Request Client Calls', () => {
         createdAt: '2026-04-22T00:00:00Z',
       };
       global.fetch = (async () =>
-        new Response(JSON.stringify(mockFailed), {status: 200, headers: {'Content-Type': 'application/json'}})) as any;
+        new Response(JSON.stringify(mockFailed), {
+          status: 200,
+          headers: {'Content-Type': 'application/json'},
+        })) as any;
 
       const result = await failWorkRequest('wr-1', 'Timeout error');
       expect(result.id).toBe('wr-1');
@@ -150,7 +182,10 @@ describe('Work Request Client Calls', () => {
 
     it('should throw on error', async () => {
       global.fetch = (async () =>
-        new Response(JSON.stringify({error: 'Not found'}), {status: 404, headers: {'Content-Type': 'application/json'}})) as any;
+        new Response(JSON.stringify({error: 'Not found'}), {
+          status: 404,
+          headers: {'Content-Type': 'application/json'},
+        })) as any;
 
       expect(async () => {
         await failWorkRequest('nonexistent', 'Error');
@@ -162,7 +197,10 @@ describe('Work Request Client Calls', () => {
     it('should trigger feeds refresh and return work request id', async () => {
       const mockResponse = {id: 'wr-123'};
       global.fetch = (async () =>
-        new Response(JSON.stringify(mockResponse), {status: 201, headers: {'Content-Type': 'application/json'}})) as any;
+        new Response(JSON.stringify(mockResponse), {
+          status: 201,
+          headers: {'Content-Type': 'application/json'},
+        })) as any;
 
       const result = await triggerRefreshAllFeeds();
       expect(result.id).toBe('wr-123');
@@ -170,7 +208,10 @@ describe('Work Request Client Calls', () => {
 
     it('should throw on error', async () => {
       global.fetch = (async () =>
-        new Response(JSON.stringify({error: 'Unauthorized'}), {status: 401, headers: {'Content-Type': 'application/json'}})) as any;
+        new Response(JSON.stringify({error: 'Unauthorized'}), {
+          status: 401,
+          headers: {'Content-Type': 'application/json'},
+        })) as any;
 
       expect(async () => {
         await triggerRefreshAllFeeds();
@@ -182,7 +223,10 @@ describe('Work Request Client Calls', () => {
     it('should trigger emails refresh and return work request id', async () => {
       const mockResponse = {id: 'wr-456'};
       global.fetch = (async () =>
-        new Response(JSON.stringify(mockResponse), {status: 201, headers: {'Content-Type': 'application/json'}})) as any;
+        new Response(JSON.stringify(mockResponse), {
+          status: 201,
+          headers: {'Content-Type': 'application/json'},
+        })) as any;
 
       const result = await triggerRefreshEmails();
       expect(result.id).toBe('wr-456');
@@ -190,7 +234,10 @@ describe('Work Request Client Calls', () => {
 
     it('should throw on error', async () => {
       global.fetch = (async () =>
-        new Response(JSON.stringify({error: 'Unauthorized'}), {status: 401, headers: {'Content-Type': 'application/json'}})) as any;
+        new Response(JSON.stringify({error: 'Unauthorized'}), {
+          status: 401,
+          headers: {'Content-Type': 'application/json'},
+        })) as any;
 
       expect(async () => {
         await triggerRefreshEmails();

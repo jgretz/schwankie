@@ -11,9 +11,7 @@ export async function refreshGmailTokens(): Promise<GmailTokens | null> {
   }
 
   const now = new Date();
-  const expiryWithSkew = new Date(
-    tokens.expiry.getTime() - EXPIRY_SKEW_SECONDS * 1000,
-  );
+  const expiryWithSkew = new Date(tokens.expiry.getTime() - EXPIRY_SKEW_SECONDS * 1000);
 
   if (expiryWithSkew > now) {
     return tokens;

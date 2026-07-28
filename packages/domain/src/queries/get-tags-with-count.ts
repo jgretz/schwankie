@@ -25,13 +25,8 @@ export async function getTagsWithCount(status?: LinkStatus, minCount?: number) {
   let countedQuery = query.groupBy(tag.id, tag.text);
 
   if (minCount !== undefined && minCount > 1) {
-    countedQuery = countedQuery.having(
-      gte(count(sql`DISTINCT ${linkTag.linkId}`), minCount)
-    );
+    countedQuery = countedQuery.having(gte(count(sql`DISTINCT ${linkTag.linkId}`), minCount));
   }
 
-  return countedQuery.orderBy(
-    desc(sql`count(DISTINCT ${linkTag.linkId})`),
-    tag.text
-  );
+  return countedQuery.orderBy(desc(sql`count(DISTINCT ${linkTag.linkId})`), tag.text);
 }

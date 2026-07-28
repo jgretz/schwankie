@@ -120,7 +120,9 @@ async function main(): Promise<void> {
 
     console.table(summaryTable);
 
-    console.log(`\nTotal: read=${totalRead}, wrote=${totalWrote}, skipped=${totalSkipped}, errors=${totalErrors}`);
+    console.log(
+      `\nTotal: read=${totalRead}, wrote=${totalWrote}, skipped=${totalSkipped}, errors=${totalErrors}`,
+    );
 
     if (totalErrors > 0) {
       console.log('\nPhase errors:');
@@ -146,7 +148,9 @@ async function main(): Promise<void> {
 }
 
 function logPhaseResult(phase: string, result: PhaseResult): void {
-  console.log(`[${phase}] read=${result.read}, wrote=${result.wrote}, skipped=${result.skipped}, errors=${result.errors.length}`);
+  console.log(
+    `[${phase}] read=${result.read}, wrote=${result.wrote}, skipped=${result.skipped}, errors=${result.errors.length}`,
+  );
 }
 
 main();

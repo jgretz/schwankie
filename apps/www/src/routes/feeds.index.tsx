@@ -25,10 +25,7 @@ export const Route = createFileRoute('/feeds/')({
   },
   validateSearch: searchSchema,
   head: () => ({
-    meta: [
-      {title: 'RSS — schwankie'},
-      {name: 'description', content: 'Your RSS items.'},
-    ],
+    meta: [{title: 'RSS — schwankie'}, {name: 'description', content: 'Your RSS items.'}],
   }),
   component: RssPage,
 });
@@ -86,9 +83,7 @@ function RssPage() {
 
   const feedOptions = useMemo(() => {
     const feeds = feedsQuery.data ?? [];
-    return [...feeds]
-      .filter((f) => !f.disabled)
-      .sort((a, b) => a.name.localeCompare(b.name));
+    return [...feeds].filter((f) => !f.disabled).sort((a, b) => a.name.localeCompare(b.name));
   }, [feedsQuery.data]);
 
   const toSearch = useCallback(
@@ -182,102 +177,102 @@ function RssPage() {
       </div>
 
       <div className="space-y-6 px-6 py-6">
-      <div className="flex flex-wrap items-center gap-2">
-        <button
-          type="button"
-          onClick={handleToggleUnread}
-          className={`px-3 py-1 rounded-full font-sans text-[0.85rem] transition-colors ${
-            search.unread
-              ? 'bg-accent text-accent-foreground'
-              : 'bg-bg-subtle text-text hover:bg-border'
-          }`}
-        >
-          {search.unread ? 'Unread' : 'All'}
-        </button>
-
-        <button
-          type="button"
-          onClick={handleToggleGroup}
-          disabled={Boolean(search.feedId)}
-          className={`px-3 py-1 rounded-full font-sans text-[0.85rem] transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
-            search.group && !search.feedId
-              ? 'bg-accent text-accent-foreground'
-              : 'bg-bg-subtle text-text hover:bg-border'
-          }`}
-        >
-          Group by source
-        </button>
-
-        {feedOptions.length > 1 && (
-          <select
-            value={search.feedId ?? ''}
-            onChange={(e) => handleFeedFilter(e.target.value)}
-            className="rounded-md border border-border bg-bg px-3 py-1 font-sans text-[0.85rem] text-text"
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={handleToggleUnread}
+            className={`px-3 py-1 rounded-full font-sans text-[0.85rem] transition-colors ${
+              search.unread
+                ? 'bg-accent text-accent-foreground'
+                : 'bg-bg-subtle text-text hover:bg-border'
+            }`}
           >
-            <option value="">All sources</option>
-            {feedOptions.map((feed) => (
-              <option key={feed.id} value={feed.id}>
-                {feed.name}
-              </option>
+            {search.unread ? 'Unread' : 'All'}
+          </button>
+
+          <button
+            type="button"
+            onClick={handleToggleGroup}
+            disabled={Boolean(search.feedId)}
+            className={`px-3 py-1 rounded-full font-sans text-[0.85rem] transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+              search.group && !search.feedId
+                ? 'bg-accent text-accent-foreground'
+                : 'bg-bg-subtle text-text hover:bg-border'
+            }`}
+          >
+            Group by source
+          </button>
+
+          {feedOptions.length > 1 && (
+            <select
+              value={search.feedId ?? ''}
+              onChange={(e) => handleFeedFilter(e.target.value)}
+              className="rounded-md border border-border bg-bg px-3 py-1 font-sans text-[0.85rem] text-text"
+            >
+              <option value="">All sources</option>
+              {feedOptions.map((feed) => (
+                <option key={feed.id} value={feed.id}>
+                  {feed.name}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+
+        {query.isLoading ? (
+          <div className="text-center py-12 text-text-muted">Loading items…</div>
+        ) : query.isError ? (
+          <div className="text-center py-12 text-destructive">Failed to load items.</div>
+        ) : visibleItems.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-text-muted font-sans">
+              {search.unread ? 'No unread items.' : 'No items.'}
+            </p>
+          </div>
+        ) : showGrouped ? (
+          <div className="space-y-6">
+            {grouped.map(([feedId, {feedName, items: groupItems}]) => (
+              <section key={feedId}>
+                <div className="mb-2 flex items-baseline justify-between">
+                  <h2 className="font-serif text-lg text-text">{feedName}</h2>
+                  <span className="font-sans text-[0.8rem] text-text-faint">
+                    {groupItems.length} item{groupItems.length !== 1 ? 's' : ''}
+                  </span>
+                </div>
+                <div className="border border-border rounded-lg overflow-hidden">
+                  {groupItems.map((item) => (
+                    <RssItemRow
+                      key={item.id}
+                      item={item}
+                      onMarkRead={handleMarkRead(item.feedId, item.id)}
+                      onPromote={handlePromote(item.feedId, item.id)}
+                    />
+                  ))}
+                </div>
+              </section>
             ))}
-          </select>
+          </div>
+        ) : (
+          <div className="border border-border rounded-lg overflow-hidden">
+            {visibleItems.map((item) => (
+              <RssItemRow
+                key={item.id}
+                item={item}
+                sourceLabel={item.feedName}
+                onMarkRead={handleMarkRead(item.feedId, item.id)}
+                onPromote={handlePromote(item.feedId, item.id)}
+              />
+            ))}
+          </div>
         )}
-      </div>
 
-      {query.isLoading ? (
-        <div className="text-center py-12 text-text-muted">Loading items…</div>
-      ) : query.isError ? (
-        <div className="text-center py-12 text-destructive">Failed to load items.</div>
-      ) : visibleItems.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-text-muted font-sans">
-            {search.unread ? 'No unread items.' : 'No items.'}
-          </p>
-        </div>
-      ) : showGrouped ? (
-        <div className="space-y-6">
-          {grouped.map(([feedId, {feedName, items: groupItems}]) => (
-            <section key={feedId}>
-              <div className="mb-2 flex items-baseline justify-between">
-                <h2 className="font-serif text-lg text-text">{feedName}</h2>
-                <span className="font-sans text-[0.8rem] text-text-faint">
-                  {groupItems.length} item{groupItems.length !== 1 ? 's' : ''}
-                </span>
-              </div>
-              <div className="border border-border rounded-lg overflow-hidden">
-                {groupItems.map((item) => (
-                  <RssItemRow
-                    key={item.id}
-                    item={item}
-                    onMarkRead={handleMarkRead(item.feedId, item.id)}
-                    onPromote={handlePromote(item.feedId, item.id)}
-                  />
-                ))}
-              </div>
-            </section>
-          ))}
-        </div>
-      ) : (
-        <div className="border border-border rounded-lg overflow-hidden">
-          {visibleItems.map((item) => (
-            <RssItemRow
-              key={item.id}
-              item={item}
-              sourceLabel={item.feedName}
-              onMarkRead={handleMarkRead(item.feedId, item.id)}
-              onPromote={handlePromote(item.feedId, item.id)}
-            />
-          ))}
-        </div>
-      )}
+        <div ref={sentinelRef} className="h-1" />
 
-      <div ref={sentinelRef} className="h-1" />
-
-      {query.isFetchingNextPage && (
-        <div className="flex justify-center py-6">
-          <div className="h-5 w-5 animate-spin rounded-full border-2 border-border border-t-accent" />
-        </div>
-      )}
+        {query.isFetchingNextPage && (
+          <div className="flex justify-center py-6">
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-border border-t-accent" />
+          </div>
+        )}
       </div>
     </div>
   );

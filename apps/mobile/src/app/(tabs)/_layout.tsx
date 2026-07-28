@@ -5,12 +5,11 @@ import {useColors} from '../../theme/use-colors';
 export default function TabsLayout() {
   const colors = useColors();
 
-  const addButton = (href: string) => () =>
-    (
-      <Link href={href} style={{marginRight: 16, padding: 8}}>
-        <MaterialIcons name="add" size={24} color={colors.accent} />
-      </Link>
-    );
+  const addButton = (href: string) => () => (
+    <Link href={href} style={{marginRight: 16, padding: 8}}>
+      <MaterialIcons name="add" size={24} color={colors.accent} />
+    </Link>
+  );
 
   return (
     <Tabs

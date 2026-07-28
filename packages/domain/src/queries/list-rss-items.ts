@@ -28,10 +28,7 @@ export async function listRssItems(params: ListRssItemsParams): Promise<ListRssI
       .select()
       .from(rssItem)
       .where(where)
-      .orderBy(
-        sql`${rssItem.publishedAt} DESC NULLS LAST`,
-        desc(rssItem.createdAt),
-      )
+      .orderBy(sql`${rssItem.publishedAt} DESC NULLS LAST`, desc(rssItem.createdAt))
       .limit(limit)
       .offset(offset),
     db.select({count: count()}).from(rssItem).where(where),

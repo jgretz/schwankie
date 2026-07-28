@@ -5,9 +5,8 @@ const processOAuthCode = createServerFn({method: 'POST'})
   .inputValidator((code: string) => code)
   .handler(async ({data: code}) => {
     try {
-      const {exchangeCodeForTokens, fetchGoogleUserInfo, isAllowedEmail} = await import(
-        '../../lib/auth.server'
-      );
+      const {exchangeCodeForTokens, fetchGoogleUserInfo, isAllowedEmail} =
+        await import('../../lib/auth.server');
       const {createSession} = await import('../../lib/session.server');
 
       const tokens = await exchangeCodeForTokens(code);

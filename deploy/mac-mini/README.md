@@ -5,14 +5,14 @@ automatic updates from the `main` branch.
 
 ## Files
 
-| File | Purpose |
-|------|---------|
-| `src/runner.ts` | Entry point: main loop, signal handling, orchestration |
-| `src/child.ts` | Spawn/stop/restart the tasks worker child process |
-| `src/updater.ts` | Git fetch, pull, install, type-check, rollback |
-| `src/health.ts` | Poll the API runners list and verify the current child's heartbeat |
-| `src/log.ts` | Timestamped structured logging |
-| `config.json` | Runner configuration (intervals, branch, health params) |
+| File             | Purpose                                                            |
+| ---------------- | ------------------------------------------------------------------ |
+| `src/runner.ts`  | Entry point: main loop, signal handling, orchestration             |
+| `src/child.ts`   | Spawn/stop/restart the tasks worker child process                  |
+| `src/updater.ts` | Git fetch, pull, install, type-check, rollback                     |
+| `src/health.ts`  | Poll the API runners list and verify the current child's heartbeat |
+| `src/log.ts`     | Timestamped structured logging                                     |
+| `config.json`    | Runner configuration (intervals, branch, health params)            |
 
 ## Prerequisites
 
@@ -91,6 +91,7 @@ tail -f /var/log/schwankie/runner.log
 ## Stopping
 
 Send SIGTERM to the runner process. It will:
+
 1. Cancel the update timer
 2. Send SIGTERM to the tasks worker
 3. Wait up to 30s for graceful pg-boss drain

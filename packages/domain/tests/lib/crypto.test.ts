@@ -5,9 +5,7 @@ describe('crypto', function () {
   let key: Uint8Array;
 
   beforeEach(function () {
-    process.env.TOKEN_ENCRYPTION_KEY = Buffer.from(
-      new Uint8Array(32).fill(0),
-    ).toString('base64');
+    process.env.TOKEN_ENCRYPTION_KEY = Buffer.from(new Uint8Array(32).fill(0)).toString('base64');
     key = loadKey();
   });
 
@@ -53,9 +51,7 @@ describe('crypto', function () {
     });
 
     it('should throw when key is not 32 bytes', function () {
-      process.env.TOKEN_ENCRYPTION_KEY = Buffer.from(
-        new Uint8Array(16).fill(0),
-      ).toString('base64');
+      process.env.TOKEN_ENCRYPTION_KEY = Buffer.from(new Uint8Array(16).fill(0)).toString('base64');
 
       expect(() => {
         loadKey();

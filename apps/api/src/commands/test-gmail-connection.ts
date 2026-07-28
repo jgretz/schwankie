@@ -4,10 +4,12 @@ import {z} from 'zod';
 import {refreshGmailTokens} from './refresh-gmail-tokens';
 import {GmailTokenRevokedError} from '../lib/gmail-oauth';
 
-const env = parseEnv(z.object({
-  GOOGLE_CLIENT_ID: z.string(),
-  GOOGLE_CLIENT_SECRET: z.string(),
-}));
+const env = parseEnv(
+  z.object({
+    GOOGLE_CLIENT_ID: z.string(),
+    GOOGLE_CLIENT_SECRET: z.string(),
+  }),
+);
 
 export type TestGmailConnectionResult =
   | {ok: true; email: string; expiry: string}
