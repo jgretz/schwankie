@@ -38,6 +38,7 @@
     "typecheck:domain": "cd packages/domain && bun run typecheck",
     "typecheck:client": "cd packages/client && bun run typecheck",
     "typecheck:env": "cd packages/env && bun run typecheck",
+    "typecheck:database": "cd packages/database && bun run typecheck",
     "start": "concurrently bun:start:*",
     "start:api": "cd apps/api && bun run start",
     "start:www": "cd apps/www && bun run start",

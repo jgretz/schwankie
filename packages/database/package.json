@@ -2,6 +2,7 @@
   "name": "database",
   "type": "module",
   "scripts": {
+    "typecheck": "tsc --noEmit",
     "generate": "drizzle-kit generate",
     "migrate": "bun drizzle-kit migrate"
   },
