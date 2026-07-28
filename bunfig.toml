@@ -2,3 +2,6 @@
 linker = "hoisted"
 
 [test]
+# Refuses a bare repo-root `bun test`. See .claude/rules/testing.md.
+# bunfig is read from the cwd only, so this never reaches per-package runs.
+preload = ["./scripts/test-preload.ts"]
