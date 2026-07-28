@@ -10,9 +10,11 @@ const REPO_ROOT = join(import.meta.dir, '..');
 // jobs with the new package simply absent, and CI runs no tests at all to catch it.
 const NOT_FANNED_OUT = ['test:isolated'];
 
+type PackageJson = {scripts: Record<string, string>};
+
 async function readScripts(): Promise<Record<string, string>> {
-  const pkg = await Bun.file(join(REPO_ROOT, 'package.json')).json();
-  return pkg.scripts;
+  const {scripts} = (await Bun.file(join(REPO_ROOT, 'package.json')).json()) as PackageJson;
+  return scripts;
 }
 
 describe('root test fan-out', function () {
@@ -21,7 +23,9 @@ describe('root test fan-out', function () {
     // Tokenised, not substring-matched: `bun:test:tasks` contains `bun:test:task`, so
     // a new `test:task` script would read as already fanned out and never run — the
     // one drift this test exists to catch.
-    const fannedOut = new Set(scripts.test!.split(/\s+/));
+    // `?? ''` rather than a non-null assertion: a renamed or deleted `"test"` script
+    // then fails here naming every job that stopped running, instead of a TypeError.
+    const fannedOut = new Set((scripts.test ?? '').split(/\s+/));
 
     const missing = Object.keys(scripts)
       .filter((name) => name.startsWith('test:') && !NOT_FANNED_OUT.includes(name))
@@ -35,6 +39,6 @@ describe('root test fan-out', function () {
   it('should not fan out the isolated whole-repo run', async function () {
     const scripts = await readScripts();
 
-    expect(scripts.test).not.toContain('bun:test:isolated');
+    expect(scripts.test ?? '').not.toContain('bun:test:isolated');
   });
 });

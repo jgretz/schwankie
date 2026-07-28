@@ -81,9 +81,15 @@ describe('test-preload guard', function () {
 
 type Bunfig = {test?: {preload?: string[]}};
 
-// Workspaces are `apps/**` and `packages/**`, but every bunfig.toml sits at a package
-// root one level down. Matching a single level keeps `node_modules` out of the scan.
-const WORKSPACE_GLOBS = ['apps/*/bunfig.toml', 'packages/*/bunfig.toml'];
+// Mirrors the `workspaces` globs in the root package.json, so a package nested deeper
+// than one level is still scanned rather than silently exempted from the checks below.
+const WORKSPACE_GLOBS = ['apps/**/bunfig.toml', 'packages/**/bunfig.toml'];
+
+// Bun.Glob has no ignore list, and `**` walks into any per-package node_modules a
+// version conflict left unhoisted. A dependency's own bunfig is not ours to aggregate.
+function isVendored(path: string): boolean {
+  return path.includes('/node_modules/');
+}
 
 // Both sides of the comparison name the same file two ways — a bunfig entry carries
 // the `.ts`, the script's import specifier omits it — so compare extensionless.
@@ -96,6 +102,8 @@ async function declaredPackagePreloads(): Promise<string[]> {
 
   for (const pattern of WORKSPACE_GLOBS) {
     for await (const bunfig of new Bun.Glob(pattern).scan({cwd: REPO_ROOT, absolute: true})) {
+      if (isVendored(bunfig)) continue;
+
       const {default: config} = (await import(bunfig)) as {default: Bunfig};
       const preloads = config.test?.preload ?? [];
       paths.push(...preloads.map((entry) => withoutExtension(resolve(dirname(bunfig), entry))));
@@ -107,7 +115,12 @@ async function declaredPackagePreloads(): Promise<string[]> {
 
 async function aggregatedPreloads(): Promise<string[]> {
   const source = await Bun.file(SCRIPT).text();
-  const specifiers = [...source.matchAll(/await import\('([^']+)'\)/g)].map((match) => match[1]!);
+  // Deliberately looser than the style the script is written in: an added import that
+  // uses double quotes, or forgets the `await`, must still read as aggregated here, or
+  // this file reports a missing preload that is in fact present.
+  const specifiers = [...source.matchAll(/import\(\s*['"]([^'"]+)['"]\s*\)/g)].map(
+    (match) => match[1]!,
+  );
 
   return specifiers.map((specifier) => withoutExtension(resolve(dirname(SCRIPT), specifier)));
 }
