@@ -15,8 +15,7 @@ import {writeFile} from 'node:fs/promises';
 
 import {readFlag} from './lib/flags';
 
-const ZEN_SESSIONS =
-  `${process.env.HOME}/Library/Application Support/zen/Profiles/r7aqmu8z.Default (release)/zen-sessions.jsonlz4`;
+const ZEN_SESSIONS = `${process.env.HOME}/Library/Application Support/zen/Profiles/r7aqmu8z.Default (release)/zen-sessions.jsonlz4`;
 
 // ---------------------------------------------------------------------------
 // mozlz4 decoder
@@ -90,10 +89,7 @@ type TabEntry = {url: string; title: string};
 // zen-sessions.jsonlz4 has a flat top-level structure (tabs, folders, groups)
 // rather than windows. Folders can be nested — a parent folder's children also
 // have tabs we want to collect.
-function extractGroupFromZenSessions(
-  data: Record<string, unknown>,
-  groupName: string,
-): TabEntry[] {
+function extractGroupFromZenSessions(data: Record<string, unknown>, groupName: string): TabEntry[] {
   const folders = (data.folders ?? []) as Record<string, unknown>[];
   const tabs = (data.tabs ?? []) as Record<string, unknown>[];
 
@@ -112,10 +108,7 @@ function extractGroupFromZenSessions(
   for (const tab of tabs) {
     if (!groupIds.has((tab as Record<string, unknown>).groupId)) continue;
 
-    const entries = ((tab as Record<string, unknown>).entries ?? []) as Record<
-      string,
-      unknown
-    >[];
+    const entries = ((tab as Record<string, unknown>).entries ?? []) as Record<string, unknown>[];
     const idx = ((tab as Record<string, unknown>).index as number) ?? entries.length;
     const entry = entries[idx - 1] ?? entries[entries.length - 1];
     if (!entry) continue;
@@ -149,10 +142,7 @@ function extractGroupFromSessionstore(
     for (const tab of tabs) {
       if ((tab as Record<string, unknown>).groupId !== group.id) continue;
 
-      const entries = ((tab as Record<string, unknown>).entries ?? []) as Record<
-        string,
-        unknown
-      >[];
+      const entries = ((tab as Record<string, unknown>).entries ?? []) as Record<string, unknown>[];
       const idx = ((tab as Record<string, unknown>).index as number) ?? entries.length;
       const entry = entries[idx - 1] ?? entries[entries.length - 1];
       if (!entry) continue;
