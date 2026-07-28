@@ -108,6 +108,14 @@ describe('check-bun-version CLI', function () {
     expect(result.exitCode).toBe(0);
   });
 
+  it('should exit 0 when the root is given in the --root=<path> form', async function () {
+    const dir = await fixture({'app-a': '1.3.14'});
+
+    const result = await Bun.$`bun run ${SCRIPT} --root=${dir}`.nothrow().quiet();
+
+    expect(result.exitCode).toBe(0);
+  });
+
   it('should exit non-zero and name the file and both versions when a pin drifts', async function () {
     const dir = await fixture({'app-a': '1.3.14', 'app-b': '1.3.10'});
 
