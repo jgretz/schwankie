@@ -5,6 +5,7 @@ import {getSettingAction, setSettingAction} from '@www/lib/settings-actions';
 import {useState, useEffect} from 'react';
 
 export const Route = createFileRoute('/admin/general')({
+  head: () => ({meta: [{title: 'General — schwankie'}]}),
   component: AdminGeneralPage,
 });
 

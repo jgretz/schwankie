@@ -1,19 +1,25 @@
-import {useState} from 'react';
+import {memo, useState} from 'react';
 import {Button} from '@www/components/ui/button';
 import {Input} from '@www/components/ui/input';
 import {Dialog, DialogContent, DialogHeader, DialogTitle} from '@www/components/ui/dialog';
-
-export type TagItem = {id: number; text: string; count: number};
+import type {TagItem} from '@www/lib/types';
 
 export interface TagRowProps {
   tag: TagItem;
   isSelected: boolean;
-  onToggleSelect: () => void;
+  /** Takes the tag id so the parent can pass one stable handler to every row. */
+  onToggleSelect: (id: number) => void;
   onRename: (input: {id: number; text: string}) => void;
   onDelete: (id: number) => void;
 }
 
-export function TagRow({tag, isSelected, onToggleSelect, onRename, onDelete}: TagRowProps) {
+export const TagRow = memo(function TagRow({
+  tag,
+  isSelected,
+  onToggleSelect,
+  onRename,
+  onDelete,
+}: TagRowProps) {
   const [isRenaming, setIsRenaming] = useState(false);
   const [newText, setNewText] = useState(tag.text);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -35,7 +41,7 @@ export function TagRow({tag, isSelected, onToggleSelect, onRename, onDelete}: Ta
           <input
             type="checkbox"
             checked={isSelected}
-            onChange={onToggleSelect}
+            onChange={() => onToggleSelect(tag.id)}
             className="h-4 w-4 rounded border-border accent-accent cursor-pointer"
           />
         </td>
@@ -111,4 +117,4 @@ export function TagRow({tag, isSelected, onToggleSelect, onRename, onDelete}: Ta
       </Dialog>
     </>
   );
-}
+});
