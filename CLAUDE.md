@@ -20,10 +20,19 @@ bun run typecheck           # Typecheck all
 bun run typecheck:mobile    # Typecheck mobile only
 cd apps/www && bun run lint # Biome lint
 
+bun run test                    # all packages (per-package processes)
+bun run test:isolated           # all packages, one process (--isolate)
+bun test --cwd packages/domain  # one package
+
 cd packages/database
 bun run generate --name <descriptive-name>  # drizzle-kit generate
 bun run migrate                             # drizzle-kit migrate
 ```
+
+Never run a bare `bun test` from the repo root — it reports ~200 phantom failures.
+bun reads `bunfig.toml` only from the cwd, so the per-package `[test] preload` entries
+are skipped, and `mock.module` registers process-globally, so `apps/api`'s partial
+`@domain` stubs leak into `packages/domain`'s tests. See `docs/testing.md`.
 
 ## Apps
 
