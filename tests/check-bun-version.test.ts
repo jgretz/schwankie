@@ -1,5 +1,5 @@
 import {afterEach, describe, expect, it} from 'bun:test';
-import {mkdtemp, mkdir, rm, writeFile} from 'node:fs/promises';
+import {mkdtemp, mkdir, rm, symlink, unlink, writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 
@@ -144,6 +144,32 @@ describe('check-bun-version CLI', function () {
 
     expect(result.exitCode).not.toBe(0);
     expect(result.stderr.toString()).toContain('--root requires a directory path');
+  });
+
+  it('should report a usage mistake as a bare message rather than a stack trace', async function () {
+    const result = await Bun.$`bun run ${SCRIPT} --root`.nothrow().quiet();
+
+    expect(result.exitCode).toBe(2);
+    expect(result.stderr.toString()).not.toMatch(/^\s+at /m);
+  });
+
+  // The usage guard must stay narrow. Widening it over main() would reduce an
+  // unexpected I/O fault to the same bare one-liner and the same exit 2 as a
+  // typo'd flag — losing both the syscall detail and the ability to tell a bug
+  // apart from a usage mistake. A self-referential symlink is the cheapest way
+  // to raise a fault main() does not itself handle.
+  it('should keep the syscall detail when the failure is not a usage mistake', async function () {
+    const dir = await fixture({'app-a': '1.3.14'});
+    const dockerfile = join(dir, 'deploy', 'app-a', 'Dockerfile');
+    await unlink(dockerfile);
+    await symlink('Dockerfile', dockerfile);
+
+    const result = await Bun.$`bun run ${SCRIPT} --root ${dir}`.nothrow().quiet();
+    const stderr = result.stderr.toString();
+
+    expect(result.exitCode).not.toBe(2);
+    expect(stderr).toContain('ELOOP');
+    expect(stderr).toContain('syscall');
   });
 
   it('should exit non-zero when no deploy Dockerfiles are found', async function () {

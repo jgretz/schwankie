@@ -101,11 +101,17 @@ function readRootFlag(argv: ReadonlyArray<string>): string {
 }
 
 if (import.meta.main) {
+  let root: string;
+
+  // Only the flag parse is guarded. A usage mistake deserves a one-line message,
+  // but a genuine failure inside main() — unreadable Dockerfile, malformed
+  // package.json — must keep its stack trace to stay diagnosable.
   try {
-    process.exit(await main(readRootFlag(Bun.argv.slice(2))));
+    root = readRootFlag(Bun.argv.slice(2));
   } catch (error) {
-    // A flag error is a usage mistake — report it as one, not as a stack trace.
     console.error(error instanceof Error ? `Error: ${error.message}` : error);
     process.exit(2);
   }
+
+  process.exit(await main(root));
 }
