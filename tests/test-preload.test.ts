@@ -3,12 +3,12 @@ import {join} from 'node:path';
 
 const SCRIPT = join(import.meta.dir, '..', 'scripts', 'test-preload.ts');
 
-// The guard reads the sentinel from the environment, and `bun run test:isolated`
-// sets it for the whole run — so it must be cleared explicitly, or these cases
-// would silently exercise the pass-through branch under `bun run test:isolated`.
-function runGuard(isolated: string) {
+// `bun run test:isolated` sets the sentinel for the whole run, so the refusal cases
+// have to clear it explicitly ('' is falsy to the guard); inheriting the ambient
+// environment would silently exercise the pass-through branch instead.
+function runGuard(sentinel: string) {
   return Bun.$`bun run ${SCRIPT}`
-    .env({...process.env, SCHWANKIE_TEST_ISOLATED: isolated})
+    .env({...process.env, SCHWANKIE_TEST_ISOLATED: sentinel})
     .nothrow()
     .quiet();
 }
