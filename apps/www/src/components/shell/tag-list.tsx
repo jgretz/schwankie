@@ -1,4 +1,4 @@
-import {useRef, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {cn} from '@www/lib/utils';
 import {selectionBg} from '@www/lib/selection-styles';
 import type {Tag} from './types';
@@ -15,6 +15,12 @@ export function TagList({tags, selectedTags, onTagToggle}: TagListProps) {
   const [isSearching, setIsSearching] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Focus on open rather than `autoFocus` so the focus move is deliberate and only
+  // happens when the search input is actually revealed.
+  useEffect(() => {
+    if (isSearching) inputRef.current?.focus();
+  }, [isSearching]);
+
   const filteredTags = filter
     ? tags.filter((t) => t.text.toLowerCase().includes(filter.toLowerCase()))
     : tags;
@@ -29,7 +35,6 @@ export function TagList({tags, selectedTags, onTagToggle}: TagListProps) {
               type="text"
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
-              autoFocus
               placeholder="Search tags…"
               className="w-full bg-transparent text-[0.68rem] text-text-faint placeholder:text-text-faint/50 focus:outline-none"
             />
@@ -39,6 +44,7 @@ export function TagList({tags, selectedTags, onTagToggle}: TagListProps) {
                 setFilter('');
                 setIsSearching(false);
               }}
+              aria-label="Clear tag search"
               className="ml-1 shrink-0 cursor-pointer text-text-faint hover:text-text-muted"
             >
               <svg
@@ -48,6 +54,8 @@ export function TagList({tags, selectedTags, onTagToggle}: TagListProps) {
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="1.5"
+                aria-hidden="true"
+                focusable="false"
               >
                 <path d="M2 2l8 8M10 2l-8 8" />
               </svg>
@@ -59,6 +67,7 @@ export function TagList({tags, selectedTags, onTagToggle}: TagListProps) {
             <button
               type="button"
               onClick={() => setIsSearching(true)}
+              aria-label="Search tags"
               className="shrink-0 cursor-pointer text-text-faint hover:text-text-muted"
             >
               <svg
@@ -68,6 +77,8 @@ export function TagList({tags, selectedTags, onTagToggle}: TagListProps) {
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="1.5"
+                aria-hidden="true"
+                focusable="false"
               >
                 <circle cx="5" cy="5" r="3.5" />
                 <path d="M7.5 7.5L10.5 10.5" />

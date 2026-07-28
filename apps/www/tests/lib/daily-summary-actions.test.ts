@@ -89,7 +89,7 @@ describe('getDailySummaryAction', function () {
 
     const result = await getDailySummaryAction({data: {date: '2026-07-27'}});
 
-    expect(result!.summaryDate).toBe('2026-07-27');
+    expect(result?.summaryDate).toBe('2026-07-27');
   });
 
   it('should return null when the day has no digest', async function () {

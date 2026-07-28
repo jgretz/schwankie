@@ -5,6 +5,7 @@ import {Button} from '@www/components/ui/button';
 import {Input} from '@www/components/ui/input';
 import {TagRow} from '@www/components/admin/tag-row';
 import {MergeDialog} from '@www/components/admin/merge-dialog';
+import {SKELETON_KEYS} from '@www/lib/skeleton-keys';
 
 export const Route = createFileRoute('/admin/tags')({
   beforeLoad: ({context}) => {
@@ -99,8 +100,8 @@ function AdminTagsPage() {
 
       {isLoading && (
         <div className="animate-pulse space-y-4">
-          {Array.from({length: 3}, (_, i) => (
-            <div key={i} className="space-y-2">
+          {SKELETON_KEYS.slice(0, 3).map((key) => (
+            <div key={key} className="space-y-2">
               <div className="h-4 w-3/4 rounded bg-border" />
               <div className="h-3 w-1/2 rounded bg-border" />
             </div>

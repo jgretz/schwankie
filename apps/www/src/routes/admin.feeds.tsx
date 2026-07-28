@@ -1,5 +1,5 @@
 import {createFileRoute, redirect} from '@tanstack/react-router';
-import {useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {MoreVertical} from 'lucide-react';
 import {toast} from 'sonner';
 import {Button} from '@www/components/ui/button';
@@ -12,6 +12,7 @@ import {
 } from '@www/components/ui/dropdown-menu';
 import {Input} from '@www/components/ui/input';
 import {useFeeds} from '@www/hooks/use-feeds';
+import {SKELETON_KEYS} from '@www/lib/skeleton-keys';
 
 export const Route = createFileRoute('/admin/feeds')({
   beforeLoad: ({context}) => {
@@ -33,6 +34,13 @@ function AdminFeedsPage() {
   const [newFeedName, setNewFeedName] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
+  const editNameRef = useRef<HTMLInputElement>(null);
+
+  // Only one row is editable at a time, so a single ref is unambiguous. Focus on open
+  // rather than `autoFocus` so the focus move is deliberate.
+  useEffect(() => {
+    if (editingId) editNameRef.current?.focus();
+  }, [editingId]);
 
   const sorted = [...feeds].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
   const filtered = filter
@@ -142,8 +150,8 @@ function AdminFeedsPage() {
 
       {query.isLoading && (
         <div className="animate-pulse space-y-4">
-          {Array.from({length: 3}, (_, i) => (
-            <div key={i} className="space-y-2">
+          {SKELETON_KEYS.slice(0, 3).map((key) => (
+            <div key={key} className="space-y-2">
               <div className="h-4 w-3/4 rounded bg-border" />
               <div className="h-3 w-1/2 rounded bg-border" />
             </div>
@@ -187,11 +195,11 @@ function AdminFeedsPage() {
                     {editingId === feed.id ? (
                       <div className="flex gap-2">
                         <input
+                          ref={editNameRef}
                           type="text"
                           value={editName}
                           onChange={(e) => setEditName(e.target.value)}
                           className="min-w-0 flex-1 px-2 py-1 border border-border rounded font-sans text-[0.9rem]"
-                          autoFocus
                         />
                         <Button
                           size="sm"

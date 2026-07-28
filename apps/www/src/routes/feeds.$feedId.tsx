@@ -120,6 +120,7 @@ function FeedDetailPage() {
 
       <div className="flex gap-2">
         <button
+          type="button"
           onClick={handleToggleUnread}
           className={`px-3 py-1 rounded-full font-sans text-[0.85rem] transition-colors ${
             unread

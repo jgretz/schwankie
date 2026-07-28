@@ -11,6 +11,7 @@ import {BulkDeleteDialog} from './bulk-delete-dialog';
 import {useInfiniteLinks} from '@www/hooks/use-infinite-links';
 import {useTags} from '@www/hooks/use-tags';
 import {parseTagSlugs} from '@www/lib/parse-tag-slugs';
+import {SKELETON_KEYS} from '@www/lib/skeleton-keys';
 
 type FeedPageProps = {
   status: LinkStatus;
@@ -76,6 +77,7 @@ export function FeedPage({
   const [isDeleting, setIsDeleting] = useState(false);
 
   // Reset selection when the visible set changes (filter, sort, search, status)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: biome 1.5.3 misreads destructured props as non-reactive "outer scope values" — these deps are what makes the reset fire, dropping them would leave stale selections across filter changes
   useEffect(() => {
     setSelected(new Set());
   }, [status, tagsParam, q, sort]);
@@ -164,8 +166,8 @@ export function FeedPage({
     return (
       <div className="px-6 py-10">
         <div className="animate-pulse space-y-4">
-          {Array.from({length: 5}, (_, i) => (
-            <div key={i} className="space-y-2">
+          {SKELETON_KEYS.map((key) => (
+            <div key={key} className="space-y-2">
               <div className="h-4 w-3/4 rounded bg-border" />
               <div className="h-3 w-1/2 rounded bg-border" />
             </div>

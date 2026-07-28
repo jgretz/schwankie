@@ -1,5 +1,6 @@
 import type {RelatedLinkData} from 'client';
 import {useRelatedLinks} from '@www/hooks/use-related-links';
+import {SKELETON_KEYS} from '@www/lib/skeleton-keys';
 
 type RelatedRailProps = {
   linkId: number | null;
@@ -19,8 +20,8 @@ export function RelatedRail({linkId}: RelatedRailProps) {
   if (isLoading) {
     return (
       <div className="space-y-2">
-        {Array.from({length: 3}, (_, i) => (
-          <div key={i} className="h-4 w-2/3 animate-pulse rounded bg-border" />
+        {SKELETON_KEYS.slice(0, 3).map((key) => (
+          <div key={key} className="h-4 w-2/3 animate-pulse rounded bg-border" />
         ))}
       </div>
     );

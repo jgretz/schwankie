@@ -1,5 +1,5 @@
 import {createFileRoute} from '@tanstack/react-router';
-import {useState, useCallback, useEffect} from 'react';
+import {useState, useCallback, useEffect, useRef} from 'react';
 import {useQueryClient} from '@tanstack/react-query';
 import {z} from 'zod';
 import {toast} from 'sonner';
@@ -18,6 +18,44 @@ export const Route = createFileRoute('/admin/gmail')({
   }),
   component: AdminGmailPage,
 });
+
+// Pure — hoisted out of the component so it is not re-created every render.
+function validateIMAPFilter(filterStr: string): {valid: boolean; error?: string} {
+  if (!filterStr.trim()) return {valid: false, error: 'Filter is empty'};
+
+  let parenCount = 0;
+  let inQuotes = false;
+  let escapeNext = false;
+
+  for (let i = 0; i < filterStr.length; i++) {
+    const char = filterStr[i];
+
+    if (escapeNext) {
+      escapeNext = false;
+      continue;
+    }
+
+    if (char === '\\') {
+      escapeNext = true;
+      continue;
+    }
+
+    if (char === '"') {
+      inQuotes = !inQuotes;
+      continue;
+    }
+
+    if (!inQuotes) {
+      if (char === '(') parenCount++;
+      if (char === ')') parenCount--;
+    }
+  }
+
+  if (inQuotes) return {valid: false, error: 'Unclosed quoted string'};
+  if (parenCount !== 0) return {valid: false, error: 'Unbalanced parentheses'};
+
+  return {valid: true};
+}
 
 function AdminGmailPage() {
   const queryClient = useQueryClient();
@@ -101,55 +139,19 @@ function AdminGmailPage() {
     [],
   );
 
+  // Timeout lives in a ref so the debounced callback survives re-renders without the
+  // per-render IIFE the previous version allocated.
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
   const debouncedSave = useCallback(
-    (() => {
-      let timeout: NodeJS.Timeout;
-      return (value: string) => {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => {
-          handleFilterSave(value);
-        }, 500);
-      };
-    })(),
+    (value: string) => {
+      clearTimeout(saveTimeoutRef.current);
+      saveTimeoutRef.current = setTimeout(() => {
+        handleFilterSave(value);
+      }, 500);
+    },
     [handleFilterSave],
   );
-
-  const validateIMAPFilter = (filterStr: string): {valid: boolean; error?: string} => {
-    if (!filterStr.trim()) return {valid: false, error: 'Filter is empty'};
-
-    let parenCount = 0;
-    let inQuotes = false;
-    let escapeNext = false;
-
-    for (let i = 0; i < filterStr.length; i++) {
-      const char = filterStr[i];
-
-      if (escapeNext) {
-        escapeNext = false;
-        continue;
-      }
-
-      if (char === '\\') {
-        escapeNext = true;
-        continue;
-      }
-
-      if (char === '"') {
-        inQuotes = !inQuotes;
-        continue;
-      }
-
-      if (!inQuotes) {
-        if (char === '(') parenCount++;
-        if (char === ')') parenCount--;
-      }
-    }
-
-    if (inQuotes) return {valid: false, error: 'Unclosed quoted string'};
-    if (parenCount !== 0) return {valid: false, error: 'Unbalanced parentheses'};
-
-    return {valid: true};
-  };
 
   const handleTestFilter = useCallback(() => {
     const validation = validateIMAPFilter(filter);

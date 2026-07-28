@@ -118,11 +118,11 @@ function Sparkline({buckets, hours = 24}: {buckets: StatusBucket[]; hours?: numb
   return (
     <div className="space-y-2">
       <div className="flex items-end gap-[2px] h-14" aria-hidden>
-        {filled.map((b, i) => {
+        {filled.map((b) => {
           const heightPct = (b.count / max) * 100;
           return (
             <div
-              key={i}
+              key={b.hour.toISOString()}
               className="flex-1 bg-accent/70 rounded-sm"
               style={{height: `${Math.max(heightPct, b.count > 0 ? 6 : 2)}%`, minHeight: '2px'}}
               title={`${b.hour.toLocaleTimeString([], {hour: 'numeric'})}: ${b.count}`}

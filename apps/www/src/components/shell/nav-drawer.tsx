@@ -66,13 +66,19 @@ export function NavDrawer({
 
   return (
     <>
-      <div
+      {/* Pointer-only affordance: keyboard users close via Escape or the Close button, so
+          the backdrop stays out of the tab order, and it is hidden from assistive tech
+          entirely while the drawer is closed (it stays mounted for the fade transition). */}
+      <button
+        type="button"
+        tabIndex={-1}
+        aria-hidden={isOpen ? undefined : true}
+        aria-label="Close navigation"
         className={cn(
           'fixed inset-0 z-[200] bg-black/40 dark:bg-black/60 transition-opacity duration-200',
           isOpen ? 'opacity-100' : 'pointer-events-none opacity-0',
         )}
         onClick={onClose}
-        aria-hidden="true"
       />
 
       <div
@@ -102,6 +108,8 @@ export function NavDrawer({
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
+              aria-hidden="true"
+              focusable="false"
             >
               <path d="M18 6 6 18M6 6l12 12" />
             </svg>

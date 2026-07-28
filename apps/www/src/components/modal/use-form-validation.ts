@@ -25,11 +25,12 @@ export function useFormValidation<T extends Record<string, unknown>>(
     setErrors(result.errors);
     setTouched((prev) => ({
       ...prev,
-      ...Object.keys(schema).reduce((acc, key) => ({...acc, [key]: true}), {}),
+      ...Object.fromEntries(Object.keys(schema).map((key) => [key, true])),
     }));
     return result.isValid;
   }, [schema, values]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: biome 1.5.3 demands member expressions (schema[field], values[field]) as literal deps — not expressible; schema and values are the correct deps
   const touch = useCallback(
     (field: string) => {
       setTouched((prev) => ({...prev, [field]: true}));
