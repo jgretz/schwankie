@@ -76,11 +76,17 @@ export function FeedPage({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Reset selection when the visible set changes (filter, sort, search, status)
-  // biome-ignore lint/correctness/useExhaustiveDependencies: biome 1.5.3 misreads destructured props as non-reactive "outer scope values" — these deps are what makes the reset fire, dropping them would leave stale selections across filter changes
-  useEffect(() => {
+  // Drop the selection whenever the visible set changes, since the selected ids may no
+  // longer be on screen. Adjusted during render rather than in an effect so the stale
+  // selection never reaches a paint and there is no redundant reset on mount.
+  // Keyed via JSON because `q` and `tagsParam` are free text — any literal separator
+  // could be forged across the two fields and hide a real filter change.
+  const filterKey = JSON.stringify([status, tagsParam, q, sort]);
+  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
+  if (filterKey !== prevFilterKey) {
+    setPrevFilterKey(filterKey);
     setSelected(new Set());
-  }, [status, tagsParam, q, sort]);
+  }
 
   const toggleSelect = useCallback((id: number) => {
     setSelected((prev) => {
