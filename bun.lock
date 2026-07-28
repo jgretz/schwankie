@@ -170,6 +170,9 @@
         "metascraper-image": "^5",
         "metascraper-title": "^5",
       },
+      "devDependencies": {
+        "bun-types": "latest",
+      },
     },
   },
   "overrides": {

@@ -1,0 +1,16 @@
+{
+  // Covers the directories that are not bun workspaces (root `workspaces` is
+  // apps/** + packages/**) and so cannot carry a package.json typecheck script.
+  //
+  // One shared config rather than three: tests/check-bun-version.test.ts imports
+  // ../scripts/check-bun-version.ts, so those two must share a program anyway.
+  //
+  // Kept at the repo root deliberately — a tsconfig.json under deploy/mac-mini/
+  // would also become the config bun reads for `paths` when `bun run tasks-runner`
+  // executes from there, which is production.
+  "extends": "./tsconfig.json",
+
+  // `include` is not inherited through `extends`, and the root config declares
+  // none (defaulting to every .ts in the repo), so it has to be set here.
+  "include": ["scripts/**/*.ts", "tests/**/*.ts", "deploy/mac-mini/src/**/*.ts"]
+}
