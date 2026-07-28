@@ -1,17 +1,14 @@
 import {createFileRoute, redirect} from '@tanstack/react-router';
-import {useState} from 'react';
-import {MoreVertical} from 'lucide-react';
+import {useCallback, useMemo, useState} from 'react';
 import {toast} from 'sonner';
+import type {FeedData} from 'client';
 import {Button} from '@www/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@www/components/ui/dropdown-menu';
+import {FeedRow} from '@www/components/admin/feed-row';
 import {Input} from '@www/components/ui/input';
+import {filterFeeds} from '@www/lib/filter-feeds';
+import {sortFeedsByUpdatedAt} from '@www/lib/sort-feeds';
 import {useFeeds} from '@www/hooks/use-feeds';
+import {SkeletonList} from '@www/components/skeleton-list';
 
 export const Route = createFileRoute('/admin/feeds')({
   beforeLoad: ({context}) => {
@@ -25,31 +22,33 @@ export const Route = createFileRoute('/admin/feeds')({
   component: AdminFeedsPage,
 });
 
+// Stable identity for the empty case — `query.data ?? []` would allocate a fresh
+// array on every render and invalidate the memos below.
+const NO_FEEDS: FeedData[] = [];
+
 function AdminFeedsPage() {
   const {query, createMutation, updateMutation, deleteMutation} = useFeeds();
-  const feeds = query.data ?? [];
+  const feeds = query.data ?? NO_FEEDS;
   const [filter, setFilter] = useState('');
   const [newFeedUrl, setNewFeedUrl] = useState('');
   const [newFeedName, setNewFeedName] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editName, setEditName] = useState('');
 
-  const sorted = [...feeds].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
-  const filtered = filter
-    ? sorted.filter((f) => f.name.toLowerCase().includes(filter.toLowerCase()) || f.sourceUrl.toLowerCase().includes(filter.toLowerCase()))
-    : sorted;
+  const sorted = useMemo(() => sortFeedsByUpdatedAt(feeds), [feeds]);
+  const filtered = useMemo(() => filterFeeds(sorted, filter), [sorted, filter]);
 
-  async function handleAddFeed() {
+  const createFeed = createMutation.mutateAsync;
+  const updateFeed = updateMutation.mutateAsync;
+  const deleteFeed = deleteMutation.mutateAsync;
+
+  const handleAddFeed = useCallback(async () => {
     if (!newFeedUrl.trim() || !newFeedName.trim()) {
       toast.error('Name and URL are required');
       return;
     }
 
     try {
-      await createMutation.mutateAsync({
-        sourceUrl: newFeedUrl,
-        name: newFeedName,
-      });
+      await createFeed({sourceUrl: newFeedUrl, name: newFeedName});
       toast.success('Feed added');
       setNewFeedUrl('');
       setNewFeedName('');
@@ -57,52 +56,68 @@ function AdminFeedsPage() {
       console.error('Failed to add feed:', error);
       toast.error('Failed to add feed');
     }
-  }
+  }, [createFeed, newFeedUrl, newFeedName]);
 
-  async function handleRenameFeed(feedId: string, newName: string) {
-    if (!newName.trim()) {
-      toast.error('Name is required');
-      return;
-    }
+  const handleRenameFeed = useCallback(
+    async (feedId: string, newName: string) => {
+      if (!newName.trim()) {
+        toast.error('Name is required');
+        return;
+      }
 
-    try {
-      await updateMutation.mutateAsync({id: feedId, name: newName});
-      toast.success('Feed renamed');
-      setEditingId(null);
-    } catch (error) {
-      console.error('Failed to rename feed:', error);
-      toast.error('Failed to rename feed');
-    }
-  }
+      try {
+        await updateFeed({id: feedId, name: newName});
+        toast.success('Feed renamed');
+        setEditingId(null);
+      } catch (error) {
+        console.error('Failed to rename feed:', error);
+        toast.error('Failed to rename feed');
+      }
+    },
+    [updateFeed],
+  );
 
-  async function handleToggleDisable(feedId: string, currentDisabled: boolean) {
-    try {
-      await updateMutation.mutateAsync({id: feedId, disabled: !currentDisabled});
-      toast.success(currentDisabled ? 'Feed enabled' : 'Feed disabled');
-    } catch (error) {
-      console.error('Failed to update feed:', error);
-      toast.error('Failed to update feed');
-    }
-  }
+  const handleToggleDisable = useCallback(
+    async (feedId: string, currentDisabled: boolean) => {
+      try {
+        await updateFeed({id: feedId, disabled: !currentDisabled});
+        toast.success(currentDisabled ? 'Feed enabled' : 'Feed disabled');
+      } catch (error) {
+        console.error('Failed to update feed:', error);
+        toast.error('Failed to update feed');
+      }
+    },
+    [updateFeed],
+  );
 
-  async function handleDeleteFeed(feedId: string) {
-    if (!confirm('Delete this feed?')) return;
+  const handleDeleteFeed = useCallback(
+    async (feedId: string) => {
+      if (!confirm('Delete this feed?')) return;
 
-    try {
-      await deleteMutation.mutateAsync(feedId);
-      toast.success('Feed deleted');
-    } catch (error) {
-      console.error('Failed to delete feed:', error);
-      toast.error('Failed to delete feed');
-    }
-  }
+      try {
+        await deleteFeed(feedId);
+        toast.success('Feed deleted');
+      } catch (error) {
+        console.error('Failed to delete feed:', error);
+        toast.error('Failed to delete feed');
+      }
+    },
+    [deleteFeed],
+  );
+
+  const handleStartEdit = useCallback((feedId: string) => setEditingId(feedId), []);
+  const handleCancelEdit = useCallback(() => setEditingId(null), []);
+
+  const isRowActionPending = updateMutation.isPending || deleteMutation.isPending;
 
   return (
     <div className="px-6 py-6">
       <div className="mb-5 flex items-baseline gap-3">
         <h2 className="font-serif text-[1.35rem] font-semibold text-text">Feeds</h2>
         <span className="font-sans text-[0.8rem] text-text-faint">
-          {filtered.length !== sorted.length ? `${filtered.length} / ${sorted.length}` : sorted.length}
+          {filtered.length !== sorted.length
+            ? `${filtered.length} / ${sorted.length}`
+            : sorted.length}
         </span>
       </div>
 
@@ -140,23 +155,18 @@ function AdminFeedsPage() {
         />
       </div>
 
-      {query.isLoading && (
-        <div className="animate-pulse space-y-4">
-          {Array.from({length: 3}, (_, i) => (
-            <div key={i} className="space-y-2">
-              <div className="h-4 w-3/4 rounded bg-border" />
-              <div className="h-3 w-1/2 rounded bg-border" />
-            </div>
-          ))}
-        </div>
-      )}
+      {query.isLoading && <SkeletonList rows={3} />}
 
       {query.isError && (
-        <p className="py-12 text-center font-sans text-[0.9rem] text-red-600">Failed to load feeds.</p>
+        <p className="py-12 text-center font-sans text-[0.9rem] text-red-600">
+          Failed to load feeds.
+        </p>
       )}
 
       {!query.isLoading && !query.isError && feeds.length === 0 && (
-        <p className="py-12 text-center font-sans text-[0.9rem] text-text-muted">No feeds yet. Add one above to get started.</p>
+        <p className="py-12 text-center font-sans text-[0.9rem] text-text-muted">
+          No feeds yet. Add one above to get started.
+        </p>
       )}
 
       {filtered.length > 0 && (
@@ -172,115 +182,40 @@ function AdminFeedsPage() {
             </colgroup>
             <thead>
               <tr className="border-b border-border">
-                <th className="py-2 text-left font-sans text-[0.8rem] font-semibold text-text-muted">Name</th>
-                <th className="py-2 px-4 text-left font-sans text-[0.8rem] font-semibold text-text-muted">URL</th>
-                <th className="py-2 px-4 text-left font-sans text-[0.8rem] font-semibold text-text-muted">Last Fetched</th>
-                <th className="py-2 px-4 text-left font-sans text-[0.8rem] font-semibold text-text-muted">Status</th>
-                <th className="py-2 px-4 text-left font-sans text-[0.8rem] font-semibold text-text-muted">Error</th>
-                <th className="py-2 px-4 text-right font-sans text-[0.8rem] font-semibold text-text-muted sr-only">Actions</th>
+                <th className="py-2 text-left font-sans text-[0.8rem] font-semibold text-text-muted">
+                  Name
+                </th>
+                <th className="py-2 px-4 text-left font-sans text-[0.8rem] font-semibold text-text-muted">
+                  URL
+                </th>
+                <th className="py-2 px-4 text-left font-sans text-[0.8rem] font-semibold text-text-muted">
+                  Last Fetched
+                </th>
+                <th className="py-2 px-4 text-left font-sans text-[0.8rem] font-semibold text-text-muted">
+                  Status
+                </th>
+                <th className="py-2 px-4 text-left font-sans text-[0.8rem] font-semibold text-text-muted">
+                  Error
+                </th>
+                <th className="py-2 px-4 text-right font-sans text-[0.8rem] font-semibold text-text-muted sr-only">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
               {filtered.map((feed) => (
-                <tr key={feed.id} className="border-b border-border hover:bg-bg-subtle transition-colors">
-                  <td className="py-3 pr-4 font-sans text-[0.9rem] align-middle">
-                    {editingId === feed.id ? (
-                      <div className="flex gap-2">
-                        <input
-                          type="text"
-                          value={editName}
-                          onChange={(e) => setEditName(e.target.value)}
-                          className="min-w-0 flex-1 px-2 py-1 border border-border rounded font-sans text-[0.9rem]"
-                          autoFocus
-                        />
-                        <Button
-                          size="sm"
-                          onClick={() => handleRenameFeed(feed.id, editName)}
-                          disabled={updateMutation.isPending}
-                        >
-                          Save
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => setEditingId(null)}
-                          disabled={updateMutation.isPending}
-                        >
-                          Cancel
-                        </Button>
-                      </div>
-                    ) : (
-                      <span className="block truncate" title={feed.name}>{feed.name}</span>
-                    )}
-                  </td>
-                  <td className="py-3 px-4 font-sans text-[0.85rem] text-text-muted align-middle">
-                    <a
-                      href={feed.sourceUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block truncate hover:text-accent transition-colors"
-                      title={feed.sourceUrl}
-                    >
-                      {feed.sourceUrl.replace(/^https?:\/\/(www\.)?/, '')}
-                    </a>
-                  </td>
-                  <td className="py-3 px-4 font-sans text-[0.85rem] text-text-muted align-middle truncate">
-                    {feed.updatedAt ? new Date(feed.updatedAt).toLocaleDateString(undefined, {month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'}) : '—'}
-                  </td>
-                  <td className="py-3 px-4 font-sans text-[0.85rem] align-middle">
-                    <span className={feed.disabled ? 'text-text-muted' : 'text-green-600 dark:text-green-400'}>
-                      {feed.disabled ? 'Disabled' : 'Active'}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4 font-sans text-[0.85rem] align-middle">
-                    {feed.errorCount > 0 && (
-                      <span
-                        className="block truncate text-destructive"
-                        title={feed.lastError ?? `${feed.errorCount} error${feed.errorCount !== 1 ? 's' : ''}`}
-                      >
-                        {feed.errorCount} err{feed.errorCount !== 1 ? 's' : ''}
-                      </span>
-                    )}
-                  </td>
-                  <td className="py-3 pl-2 text-right align-middle">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <button
-                          type="button"
-                          aria-label="Feed actions"
-                          disabled={editingId !== null}
-                          className="inline-flex h-8 w-8 items-center justify-center rounded-md text-text-muted transition-colors hover:bg-bg-subtle hover:text-text disabled:opacity-40 disabled:cursor-not-allowed"
-                        >
-                          <MoreVertical className="h-4 w-4" />
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-40">
-                        <DropdownMenuItem
-                          onSelect={() => {
-                            setEditingId(feed.id);
-                            setEditName(feed.name);
-                          }}
-                        >
-                          Rename
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onSelect={() => handleToggleDisable(feed.id, feed.disabled ?? false)}
-                          disabled={updateMutation.isPending}
-                        >
-                          {feed.disabled ? 'Enable' : 'Disable'}
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          onSelect={() => handleDeleteFeed(feed.id)}
-                          disabled={deleteMutation.isPending}
-                          className="text-destructive focus:text-destructive"
-                        >
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </td>
-                </tr>
+                <FeedRow
+                  key={feed.id}
+                  feed={feed}
+                  isEditing={editingId === feed.id}
+                  isRowActionPending={isRowActionPending}
+                  isAnyRowEditing={editingId !== null}
+                  onStartEdit={handleStartEdit}
+                  onCancelEdit={handleCancelEdit}
+                  onRename={handleRenameFeed}
+                  onToggleDisable={handleToggleDisable}
+                  onDelete={handleDeleteFeed}
+                />
               ))}
             </tbody>
           </table>

@@ -76,6 +76,7 @@ function RootComponent() {
       <head>
         <HeadContent />
         <script
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: pre-hydration theme script must run synchronously before React hydrates (react-components.md #2); content is a static literal with no user input
           dangerouslySetInnerHTML={{
             __html: `(function(){var t=localStorage.getItem('schwankie-theme');var d=t==='dark'||(t!=='light'&&window.matchMedia('(prefers-color-scheme:dark)').matches);if(d)document.documentElement.classList.add('dark')})()`,
           }}

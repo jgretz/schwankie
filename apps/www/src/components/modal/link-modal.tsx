@@ -1,5 +1,5 @@
 import {useQueryClient} from '@tanstack/react-query';
-import {useCallback, useEffect, useState} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 import {toast} from 'sonner';
 import {
   Dialog,
@@ -134,7 +134,7 @@ export function LinkModal() {
       setStage('url-entry');
       setForm(emptyForm);
     }
-  }, [isOpen, mode, editLink]);
+  }, [isOpen, mode, editLink, reset]);
 
   const handleFetchMetadata = useCallback(async (url: string) => {
     setStage('loading');
@@ -427,6 +427,12 @@ export function LinkModal() {
 function UrlEntryStage({onSubmit}: {onSubmit: (url: string) => void}) {
   const [url, setUrl] = useState('');
   const [error, setError] = useState('');
+  const urlInputRef = useRef<HTMLInputElement>(null);
+
+  // Focus on open rather than `autoFocus` so the focus move is deliberate.
+  useEffect(() => {
+    urlInputRef.current?.focus();
+  }, []);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -450,6 +456,7 @@ function UrlEntryStage({onSubmit}: {onSubmit: (url: string) => void}) {
     <form onSubmit={handleSubmit} className="space-y-4">
       <Field label="URL" required error={error || undefined}>
         <input
+          ref={urlInputRef}
           type="url"
           value={url}
           onChange={(e) => {
@@ -463,7 +470,6 @@ function UrlEntryStage({onSubmit}: {onSubmit: (url: string) => void}) {
             }
           }}
           placeholder="https://…"
-          autoFocus
           className="w-full rounded-md border border-border bg-bg px-3 py-2 font-sans text-[0.85rem] text-text outline-none transition-colors placeholder:text-text-faint focus:border-accent"
         />
       </Field>

@@ -1,4 +1,5 @@
 # Link Metadata Extraction Architecture
+<!-- Adding an incidental implementation note (dependency override, workaround, gotcha)? It goes in the top-level "## Implementation Notes" section — never nested under a tier/layer/phase heading. See .claude/rules/doc-structure.md. -->
 
 ## Context
 
@@ -69,6 +70,16 @@ Current `link` table fields sufficient:
 - `publishedDate` timestamp
 - `siteName` varchar(200)
 - `contentType` varchar(100)
+
+## Implementation Notes
+
+### The `re2` override
+
+`@metascraper/helpers` declares a hard dependency on `re2` (`~1.23.0`), a native NAN addon it passes to `url-regex-safe` for ReDoS-hardened URL matching. `re2` at `1.23.x` cannot compile against Node 26's V8 — its addon calls `v8::String::Utf8Length`, `v8::String::WriteUtf8`, and `v8::Context::GetIsolate`, all removed there — so on a machine with Node 26 the `node-gyp` fallback in `re2`'s install script fails and a from-scratch `bun install` exits non-zero. Nothing here loads `re2` at runtime: `METASCRAPER_RE2` is unset, so `url-regex-safe` falls back to plain `RegExp`.
+
+The root `package.json` therefore carries `"re2": "^1.26.1"` in `overrides`, purely to keep `bun install` a clean signal. Drop it once `grep '"re2"' node_modules/@metascraper/helpers/package.json` shows a floor of `>= 1.24` — i.e. once `packages/metadata` moves to a metascraper release that no longer pulls an uncompilable `re2`.
+
+Note that CI does not guard this: `.github/workflows/checks.yml` runs on `ubuntu-latest`, whose Node is old enough that even `re2@1.23.3` installs cleanly. The failure only reproduces on a from-scratch install under Node 26+.
 
 ## Implementation Roadmap (Future Tasks)
 

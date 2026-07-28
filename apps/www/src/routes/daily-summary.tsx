@@ -49,6 +49,7 @@ function DailySummaryPage() {
   // so prev/next work even when the page opened without a ?date.
   const activeDate = summary?.summaryDate ?? date;
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: biome 1.5.3 demands member expressions (dates[index + 1]) as literal deps — not expressible; dates and activeDate are the correct deps
   const {previousDate, nextDate} = useMemo(() => {
     if (!dates || !activeDate) return {previousDate: undefined, nextDate: undefined};
     const index = dates.indexOf(activeDate);

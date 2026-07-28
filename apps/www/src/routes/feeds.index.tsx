@@ -77,10 +77,9 @@ function RssPage() {
   const grouped = useMemo(() => {
     const groups: Record<string, {feedName: string; items: RssItemWithFeedData[]}> = {};
     for (const item of visibleItems) {
-      if (!groups[item.feedId]) {
-        groups[item.feedId] = {feedName: item.feedName, items: []};
-      }
-      groups[item.feedId]!.items.push(item);
+      const group = groups[item.feedId] ?? {feedName: item.feedName, items: []};
+      group.items.push(item);
+      groups[item.feedId] = group;
     }
     return Object.entries(groups).sort((a, b) => a[1].feedName.localeCompare(b[1].feedName));
   }, [visibleItems]);

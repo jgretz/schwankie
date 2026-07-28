@@ -1,10 +1,14 @@
 import {createFileRoute, redirect} from '@tanstack/react-router';
-import {useState} from 'react';
+import {useCallback, useMemo, useState} from 'react';
 import {useAdminTags} from '@www/hooks/use-admin-tags';
 import {Button} from '@www/components/ui/button';
 import {Input} from '@www/components/ui/input';
 import {TagRow} from '@www/components/admin/tag-row';
 import {MergeDialog} from '@www/components/admin/merge-dialog';
+import {SkeletonList} from '@www/components/skeleton-list';
+import {filterTags} from '@www/lib/filter-tags';
+import {sortTagsByCount} from '@www/lib/sort-tags';
+import type {TagItem} from '@www/lib/types';
 
 export const Route = createFileRoute('/admin/tags')({
   beforeLoad: ({context}) => {
@@ -18,22 +22,23 @@ export const Route = createFileRoute('/admin/tags')({
   component: AdminTagsPage,
 });
 
+// Stable identity for the empty case — `data?.tags ?? []` would allocate a fresh
+// array on every render and invalidate the memos below.
+const NO_TAGS: TagItem[] = [];
+
 function AdminTagsPage() {
   const {data, isLoading, isError, rename, merge, remove} = useAdminTags();
-  const items = data?.tags ?? [];
+  const items = data?.tags ?? NO_TAGS;
   const [filter, setFilter] = useState('');
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [mergeDialogOpen, setMergeDialogOpen] = useState(false);
   const [canonicalId, setCanonicalId] = useState<number | null>(null);
 
-  const sorted = [...items].sort((a, b) => b.count - a.count);
-  const filtered = filter
-    ? sorted.filter((t) => t.text.toLowerCase().includes(filter.toLowerCase()))
-    : sorted;
+  const sorted = useMemo(() => sortTagsByCount(items), [items]);
+  const filtered = useMemo(() => filterTags(sorted, filter), [sorted, filter]);
+  const selectedTags = useMemo(() => sorted.filter((t) => selected.has(t.id)), [sorted, selected]);
 
-  const selectedTags = sorted.filter((t) => selected.has(t.id));
-
-  function toggleSelect(id: number) {
+  const toggleSelect = useCallback((id: number) => {
     setSelected((prev) => {
       const next = new Set(prev);
       if (next.has(id)) {
@@ -43,16 +48,20 @@ function AdminTagsPage() {
       }
       return next;
     });
-  }
+  }, []);
 
-  function handleMergeClick() {
+  const handleMergeClick = useCallback(() => {
+    // `selected` can hold ids that a prior merge or delete removed, so the
+    // selection may resolve to nothing even though the button was rendered.
+    if (selectedTags.length === 0) return;
+
     // Default canonical to the tag with the highest count
     const highest = selectedTags.reduce((a, b) => (a.count >= b.count ? a : b));
     setCanonicalId(highest.id);
     setMergeDialogOpen(true);
-  }
+  }, [selectedTags]);
 
-  function handleMergeConfirm() {
+  const handleMergeConfirm = useCallback(() => {
     if (!canonicalId) return;
     const aliases = selectedTags.filter((t) => t.id !== canonicalId);
     for (const alias of aliases) {
@@ -61,7 +70,7 @@ function AdminTagsPage() {
     setMergeDialogOpen(false);
     setSelected(new Set());
     setCanonicalId(null);
-  }
+  }, [canonicalId, selectedTags, merge]);
 
   return (
     <div className="px-6 py-6">
@@ -97,16 +106,7 @@ function AdminTagsPage() {
         )}
       </div>
 
-      {isLoading && (
-        <div className="animate-pulse space-y-4">
-          {Array.from({length: 3}, (_, i) => (
-            <div key={i} className="space-y-2">
-              <div className="h-4 w-3/4 rounded bg-border" />
-              <div className="h-3 w-1/2 rounded bg-border" />
-            </div>
-          ))}
-        </div>
-      )}
+      {isLoading && <SkeletonList rows={3} />}
 
       {isError && (
         <p className="py-12 text-center font-sans text-[0.9rem] text-red-600">
@@ -141,7 +141,7 @@ function AdminTagsPage() {
                   key={tag.id}
                   tag={tag}
                   isSelected={selected.has(tag.id)}
-                  onToggleSelect={() => toggleSelect(tag.id)}
+                  onToggleSelect={toggleSelect}
                   onRename={rename}
                   onDelete={remove}
                 />
