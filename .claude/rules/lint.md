@@ -34,11 +34,11 @@ here instead.
 
 Every `biome-ignore` must state *why* after the colon. Two rules are suppressed today:
 
-- **`correctness/useExhaustiveDependencies`** ×3 — `daily-summary.tsx`,
-  `use-form-validation.ts`, `feed-page.tsx`. Biome 1.5.3 demands member expressions
-  (`dates[index + 1]`, `schema[field]`) as literal deps, and misreads destructured
-  props as non-reactive "outer scope values". Never edit these dependency arrays to
-  appease the linter — doing so introduces stale closures or drops a needed re-run.
+- **`correctness/useExhaustiveDependencies`** ×2 — `daily-summary.tsx`,
+  `use-form-validation.ts`. Biome 1.5.3 demands member expressions
+  (`dates[index + 1]`, `schema[field]`) as literal deps, which is not expressible.
+  Never edit these dependency arrays to appease the linter — doing so introduces stale
+  closures or drops a needed re-run.
 - **`security/noDangerouslySetInnerHtml`** ×1 — `__root.tsx`, the pre-hydration theme
   script (`react-components.md` #2). It must run synchronously before React hydrates.
 
