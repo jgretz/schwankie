@@ -1,7 +1,7 @@
 import {createFileRoute} from '@tanstack/react-router';
 import {useDeadLinks} from '@www/hooks/use-dead-links';
 import {Button} from '@www/components/ui/button';
-import {SKELETON_KEYS} from '@www/lib/skeleton-keys';
+import {SkeletonList} from '@www/components/skeleton-list';
 
 export const Route = createFileRoute('/admin/dead-links')({
   component: AdminDeadLinksPage,
@@ -18,16 +18,7 @@ function AdminDeadLinksPage() {
         <span className="font-sans text-[0.8rem] text-text-faint">{data?.total ?? 0}</span>
       </div>
 
-      {isLoading && (
-        <div className="animate-pulse space-y-4">
-          {SKELETON_KEYS.slice(0, 3).map((key) => (
-            <div key={key} className="space-y-2">
-              <div className="h-4 w-3/4 rounded bg-border" />
-              <div className="h-3 w-1/2 rounded bg-border" />
-            </div>
-          ))}
-        </div>
-      )}
+      {isLoading && <SkeletonList rows={3} />}
 
       {isError && (
         <p className="py-12 text-center font-sans text-[0.9rem] text-red-600">

@@ -1,10 +1,13 @@
 import type {RelatedLinkData} from 'client';
 import {useRelatedLinks} from '@www/hooks/use-related-links';
-import {SKELETON_KEYS} from '@www/lib/skeleton-keys';
 
 type RelatedRailProps = {
   linkId: number | null;
 };
+
+// Static placeholder bars — they never reorder, so positional identity is the correct
+// identity; the literal keys say so without handing React a bare array index.
+const SKELETON_BARS = ['bar-1', 'bar-2', 'bar-3'];
 
 function formatBadge(item: RelatedLinkData): string {
   if (item.similarity != null) return `~${Math.round(item.similarity * 100)}%`;
@@ -20,7 +23,7 @@ export function RelatedRail({linkId}: RelatedRailProps) {
   if (isLoading) {
     return (
       <div className="space-y-2">
-        {SKELETON_KEYS.slice(0, 3).map((key) => (
+        {SKELETON_BARS.map((key) => (
           <div key={key} className="h-4 w-2/3 animate-pulse rounded bg-border" />
         ))}
       </div>

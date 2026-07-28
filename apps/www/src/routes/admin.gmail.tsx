@@ -11,6 +11,7 @@ import {
   setGmailFilterAction,
   testGmailConnectionAction,
 } from '@www/lib/gmail-actions';
+import {validateIMAPFilter} from '@www/lib/validate-imap-filter';
 
 export const Route = createFileRoute('/admin/gmail')({
   validateSearch: z.object({
@@ -18,44 +19,6 @@ export const Route = createFileRoute('/admin/gmail')({
   }),
   component: AdminGmailPage,
 });
-
-// Pure — hoisted out of the component so it is not re-created every render.
-function validateIMAPFilter(filterStr: string): {valid: boolean; error?: string} {
-  if (!filterStr.trim()) return {valid: false, error: 'Filter is empty'};
-
-  let parenCount = 0;
-  let inQuotes = false;
-  let escapeNext = false;
-
-  for (let i = 0; i < filterStr.length; i++) {
-    const char = filterStr[i];
-
-    if (escapeNext) {
-      escapeNext = false;
-      continue;
-    }
-
-    if (char === '\\') {
-      escapeNext = true;
-      continue;
-    }
-
-    if (char === '"') {
-      inQuotes = !inQuotes;
-      continue;
-    }
-
-    if (!inQuotes) {
-      if (char === '(') parenCount++;
-      if (char === ')') parenCount--;
-    }
-  }
-
-  if (inQuotes) return {valid: false, error: 'Unclosed quoted string'};
-  if (parenCount !== 0) return {valid: false, error: 'Unbalanced parentheses'};
-
-  return {valid: true};
-}
 
 function AdminGmailPage() {
   const queryClient = useQueryClient();
@@ -139,9 +102,15 @@ function AdminGmailPage() {
     [],
   );
 
-  // Timeout lives in a ref so the debounced callback survives re-renders without the
-  // per-render IIFE the previous version allocated.
+  // The pending timeout lives in a ref rather than in a closure built by a per-render
+  // IIFE (`useCallback((() => {let timeout; return …})(), […])`). That IIFE re-ran on
+  // every render only for useCallback to throw the result away, and it hid the real
+  // `handleFilterSave` capture from biome's dependency analysis.
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  useEffect(() => {
+    return () => clearTimeout(saveTimeoutRef.current);
+  }, []);
 
   const debouncedSave = useCallback(
     (value: string) => {
@@ -156,7 +125,7 @@ function AdminGmailPage() {
   const handleTestFilter = useCallback(() => {
     const validation = validateIMAPFilter(filter);
     if (!validation.valid) {
-      toast.error(validation.error || 'Invalid filter syntax');
+      toast.error(validation.error);
       return;
     }
     toast.success('Filter syntax is valid');

@@ -66,9 +66,13 @@ export function NavDrawer({
 
   return (
     <>
-      {/* Pointer-only affordance: keyboard users close via Escape or the Close button, so
-          the backdrop stays out of the tab order, and it is hidden from assistive tech
-          entirely while the drawer is closed (it stays mounted for the fade transition). */}
+      {/* Click-outside backdrop. It has to be a real <button>: biome 1.5.3's
+          useKeyWithClickEvents offers no exemption for a decorative click target, and
+          aria-hidden is not allowed on a focusable one. So it carries a name and is
+          exposed while open — redundant with the Close button below, but harmless —
+          and is hidden from assistive tech while closed, since it stays mounted (at
+          opacity 0) for the fade transition. tabIndex={-1} keeps it out of the tab
+          order; keyboard users close via Escape or that Close button. */}
       <button
         type="button"
         tabIndex={-1}

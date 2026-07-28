@@ -11,7 +11,7 @@ import {BulkDeleteDialog} from './bulk-delete-dialog';
 import {useInfiniteLinks} from '@www/hooks/use-infinite-links';
 import {useTags} from '@www/hooks/use-tags';
 import {parseTagSlugs} from '@www/lib/parse-tag-slugs';
-import {SKELETON_KEYS} from '@www/lib/skeleton-keys';
+import {SkeletonList} from '@www/components/skeleton-list';
 
 type FeedPageProps = {
   status: LinkStatus;
@@ -165,14 +165,7 @@ export function FeedPage({
   if (isLoading) {
     return (
       <div className="px-6 py-10">
-        <div className="animate-pulse space-y-4">
-          {SKELETON_KEYS.map((key) => (
-            <div key={key} className="space-y-2">
-              <div className="h-4 w-3/4 rounded bg-border" />
-              <div className="h-3 w-1/2 rounded bg-border" />
-            </div>
-          ))}
-        </div>
+        <SkeletonList rows={5} />
       </div>
     );
   }

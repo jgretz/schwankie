@@ -12,7 +12,7 @@ import {
 } from '@www/components/ui/dropdown-menu';
 import {Input} from '@www/components/ui/input';
 import {useFeeds} from '@www/hooks/use-feeds';
-import {SKELETON_KEYS} from '@www/lib/skeleton-keys';
+import {SkeletonList} from '@www/components/skeleton-list';
 
 export const Route = createFileRoute('/admin/feeds')({
   beforeLoad: ({context}) => {
@@ -148,16 +148,7 @@ function AdminFeedsPage() {
         />
       </div>
 
-      {query.isLoading && (
-        <div className="animate-pulse space-y-4">
-          {SKELETON_KEYS.slice(0, 3).map((key) => (
-            <div key={key} className="space-y-2">
-              <div className="h-4 w-3/4 rounded bg-border" />
-              <div className="h-3 w-1/2 rounded bg-border" />
-            </div>
-          ))}
-        </div>
-      )}
+      {query.isLoading && <SkeletonList rows={3} />}
 
       {query.isError && (
         <p className="py-12 text-center font-sans text-[0.9rem] text-red-600">Failed to load feeds.</p>
