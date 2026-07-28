@@ -45,3 +45,13 @@ Every `biome-ignore` must state *why* after the colon. Two rules are suppressed 
 In JSX, a suppression comment must be a `//` comment **inside the opening tag**, on the
 line directly above the offending attribute. A `{/* … */}` JSX comment node does not
 register and reports `suppressions/unused`.
+
+## Known 1.5.3 rule gaps
+
+`a11y/noAriaHiddenOnFocusable` only reasons about a **static** `aria-hidden`, and it does
+not account for `disabled`. The backdrop in `nav-drawer.tsx` is a `disabled` button —
+already unfocusable, so `aria-hidden` on it is correct — but writing it as
+`aria-hidden="true"` reports an error, while `aria-hidden={isOpen ? undefined : true}` does
+not. That attribute is dynamic because the value genuinely tracks `isOpen`, not to dodge
+the rule; do not "simplify" it to a literal. If a future edit makes it static and the
+rule fires, suppress it with a reason rather than deleting the `aria-hidden`.
