@@ -1,6 +1,6 @@
 import {View, FlatList, Text, RefreshControl, TouchableOpacity} from 'react-native';
 import {useState} from 'react';
-import type {DigestTopic} from 'client';
+import type {DailySummaryData, DigestTopic} from 'client';
 import {useColors} from '../../theme/use-colors';
 import {LoadingState, ErrorState, EmptyState} from '../../components/ListStates';
 import {formatSummaryDate} from '../../lib/format-summary-date';
@@ -21,8 +21,8 @@ export default function DailyScreen() {
   const {data: summary, isLoading, error, refetch, isFetching} = useDailySummary(date);
   const {data: dates, refetch: refetchDates} = useDailySummaryDates();
 
-  // The row's own date once loaded, so the day controls work even when the
-  // screen opened without an explicit date.
+  // Which day we are actually looking at — the loaded digest's own date, so the
+  // controls work even when the screen opened without one selected.
   const activeDate = summary?.summaryDate ?? date;
   const {previousDate, nextDate} = resolveAdjacentDates(dates, activeDate);
 
@@ -31,7 +31,80 @@ export default function DailyScreen() {
     refetchDates();
   };
 
-  const renderHeader = () => (
+  const renderItem = ({item}: {item: DigestTopic}) => <TopicCard topic={item} colors={colors} />;
+
+  if (isLoading) {
+    return <LoadingState colors={colors} />;
+  }
+
+  if (error) {
+    return (
+      <ErrorState
+        title="Error loading digest"
+        message={error instanceof Error ? error.message : 'Unknown error'}
+        colors={colors}
+      />
+    );
+  }
+
+  return (
+    <View style={{flex: 1, backgroundColor: colors.bg}}>
+      <FlatList
+        data={summary?.topics ?? []}
+        keyExtractor={(topic) => String(topic.rank)}
+        renderItem={renderItem}
+        ListHeaderComponent={
+          <DigestHeader
+            summary={summary}
+            previousDate={previousDate}
+            nextDate={nextDate}
+            onSelectDate={setDate}
+            colors={colors}
+          />
+        }
+        ListEmptyComponent={
+          <EmptyState
+            title={summary ? 'No topics' : 'No digest yet'}
+            message={
+              summary
+                ? 'Nothing notable came in over this window.'
+                : 'No digest for this day yet. The first one lands at 7am.'
+            }
+            colors={colors}
+          />
+        }
+        refreshControl={
+          <RefreshControl
+            refreshing={isFetching}
+            onRefresh={handleRefresh}
+            tintColor={colors.accent}
+          />
+        }
+        contentContainerStyle={{paddingBottom: 20, flexGrow: 1}}
+      />
+    </View>
+  );
+}
+
+/**
+ * Rendered as an element rather than passed to `ListHeaderComponent` as a
+ * function, so a re-render of the screen re-renders the header instead of
+ * remounting it under a freshly-created component type.
+ */
+function DigestHeader({
+  summary,
+  previousDate,
+  nextDate,
+  onSelectDate,
+  colors,
+}: {
+  summary: DailySummaryData | null | undefined;
+  previousDate: string | undefined;
+  nextDate: string | undefined;
+  onSelectDate: (date: string) => void;
+  colors: Colors;
+}) {
+  return (
     <View
       style={{
         paddingHorizontal: 16,
@@ -60,36 +133,20 @@ export default function DailyScreen() {
           <View style={{flex: 1}} />
         )}
         <View style={{flexDirection: 'row', gap: 8}}>
-          <TouchableOpacity
-            onPress={() => setDate(previousDate)}
-            disabled={!previousDate}
+          <DayNavButton
+            label="← Older"
             accessibilityLabel="Previous digest"
-            style={{
-              paddingHorizontal: 10,
-              paddingVertical: 6,
-              borderRadius: 6,
-              borderWidth: 1,
-              borderColor: colors.border,
-              opacity: previousDate ? 1 : 0.4,
-            }}
-          >
-            <Text style={{fontSize: 12, color: colors.text}}>← Older</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setDate(nextDate)}
-            disabled={!nextDate}
+            target={previousDate}
+            onSelectDate={onSelectDate}
+            colors={colors}
+          />
+          <DayNavButton
+            label="Newer →"
             accessibilityLabel="Next digest"
-            style={{
-              paddingHorizontal: 10,
-              paddingVertical: 6,
-              borderRadius: 6,
-              borderWidth: 1,
-              borderColor: colors.border,
-              opacity: nextDate ? 1 : 0.4,
-            }}
-          >
-            <Text style={{fontSize: 12, color: colors.text}}>Newer →</Text>
-          </TouchableOpacity>
+            target={nextDate}
+            onSelectDate={onSelectDate}
+            colors={colors}
+          />
         </View>
       </View>
 
@@ -109,55 +166,38 @@ export default function DailyScreen() {
       ) : null}
     </View>
   );
+}
 
-  const renderItem = ({item}: {item: DigestTopic}) => <TopicCard topic={item} colors={colors} />;
-
-  if (isLoading) {
-    return <LoadingState colors={colors} />;
-  }
-
-  if (error) {
-    return (
-      <ErrorState
-        title="Error loading digest"
-        message={error instanceof Error ? error.message : 'Unknown error'}
-        colors={colors}
-      />
-    );
-  }
-
+/** A day step. No target means that end of the digest list, so it is disabled. */
+function DayNavButton({
+  label,
+  accessibilityLabel,
+  target,
+  onSelectDate,
+  colors,
+}: {
+  label: string;
+  accessibilityLabel: string;
+  target: string | undefined;
+  onSelectDate: (date: string) => void;
+  colors: Colors;
+}) {
   return (
-    <View style={{flex: 1, backgroundColor: colors.bg}}>
-      <FlatList
-        data={summary?.topics ?? []}
-        keyExtractor={(topic) => String(topic.rank)}
-        renderItem={renderItem}
-        ListHeaderComponent={renderHeader}
-        ListEmptyComponent={
-          summary ? (
-            <EmptyState
-              title="No topics"
-              message="Nothing notable came in over this window."
-              colors={colors}
-            />
-          ) : (
-            <EmptyState
-              title="No digest yet"
-              message="No digest for this day yet. The first one lands at 7am."
-              colors={colors}
-            />
-          )
-        }
-        refreshControl={
-          <RefreshControl
-            refreshing={isFetching}
-            onRefresh={handleRefresh}
-            tintColor={colors.accent}
-          />
-        }
-        contentContainerStyle={{paddingBottom: 20, flexGrow: 1}}
-      />
-    </View>
+    <TouchableOpacity
+      onPress={() => target && onSelectDate(target)}
+      disabled={!target}
+      accessibilityLabel={accessibilityLabel}
+      style={{
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+        borderRadius: 6,
+        borderWidth: 1,
+        borderColor: colors.border,
+        opacity: target ? 1 : 0.4,
+      }}
+    >
+      <Text style={{fontSize: 12, color: colors.text}}>{label}</Text>
+    </TouchableOpacity>
   );
 }
 

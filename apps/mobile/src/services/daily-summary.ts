@@ -3,18 +3,26 @@ import {fetchDailySummary, fetchDailySummaryDates} from 'client';
 import type {DailySummaryData} from 'client';
 import {isMissingDigestError} from '../lib/is-missing-digest-error';
 
+/**
+ * The digest for one day, or `null` for a day the job has not covered.
+ *
+ * Exported separately from the hook so the 404-to-`null` mapping — a contract
+ * with the message `apiFetch` builds, not with anything in this app — can be
+ * driven by a test without a React renderer.
+ */
+export async function fetchDailySummaryOrNull(date?: string): Promise<DailySummaryData | null> {
+  try {
+    return await fetchDailySummary({date});
+  } catch (error) {
+    if (isMissingDigestError(error)) return null;
+    throw error;
+  }
+}
+
 export function useDailySummary(date?: string) {
   return useQuery({
     queryKey: ['daily-summary', date ?? 'latest'],
-    queryFn: async (): Promise<DailySummaryData | null> => {
-      try {
-        return await fetchDailySummary({date});
-      } catch (error) {
-        // A day the digest job has not covered is an empty state, not a failure.
-        if (isMissingDigestError(error)) return null;
-        throw error;
-      }
-    },
+    queryFn: () => fetchDailySummaryOrNull(date),
   });
 }
 

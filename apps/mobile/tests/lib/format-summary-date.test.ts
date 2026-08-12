@@ -10,7 +10,10 @@ const LONG_FORM = {
 
 // The UTC-shift regression only reproduces west of Greenwich, so pin a fixed
 // offset (Hawaii, UTC-10, no DST) rather than trusting the runner's zone.
-const originalTz = process.env.TZ;
+// Bun cannot restore the zone by deleting `TZ` — only by assigning one — so
+// fall back to the resolved zone when the runner left the variable unset,
+// otherwise the pin leaks into every test file that loads after this one.
+const originalTz = process.env.TZ ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
 
 beforeAll(function () {
   process.env.TZ = 'Pacific/Honolulu';
