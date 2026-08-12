@@ -21,7 +21,7 @@ export default function DailyScreen() {
   const {data: summary, isLoading, error, refetch, isFetching} = useDailySummary(date);
   const {data: dates, refetch: refetchDates} = useDailySummaryDates();
 
-  // Which day we are actually looking at — the loaded digest's own date, so the
+  // Which day we are actually looking at: the loaded digest's own date, so the
   // controls work even when the screen opened without one selected.
   const activeDate = summary?.summaryDate ?? date;
   const {previousDate, nextDate} = resolveAdjacentDates(dates, activeDate);

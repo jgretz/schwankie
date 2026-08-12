@@ -6,9 +6,9 @@ import {isMissingDigestError} from '../lib/is-missing-digest-error';
 /**
  * The digest for one day, or `null` for a day the job has not covered.
  *
- * Exported separately from the hook so the 404-to-`null` mapping — a contract
- * with the message `apiFetch` builds, not with anything in this app — can be
- * driven by a test without a React renderer.
+ * Exported separately from the hook so a test can drive the 404-to-`null`
+ * mapping without a React renderer. That mapping is a contract with the message
+ * `apiFetch` builds, not with anything in this app.
  */
 export async function fetchDailySummaryOrNull(date?: string): Promise<DailySummaryData | null> {
   try {
