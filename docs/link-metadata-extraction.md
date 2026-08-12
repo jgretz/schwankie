@@ -74,13 +74,19 @@ Current `link` table fields sufficient:
 
 ## Implementation Notes
 
-### The `re2` override
+### `re2` is installed but never built
 
-`@metascraper/helpers` declares a hard dependency on `re2` (`~1.23.0`), a native NAN addon it passes to `url-regex-safe` for ReDoS-hardened URL matching. `re2` at `1.23.x` cannot compile against Node 26's V8 — its addon calls `v8::String::Utf8Length`, `v8::String::WriteUtf8`, and `v8::Context::GetIsolate`, all removed there — so on a machine with Node 26 the `node-gyp` fallback in `re2`'s install script fails and a from-scratch `bun install` exits non-zero. Nothing here loads `re2` at runtime: `METASCRAPER_RE2` is unset, so `url-regex-safe` falls back to plain `RegExp`.
+`@metascraper/helpers` declares a hard dependency on `re2` (`~1.23.0`), a native NAN addon it passes to `url-regex-safe` for ReDoS-hardened URL matching. Nothing here loads it: `METASCRAPER_RE2` is unset, so `helpers` passes `re2: false` and `url-regex-safe` uses plain `RegExp` (its `require('re2')` is inside a try/catch behind that flag). The addon is pure install-time cost, and compiling it is where the failures live:
 
-The root `package.json` therefore carries `"re2": "^1.26.1"` in `overrides`, purely to keep `bun install` a clean signal. Drop it once `grep '"re2"' node_modules/@metascraper/helpers/package.json` shows a floor of `>= 1.24` — i.e. once `packages/metadata` moves to a metascraper release that no longer pulls an uncompilable `re2`.
+- On a machine with Node 26, `re2@1.23.x` will not compile at all. Its addon calls `v8::String::Utf8Length`, `v8::String::WriteUtf8` and `v8::Context::GetIsolate`, all removed there.
+- Under bun, the download step never even tries. `re2`'s install script shells out to `install-from-cache`, which locates the prebuilt artifact by reading `npm_package_repository_url`; bun points the `npm_package_*` variables at the workspace root, so the script logs `No github repository was identified` and falls through to `node-gyp -j max rebuild`. Every `bun install` therefore compiles RE2 from source.
+- That source build then broke the EAS iOS build outright. `re2@1.26.1` depends on `node-gyp@^13`, whose bundled `undici` calls `webidl.util.markAsUncloneable`, absent from the Node 20.19.4 on EAS's macOS image. EAS runs `bun install --frozen-lockfile` from the repo root, so the mobile build paid for a native module that only the API and task runner even transitively reference, and died on it.
 
-Note that CI does not guard this: `.github/workflows/checks.yml` runs on `ubuntu-latest`, whose Node is old enough that even `re2@1.23.3` installs cleanly. The failure only reproduces on a from-scratch install under Node 26+.
+The root `package.json` therefore lists `trustedDependencies: ["esbuild"]`. Declaring the field at all replaces bun's default allow list of packages permitted to run install hooks, so `re2` is blocked and the build never happens, on any machine or CI image. `esbuild` is the only installed package whose hook must still run; `@biomejs/biome` and `es5-ext` were already blocked before this and are unaffected. `tests/trusted-dependencies.test.ts` pins the list, mirrors it against `bun.lock` (which is what `--frozen-lockfile` reads), and fails when a newly added dependency ships an install hook that nobody has classified.
+
+`"re2": "^1.26.1"` stays in `overrides` as a second line of defense: it is what makes the package compilable under Node 26 if the hook is ever unblocked. Both can go once `grep '"re2"' node_modules/@metascraper/helpers/package.json` shows the dependency gone, i.e. once `packages/metadata` moves to a metascraper release that no longer pulls it.
+
+CI does not reproduce any of this. `.github/workflows/checks.yml` runs on `ubuntu-latest`, whose Node is old enough that even `re2@1.23.3` builds cleanly, and it has no iOS job. The guard is the test, not the pipeline.
 
 ## Implementation Roadmap (Future Tasks)
 
