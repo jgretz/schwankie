@@ -34,6 +34,13 @@ export default function TabsLayout() {
       }}
     >
       <Tabs.Screen
+        name="daily"
+        options={{
+          title: 'Daily',
+          tabBarIcon: ({color}) => <MaterialIcons name="today" size={24} color={color} />,
+        }}
+      />
+      <Tabs.Screen
         name="compendium"
         options={{
           title: 'Compendium',

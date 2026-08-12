@@ -1,5 +1,5 @@
 import type {InfiniteData} from '@tanstack/react-query';
-import type {LinkData, LinksResponse} from 'client';
+import type {DailySummaryData, LinkData, LinksResponse} from 'client';
 
 export function makeLink(overrides: Partial<LinkData> = {}): LinkData {
   return {
@@ -39,5 +39,22 @@ export function makeInfiniteData(pages: LinksResponse[]): InfiniteData<LinksResp
     pages,
     // Mirror real offset pagination: page 0 → offset 0, page 1 → offset 25, …
     pageParams: pages.map((_, index) => index * PAGE_SIZE),
+  };
+}
+
+export function makeDailySummary(overrides: Partial<DailySummaryData> = {}): DailySummaryData {
+  return {
+    id: 'summary-1',
+    summaryDate: '2026-03-01',
+    lookbackHours: 24,
+    windowStart: '2026-02-28T07:00:00.000Z',
+    windowEnd: '2026-03-01T07:00:00.000Z',
+    itemCount: 3,
+    coveredCount: 2,
+    notable: null,
+    topics: [],
+    createdAt: '2026-03-01T07:00:00.000Z',
+    updatedAt: '2026-03-01T07:00:00.000Z',
+    ...overrides,
   };
 }
