@@ -175,6 +175,9 @@
       },
     },
   },
+  "trustedDependencies": [
+    "esbuild",
+  ],
   "overrides": {
     "re2": "^1.26.1",
     "react": "19.2.0",
