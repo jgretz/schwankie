@@ -1,7 +1,10 @@
 export type RunnerHealth = 'healthy' | 'stale' | 'dead';
 
-export const HEALTHY_MAX_S = 120;
-export const STALE_MAX_S = 600;
+// The runner beats only at :00/:45 UTC so Neon can suspend between bursts
+// (apps/tasks/src/lib/burst-schedule.ts), so a healthy beat can be up to 45 min
+// old. Healthy allows 5 min of slack on that; stale covers about two missed beats.
+export const HEALTHY_MAX_S = 50 * 60;
+export const STALE_MAX_S = 2 * 60 * 60;
 
 export function classifyRunner(
   lastHeartbeatAt: Date | string,

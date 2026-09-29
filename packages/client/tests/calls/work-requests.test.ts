@@ -122,6 +122,41 @@ describe('Work Request Client Calls', () => {
         await listPendingWorkRequests();
       }).toThrow();
     });
+
+    describe('mode query parameter', () => {
+      let requestedUrl: string | undefined;
+
+      beforeEach(() => {
+        requestedUrl = undefined;
+        global.fetch = (async (input: RequestInfo | URL) => {
+          requestedUrl = String(input);
+          return new Response(JSON.stringify([]), {
+            status: 200,
+            headers: {'Content-Type': 'application/json'},
+          });
+        }) as any;
+      });
+
+      it('should request ?mode=hinted for a hinted poll', async () => {
+        await listPendingWorkRequests({mode: 'hinted'});
+        expect(requestedUrl).toBe(`${TEST_API_URL}/api/work/pending?mode=hinted`);
+      });
+
+      it('should request ?mode=full for a full sweep', async () => {
+        await listPendingWorkRequests({mode: 'full'});
+        expect(requestedUrl).toBe(`${TEST_API_URL}/api/work/pending?mode=full`);
+      });
+
+      it('should send no query string when called with no args', async () => {
+        await listPendingWorkRequests();
+        expect(requestedUrl).toBe(`${TEST_API_URL}/api/work/pending`);
+      });
+
+      it('should send no query string when mode is omitted', async () => {
+        await listPendingWorkRequests({});
+        expect(requestedUrl).toBe(`${TEST_API_URL}/api/work/pending`);
+      });
+    });
   });
 
   describe('completeWorkRequest', () => {

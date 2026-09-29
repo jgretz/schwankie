@@ -7,3 +7,7 @@ export const workIdParamSchema = z.object({
 export const failBodySchema = z.object({
   errorMessage: z.string().min(1),
 });
+
+export const pendingQuerySchema = z.object({
+  mode: z.enum(['hinted', 'full']).default('full'),
+});
