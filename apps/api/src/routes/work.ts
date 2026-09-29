@@ -9,14 +9,21 @@ import {
   cleanupOldWorkRequests,
 } from '@domain';
 
+import {pollPendingWorkRequests} from '../commands/poll-pending-work-requests';
+import {markWorkRequestPending} from '../lib/work-request-signal';
 import {authMiddleware} from '../middleware/auth';
-import {workIdParamSchema, failBodySchema} from '../validators/work';
+import {workIdParamSchema, failBodySchema, pendingQuerySchema} from '../validators/work';
 
 export const workRoutes = new Hono();
 const auth = authMiddleware();
 
 workRoutes.get('/api/work/pending', auth, async (c) => {
-  const results = await listPendingWorkRequests();
+  const parsed = pendingQuerySchema.safeParse({mode: c.req.query('mode')});
+  if (!parsed.success) {
+    return c.json({error: 'Invalid query parameters', details: parsed.error.flatten()}, 400);
+  }
+
+  const results = await pollPendingWorkRequests(parsed.data.mode, listPendingWorkRequests);
   return c.json(results);
 });
 
@@ -66,10 +73,12 @@ workRoutes.post('/api/work/cleanup', auth, async (c) => {
 
 workRoutes.post('/api/feeds/refresh', auth, async (c) => {
   const result = await createWorkRequest({type: 'refresh-all-feeds'});
+  markWorkRequestPending();
   return c.json(result, 201);
 });
 
 workRoutes.post('/api/emails/refresh', auth, async (c) => {
   const result = await createWorkRequest({type: 'refresh-emails'});
+  markWorkRequestPending();
   return c.json(result, 201);
 });

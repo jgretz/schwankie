@@ -110,6 +110,7 @@ export type {
   BulkUpsertRssItemsInput,
   WorkRequestData,
   WorkRequestResponse,
+  PendingWorkMode,
   EmailItemData,
   StatusResponse,
   StatusBucket,

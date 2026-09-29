@@ -6,22 +6,43 @@ import {
   completeWorkRequest,
   failWorkRequest,
   fetchAllFeeds,
+  type PendingWorkMode,
 } from 'client';
 
-export function createProcessWorkRequestsHandler(boss: PgBoss): PgBoss.WorkHandler<unknown> {
+export interface WorkRequestsApi {
+  listPendingWorkRequests: typeof listPendingWorkRequests;
+  startWorkRequest: typeof startWorkRequest;
+  completeWorkRequest: typeof completeWorkRequest;
+  failWorkRequest: typeof failWorkRequest;
+  fetchAllFeeds: typeof fetchAllFeeds;
+}
+
+const defaultApi: WorkRequestsApi = {
+  listPendingWorkRequests,
+  startWorkRequest,
+  completeWorkRequest,
+  failWorkRequest,
+  fetchAllFeeds,
+};
+
+export function createProcessWorkRequestsHandler(
+  boss: PgBoss,
+  mode: PendingWorkMode,
+  api: WorkRequestsApi = defaultApi,
+): PgBoss.WorkHandler<unknown> {
   return async () => {
-    const pending = await listPendingWorkRequests();
+    const pending = await api.listPendingWorkRequests({mode});
 
     for (const wr of pending) {
       try {
-        const claimed = await startWorkRequest(wr.id);
+        const claimed = await api.startWorkRequest(wr.id);
         if (!claimed) {
           console.log(`[process-work-requests] ${wr.id}: already claimed, skipping`);
           continue;
         }
 
         if (wr.type === 'refresh-all-feeds') {
-          const feeds = await fetchAllFeeds();
+          const feeds = await api.fetchAllFeeds();
           const jobs = feeds.map((feed) => ({
             name: 'import-feed',
             data: {feedId: feed.id, sourceUrl: feed.sourceUrl},
@@ -39,13 +60,13 @@ export function createProcessWorkRequestsHandler(boss: PgBoss): PgBoss.WorkHandl
           throw new Error(`Unknown work request type: ${wr.type}`);
         }
 
-        await completeWorkRequest(wr.id);
+        await api.completeWorkRequest(wr.id);
         console.log(`[process-work-requests] ${wr.id}: completed`);
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         console.error(`[process-work-requests] ${wr.id}: failed with error`, error);
         try {
-          await failWorkRequest(wr.id, message);
+          await api.failWorkRequest(wr.id, message);
         } catch (failError) {
           console.error(`[process-work-requests] ${wr.id}: failed to mark as failed`, failError);
         }

@@ -20,8 +20,8 @@ import {createProcessWorkRequestsHandler} from './jobs/process-work-requests';
 import {cleanupWorkRequestsHandler} from './jobs/cleanup-work-requests';
 import {cleanupRunnersHandler} from './jobs/cleanup-runners';
 import {runWithAutoRecovery} from './connectionManager';
-
-const HEARTBEAT_INTERVAL_MS = 60_000;
+import {jobDefinitions} from './job-definitions';
+import {startHeartbeatLoop} from './lib/heartbeat';
 
 const envSchema = z.object({
   API_URL: z.string().url(),
@@ -35,34 +35,6 @@ const envSchema = z.object({
   OLLAMA_EMBED_MODEL: z.string().default('nomic-embed-text'),
 });
 const env = parseEnv(envSchema);
-
-interface JobDefinition {
-  queue: string;
-  schedule: string;
-  runOnBoot?: boolean;
-  options?: PgBoss.WorkOptions;
-}
-
-// Scheduler crons fire every 45 min (':0' and ':45') so Neon stays quiet
-// between bursts. Content is read 2-3x/day, so up-to-45-min enrich/score
-// latency is fine. Tune upward (e.g. hourly) if Neon usage allows.
-const jobDefinitions: JobDefinition[] = [
-  {queue: 'schedule-enrich-content', schedule: '0,45 * * * *'},
-  {queue: 'enrich-link', schedule: '', options: {batchSize: 5}},
-  {queue: 'schedule-compute-embeddings', schedule: '0,45 * * * *'},
-  {queue: 'embed-link', schedule: '', options: {batchSize: 5}},
-  {queue: 'schedule-score-links', schedule: '0,45 * * * *'},
-  {queue: 'score-link', schedule: '', options: {batchSize: 10}},
-  {queue: 'schedule-normalize-tags', schedule: '0,45 * * * *'},
-  {queue: 'normalize-tag-chunk', schedule: '', options: {batchSize: 1}},
-  {queue: 'import-feed', schedule: '', options: {batchSize: 50}},
-  {queue: 'schedule-feed-imports', schedule: '0,45 * * * *'},
-  {queue: 'schedule-import-emails', schedule: '0,45 * * * *'},
-  {queue: 'import-email-message', schedule: '', options: {batchSize: 5}},
-  {queue: 'process-work-requests', schedule: '*/5 * * * *', runOnBoot: true},
-  {queue: 'cleanup-work-requests', schedule: '0 4 * * *'},
-  {queue: 'cleanup-runners', schedule: '0 5 * * *'},
-];
 
 async function setupWorkers(boss: PgBoss): Promise<void> {
   const handlers: Record<string, PgBoss.WorkHandler<unknown>> = {
@@ -78,7 +50,8 @@ async function setupWorkers(boss: PgBoss): Promise<void> {
     'schedule-feed-imports': createScheduleFeedImportsHandler(boss),
     'schedule-import-emails': createScheduleImportEmailsHandler(boss),
     'import-email-message': importEmailMessageHandler as PgBoss.WorkHandler<unknown>,
-    'process-work-requests': createProcessWorkRequestsHandler(boss),
+    'process-work-requests': createProcessWorkRequestsHandler(boss, 'hinted'),
+    'sweep-work-requests': createProcessWorkRequestsHandler(boss, 'full'),
     'cleanup-work-requests': cleanupWorkRequestsHandler,
     'cleanup-runners': cleanupRunnersHandler,
   };
@@ -122,13 +95,11 @@ async function main(): Promise<void> {
   });
   await recordRunnerHeartbeat(workerId);
 
-  setInterval(async function () {
-    try {
+  startHeartbeatLoop({
+    send: async function () {
       await recordRunnerHeartbeat(workerId);
-    } catch (error) {
-      console.error('[heartbeat] Failed:', error);
-    }
-  }, HEARTBEAT_INTERVAL_MS);
+    },
+  });
 
   await runWithAutoRecovery(setupWorkers);
 }

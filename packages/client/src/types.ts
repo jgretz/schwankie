@@ -152,6 +152,8 @@ export type WorkRequestResponse = {
   id: string;
 };
 
+export type PendingWorkMode = 'hinted' | 'full';
+
 export type EmailItemData = {
   id: string;
   emailMessageId: string;
