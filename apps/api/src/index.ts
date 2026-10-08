@@ -62,5 +62,8 @@ console.log(`schwankie-api is running on port ${env.PORT}`);
 export default {
   port: Number(env.PORT),
   hostname: '0.0.0.0',
+  // Bun's default 10s idle timeout drops a slow response mid-flight; history
+  // search's two LLM calls can approach it.
+  idleTimeout: 60,
   fetch: app.fetch,
 };

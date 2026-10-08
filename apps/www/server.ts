@@ -36,6 +36,10 @@ async function initializeServer() {
 
   const server = Bun.serve({
     port: SERVER_PORT,
+    // Bun's default 10s idle timeout drops a slow response mid-flight; history
+    // search's two LLM calls can approach it.
+    // Must be at least the api's, since this server waits on it.
+    idleTimeout: 60,
 
     routes: {
       '/rss': (req: Request) => proxyFeed(req, '/api/rss'),

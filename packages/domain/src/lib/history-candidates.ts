@@ -3,8 +3,6 @@ import {and, eq, gte, sql, type AnyColumn, type SQL} from 'drizzle-orm';
 import type {HistoryCandidate} from '../types';
 import {normalizeUrl} from './normalize-url';
 
-/** Caps the rss content fed to to_tsvector: bounds detoasting cost per row. */
-export const HISTORY_CONTENT_CHARS = 2000;
 /** Rank multiplier for items the owner has already opened from a reader. */
 export const HISTORY_OPENED_BOOST = 1.5;
 export const HISTORY_CANDIDATE_LIMIT = 50;
@@ -25,31 +23,28 @@ export function buildHistoryTsQuery(terms: string[]): SQL {
   return sql`(${sql.join(parts, sql` || `)})`;
 }
 
-function weighted(text: SQL, weight: 'A' | 'B' | 'C'): SQL {
-  return sql`setweight(to_tsvector('english', ${text}), ${sql.raw(`'${weight}'`)})`;
-}
+// Stored generated columns with GIN indexes, created by migration 0020, which
+// holds the weighting. They are not in the drizzle schema (drizzle-orm 0.30
+// cannot declare a generated column), so they are referenced here by name.
+const rssSearchVector = sql`"rss_item"."search_vector"`;
+const emailSearchVector = sql`"email_item"."search_vector"`;
 
 // Constants are inlined with sql.raw rather than bound: a bound value would
 // render a fresh $n at every occurrence of the expression.
 const openedBoost = sql.raw(String(HISTORY_OPENED_BOOST));
-const contentChars = sql.raw(String(HISTORY_CONTENT_CHARS));
 
-function rankExpression(doc: SQL, tsquery: SQL, openedAt: AnyColumn) {
-  return sql<number>`(ts_rank(${doc}, ${tsquery}) * case when ${openedAt} is not null then ${openedBoost} else 1 end)::float8`;
+function rankExpression(vector: SQL, tsquery: SQL, openedAt: AnyColumn) {
+  return sql<number>`(ts_rank(${vector}, ${tsquery}) * case when ${openedAt} is not null then ${openedBoost} else 1 end)::float8`;
 }
 
 // Ordering by the select-list alias, not the expression: repeating the
-// expression re-binds its parameters, so Postgres would compute the
-// tsvector a second time for every matched row.
+// expression re-binds its tsquery parameters, so Postgres would rebuild the
+// query and rank every matched row a second time.
 const byRankDesc = sql`"rank" desc`;
 
 export function rssCandidateQuery(db: Database, args: CandidateQueryArgs) {
   const {terms, windowStart, limit = HISTORY_CANDIDATE_LIMIT} = args;
   const tsquery = buildHistoryTsQuery(terms);
-  const doc = sql`(${weighted(sql`coalesce(${rssItem.title}, '')`, 'A')} || ${weighted(
-    sql`coalesce(${rssItem.summary}, '')`,
-    'B',
-  )} || ${weighted(sql`left(coalesce(${rssItem.content}, ''), ${contentChars})`, 'C')})`;
 
   return db
     .select({
@@ -62,12 +57,16 @@ export function rssCandidateQuery(db: Database, args: CandidateQueryArgs) {
       ingestedAt: rssItem.createdAt,
       openedAt: rssItem.openedAt,
       promoted: rssItem.promoted,
-      rank: rankExpression(doc, tsquery, rssItem.openedAt).as('rank'),
+      rank: rankExpression(rssSearchVector, tsquery, rssItem.openedAt).as('rank'),
     })
     .from(rssItem)
     .innerJoin(feed, eq(rssItem.feedId, feed.id))
     .where(
-      and(eq(feed.disabled, false), gte(rssItem.createdAt, windowStart), sql`${doc} @@ ${tsquery}`),
+      and(
+        eq(feed.disabled, false),
+        gte(rssItem.createdAt, windowStart),
+        sql`${rssSearchVector} @@ ${tsquery}`,
+      ),
     )
     .orderBy(byRankDesc)
     .limit(limit);
@@ -76,10 +75,6 @@ export function rssCandidateQuery(db: Database, args: CandidateQueryArgs) {
 export function emailCandidateQuery(db: Database, args: CandidateQueryArgs) {
   const {terms, windowStart, limit = HISTORY_CANDIDATE_LIMIT} = args;
   const tsquery = buildHistoryTsQuery(terms);
-  const doc = sql`(${weighted(sql`coalesce(${emailItem.title}, '')`, 'A')} || ${weighted(
-    sql`coalesce(${emailItem.emailSubject}, '')`,
-    'A',
-  )} || ${weighted(sql`coalesce(${emailItem.description}, '')`, 'B')})`;
 
   return db
     .select({
@@ -92,10 +87,10 @@ export function emailCandidateQuery(db: Database, args: CandidateQueryArgs) {
       ingestedAt: emailItem.importedAt,
       openedAt: emailItem.openedAt,
       promoted: emailItem.promoted,
-      rank: rankExpression(doc, tsquery, emailItem.openedAt).as('rank'),
+      rank: rankExpression(emailSearchVector, tsquery, emailItem.openedAt).as('rank'),
     })
     .from(emailItem)
-    .where(and(gte(emailItem.importedAt, windowStart), sql`${doc} @@ ${tsquery}`))
+    .where(and(gte(emailItem.importedAt, windowStart), sql`${emailSearchVector} @@ ${tsquery}`))
     .orderBy(byRankDesc)
     .limit(limit);
 }
