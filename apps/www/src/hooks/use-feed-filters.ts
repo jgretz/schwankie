@@ -3,6 +3,7 @@ import {useNavigate, useRouterState, useSearch} from '@tanstack/react-router';
 import {useTags} from '@www/hooks/use-tags';
 import {parseTagSlugs} from '@www/lib/parse-tag-slugs';
 import type {CurrentSection} from '@www/components/shell/types';
+import {currentSectionFor, isLinkSection} from '@www/lib/current-section';
 import type {FeedSearch} from '@www/routes/index';
 
 export function useFeedFilters(): {
@@ -17,28 +18,15 @@ export function useFeedFilters(): {
 
   const pathname = useRouterState({select: (s) => s.location.pathname});
 
-  // The trailing fallback is 'public', which IS a tag section — a path without
-  // its own branch renders the tag sidebar and fires a needless tags query.
-  const currentSection = pathname.startsWith('/admin')
-    ? 'admin'
-    : pathname === '/queue'
-      ? 'queue'
-      : pathname.startsWith('/feeds')
-        ? 'feeds'
-        : pathname.startsWith('/email')
-          ? 'emails'
-          : pathname.startsWith('/daily-summary')
-            ? 'daily-summary'
-            : pathname === '/about'
-              ? 'about'
-              : 'public';
+  const currentSection = currentSectionFor(pathname);
 
   const status = pathname === '/queue' ? 'queued' : 'saved';
   const currentPath = pathname === '/queue' ? '/queue' : '/';
 
   const search = useSearch({strict: false}) as FeedSearch;
   const tagsParam = search.tags;
-  const qParam = search.q ?? '';
+  const linkQ = isLinkSection(currentSection) ? search.q : undefined;
+  const qParam = linkQ ?? '';
 
   const selectedTags = useMemo(() => parseTagSlugs(tagsParam), [tagsParam]);
 
@@ -80,10 +68,10 @@ export function useFeedFilters(): {
         : [...selectedTags, tagText];
       navigate({
         to: currentPath,
-        search: {tags: next.length > 0 ? next.join(',') : undefined, q: search.q},
+        search: {tags: next.length > 0 ? next.join(',') : undefined, q: linkQ},
       });
     },
-    [selectedTags, navigate, search.q, currentPath],
+    [selectedTags, navigate, linkQ, currentPath],
   );
 
   return {
