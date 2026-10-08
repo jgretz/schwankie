@@ -71,6 +71,7 @@ export {deleteRunner} from './commands/delete-runner';
 export {cleanupStaleRunners} from './commands/cleanup-stale-runners';
 export {listRunners} from './queries/list-runners';
 export {listDigestSourceItems} from './queries/list-digest-source-items';
+export {searchHistoryCandidates} from './queries/search-history-candidates';
 export {getDailySummary} from './queries/get-daily-summary';
 export {listDailySummaryDates} from './queries/list-daily-summary-dates';
 export {upsertDailySummary} from './commands/upsert-daily-summary';
@@ -129,6 +130,9 @@ export type {
   DigestSourceItem,
   ListDigestSourceItemsParams,
   ListDigestSourceItemsResult,
+  HistoryCandidate,
+  HistoryCandidateBase,
+  SearchHistoryCandidatesParams,
   UpsertDailySummaryInput,
   PromoteFailure,
   RecordPromoteFailureInput,

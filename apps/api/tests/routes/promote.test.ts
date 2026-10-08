@@ -18,6 +18,7 @@ const mockGetEmailItem = mock(async () => null as any);
 const mockNoop = mock(async () => null as any);
 
 mock.module('@domain', () => ({
+  searchHistoryCandidates: mock(async () => []),
   DomainValidationError,
   NotFoundError,
   getLink: mockGetLink,

@@ -33,6 +33,7 @@ const mockUpsertLinkEmbedding = mock(async () => undefined);
 const mockScoreQueuedBySimilarity = mock(async () => [] as any[]);
 
 mock.module('@domain', () => ({
+  searchHistoryCandidates: mock(async () => []),
   DomainValidationError,
   NotFoundError,
   getLink: mockGetLink,
