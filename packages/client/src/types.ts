@@ -282,3 +282,28 @@ export type UpsertDailySummaryInput = {
   notable?: string | null;
   topics: DigestTopic[];
 };
+
+export type HistoryDays = 7 | 30 | 90;
+
+type HistoryMatchBase = {
+  id: string;
+  title: string;
+  url: string;
+  source: string;
+  ingestedAt: string;
+  openedAt: string | null;
+  promoted: boolean;
+  /** The judge's one-line reason; null when the results are keyword-ranked only. */
+  reason: string | null;
+};
+
+export type HistoryMatch =
+  | (HistoryMatchBase & {kind: 'rss'; feedId: string})
+  | (HistoryMatchBase & {kind: 'email'});
+
+export type HistorySearchResponse = {
+  results: HistoryMatch[];
+  /** False when the LLM judgment was unavailable and results are keyword-ranked. */
+  judged: boolean;
+  windowStart: string;
+};

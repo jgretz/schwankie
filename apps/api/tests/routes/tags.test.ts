@@ -44,6 +44,7 @@ const mockPromoteRssItem = mock(async () => null as any);
 const mockBulkUpsertRssItems = mock(async () => undefined);
 
 mock.module('@domain', () => ({
+  searchHistoryCandidates: mock(async () => []),
   DomainValidationError,
   NotFoundError,
   getLink: mockGetLink,

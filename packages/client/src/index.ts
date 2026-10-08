@@ -89,6 +89,7 @@ export {fetchDailySummary} from './calls/fetch-daily-summary';
 export {fetchDailySummaryDates} from './calls/fetch-daily-summary-dates';
 export {upsertDailySummary} from './calls/upsert-daily-summary';
 export {listPromoteFailures} from './calls/list-promote-failures';
+export {searchHistory} from './calls/search-history';
 
 // types
 export type {
@@ -127,4 +128,7 @@ export type {
   DailySummaryData,
   UpsertDailySummaryInput,
   PromoteFailureData,
+  HistoryDays,
+  HistoryMatch,
+  HistorySearchResponse,
 } from './types';

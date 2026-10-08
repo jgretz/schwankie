@@ -21,6 +21,7 @@ mock.module('env', () => ({
 }));
 
 mock.module('@domain', () => ({
+  searchHistoryCandidates: mock(async () => []),
   DomainValidationError,
   NotFoundError,
   getSetting: mockGetSetting,
