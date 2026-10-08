@@ -3,6 +3,7 @@ export type CurrentSection =
   | 'feeds'
   | 'emails'
   | 'daily-summary'
+  | 'history'
   | 'admin'
   | 'public'
   | 'about';

@@ -215,6 +215,32 @@ export type ListDigestSourceItemsResult = {
   count: number;
 };
 
+export type HistoryCandidateBase = {
+  id: string;
+  title: string;
+  url: string;
+  source: string;
+  summary: string | null;
+  ingestedAt: Date;
+  openedAt: Date | null;
+  promoted: boolean;
+  rank: number;
+};
+
+/** A previously ingested item a history search can surface; rss items carry their feed. */
+export type HistoryCandidate =
+  | (HistoryCandidateBase & {kind: 'rss'; feedId: string})
+  | (HistoryCandidateBase & {kind: 'email'});
+
+export type SearchHistoryCandidatesParams = {
+  /** Search terms; each is matched as a plain phrase, and any term may match. */
+  terms: string[];
+  /** Size of the lookback window in days. */
+  days: number;
+  /** Injectable clock; defaults to now. Present so the window is testable. */
+  now?: Date;
+};
+
 export type PromoteFailure = typeof promoteFailure.$inferSelect;
 
 export type RecordPromoteFailureInput = {
