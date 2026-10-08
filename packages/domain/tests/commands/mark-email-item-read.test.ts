@@ -15,6 +15,14 @@ describe('markEmailItemRead', function () {
     expect(updated!.read).toBe(true);
   });
 
+  it('should not record an open when marking read', async function () {
+    const item = await makeEmailItem();
+
+    const updated = await markEmailItemRead(item!.id);
+
+    expect(updated!.openedAt).toBeNull();
+  });
+
   it('should return null for non-existent item', async function () {
     const result = await markEmailItemRead('00000000-0000-0000-0000-000000000000');
     expect(result).toBeNull();

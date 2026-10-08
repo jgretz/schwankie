@@ -16,6 +16,7 @@ import {
   useAllRssItems,
   useListFeeds,
   useMarkAllRssItemsRead,
+  useMarkRssItemOpened,
   useMarkRssItemRead,
   usePromoteRssItem,
   useTriggerRefreshAllFeeds,
@@ -32,6 +33,7 @@ export default function FeedsScreen() {
   const {data: feedsData} = useListFeeds();
   const {data, isLoading, error, refetch, fetchNextPage, hasNextPage, isFetchingNextPage} =
     useAllRssItems({unread, feedId: selectedFeedId ?? undefined});
+  const {mutate: markOpened} = useMarkRssItemOpened();
   const {mutate: markRead, isPending: isMarkingRead} = useMarkRssItemRead();
   const {mutate: promote, isPending: isPromoting} = usePromoteRssItem();
   const {mutate: markAllRead, isPending: isMarkingAllRead} = useMarkAllRssItemsRead();
@@ -120,6 +122,7 @@ export default function FeedsScreen() {
         </View>
         <ItemActions
           url={item.link}
+          onOpen={() => markOpened({feedId: item.feedId, itemId: item.id})}
           onMarkRead={() => handleMarkRead(item)}
           onPromote={() => handlePromote(item)}
           isMarkingRead={pendingMarkReadId === item.id && isMarkingRead}

@@ -6,6 +6,7 @@ import {updateFeed} from '../../src/calls/update-feed';
 import {deleteFeed} from '../../src/calls/delete-feed';
 import {fetchFeedItems} from '../../src/calls/fetch-feed-items';
 import {markRssItemRead} from '../../src/calls/mark-rss-item-read';
+import {markRssItemOpened} from '../../src/calls/mark-rss-item-opened';
 import {promoteRssItem} from '../../src/calls/promote-rss-item';
 import {fetchAllFeeds} from '../../src/calls/fetch-all-feeds';
 import {bulkUpsertRssItems} from '../../src/calls/bulk-upsert-rss-items';
@@ -221,6 +222,47 @@ describe('Feeds Client Calls', () => {
 
       expect(async () => {
         await markRssItemRead('feed-1', 'nonexistent');
+      }).toThrow();
+    });
+  });
+
+  describe('markRssItemOpened', () => {
+    it('should post to the open endpoint for the item', async () => {
+      let requested = '';
+      global.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+        requested = `${init?.method} ${String(input)}`;
+        return new Response(JSON.stringify({opened: true}), {
+          status: 200,
+          headers: {'Content-Type': 'application/json'},
+        });
+      }) as any;
+
+      await markRssItemOpened('feed-1', 'item-1');
+
+      expect(requested).toBe(`POST ${TEST_API_URL}/api/feeds/feed-1/items/item-1/open`);
+    });
+
+    it('should return the confirmation on success', async () => {
+      global.fetch = (async () =>
+        new Response(JSON.stringify({opened: true}), {
+          status: 200,
+          headers: {'Content-Type': 'application/json'},
+        })) as any;
+
+      const result = await markRssItemOpened('feed-1', 'item-1');
+
+      expect(result.opened).toBe(true);
+    });
+
+    it('should throw on item not found', async () => {
+      global.fetch = (async () =>
+        new Response(JSON.stringify({error: 'Item not found'}), {
+          status: 404,
+          headers: {'Content-Type': 'application/json'},
+        })) as any;
+
+      expect(async () => {
+        await markRssItemOpened('feed-1', 'nonexistent');
       }).toThrow();
     });
   });

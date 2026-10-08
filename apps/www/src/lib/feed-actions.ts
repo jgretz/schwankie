@@ -96,6 +96,17 @@ export const markRssItemReadAction = createServerFn({method: 'POST'})
     return markRssItemRead(data.feedId, data.itemId);
   });
 
+const markRssItemOpenedInput = z.object({feedId: z.string(), itemId: z.string()});
+
+export const markRssItemOpenedAction = createServerFn({method: 'POST'})
+  .inputValidator(markRssItemOpenedInput)
+  .handler(async ({data}) => {
+    await getClient();
+    await requireAuth();
+    const {markRssItemOpened} = await import('client');
+    return markRssItemOpened(data.feedId, data.itemId);
+  });
+
 const markAllRssItemsReadInput = z.object({feedId: z.string().optional()});
 
 export const markAllRssItemsReadAction = createServerFn({method: 'POST'})

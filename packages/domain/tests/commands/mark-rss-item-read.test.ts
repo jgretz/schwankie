@@ -17,6 +17,15 @@ describe('markRssItemRead', function () {
     expect(updated?.read).toBe(true);
   });
 
+  it('should not record an open when marking read', async function () {
+    const feed = await makeFeed();
+    const item = await makeRssItem(feed.id);
+
+    const updated = await markRssItemRead(item!.id);
+
+    expect(updated?.openedAt).toBeNull();
+  });
+
   it('should return null for non-existent item', async function () {
     const updated = await markRssItemRead('non-existent-id');
 

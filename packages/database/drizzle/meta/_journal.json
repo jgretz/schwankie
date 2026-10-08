@@ -134,6 +134,13 @@
       "when": 1791487336351,
       "tag": "0018_rename-clicked-to-promoted",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "6",
+      "when": 1791487371484,
+      "tag": "0019_add-item-opened-at",
+      "breakpoints": true
     }
   ]
 }

@@ -5,6 +5,7 @@ import {
   listEmailItems,
   markAllEmailItemsRead,
   markEmailItemRead,
+  markEmailItemOpened,
   promoteEmailItem,
 } from '@domain';
 import {capturePromoteFailure} from '../commands/capture-promote-failure';
@@ -47,6 +48,19 @@ emailsRouter.post('/api/emails/:id/read', auth, async (c) => {
 
   await markEmailItemRead(parsed.data.id);
   return c.json({marked: true});
+});
+
+emailsRouter.post('/api/emails/:id/open', auth, async (c) => {
+  const parsed = emailItemIdParamSchema.safeParse({id: c.req.param('id')});
+  if (!parsed.success) {
+    return c.json({error: 'Invalid email item ID'}, 400);
+  }
+
+  const result = await markEmailItemOpened(parsed.data.id);
+  if (!result) {
+    return c.json({error: 'Email item not found'}, 404);
+  }
+  return c.json({opened: true});
 });
 
 emailsRouter.post('/api/emails/:id/promote', auth, async (c) => {

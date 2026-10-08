@@ -30,6 +30,7 @@ export async function listAllRssItems(
         publishedAt: rssItem.publishedAt,
         read: rssItem.read,
         promoted: rssItem.promoted,
+        openedAt: rssItem.openedAt,
         createdAt: rssItem.createdAt,
       })
       .from(rssItem)

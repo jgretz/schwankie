@@ -16,6 +16,7 @@ import {ItemActions} from '../../components/ItemActions';
 import {
   useEmailItems,
   useMarkAllEmailItemsRead,
+  useMarkEmailItemOpened,
   useMarkEmailItemRead,
   usePromoteEmailItem,
   useTriggerRefreshEmails,
@@ -31,6 +32,7 @@ export default function EmailsScreen() {
 
   const {data, isLoading, error, refetch, fetchNextPage, hasNextPage, isFetchingNextPage} =
     useEmailItems({unread, from: selectedFrom ?? undefined});
+  const {mutate: markOpened} = useMarkEmailItemOpened();
   const {mutate: markRead, isPending: isMarkingRead} = useMarkEmailItemRead();
   const {mutate: promote, isPending: isPromoting} = usePromoteEmailItem();
   const {mutate: markAllRead, isPending: isMarkingAllRead} = useMarkAllEmailItemsRead();
@@ -125,6 +127,7 @@ export default function EmailsScreen() {
         </View>
         <ItemActions
           url={item.link}
+          onOpen={() => markOpened(item.id)}
           onMarkRead={() => handleMarkRead(item)}
           onPromote={() => handlePromote(item)}
           isMarkingRead={pendingMarkReadId === item.id && isMarkingRead}

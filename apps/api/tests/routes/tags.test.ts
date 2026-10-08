@@ -73,6 +73,7 @@ mock.module('@domain', () => ({
   deleteFeed: mockDeleteFeed,
   listRssItems: mockListRssItems,
   markRssItemRead: mockMarkRssItemRead,
+  markRssItemOpened: mockMarkRssItemRead,
   promoteRssItem: mockPromoteRssItem,
   bulkUpsertRssItems: mockBulkUpsertRssItems,
   // Add other exports to prevent import errors
@@ -82,6 +83,7 @@ mock.module('@domain', () => ({
   createRssItem: mockSetSetting,
   createEmailItem: mockSetSetting,
   markEmailItemRead: mockSetSetting,
+  markEmailItemOpened: mockSetSetting,
   promoteEmailItem: mockSetSetting,
   setGmailFilter: mockSetSetting,
   loadKey: () => Buffer.from(new Uint8Array(32)),

@@ -66,6 +66,7 @@ type RssItemRow = {
   publishedAt: Date | null;
   read: boolean;
   promoted: boolean;
+  openedAt: Date | null;
   createdAt: Date;
 };
 
@@ -79,6 +80,7 @@ type EmailItemRow = {
   description: string | null;
   read: boolean;
   promoted: boolean;
+  openedAt: Date | null;
   importedAt: Date;
 };
 
@@ -317,6 +319,7 @@ const COLUMN_MAP: Record<string, Record<string, string>> = {
     published_at: 'publishedAt',
     read: 'read',
     promoted: 'promoted',
+    opened_at: 'openedAt',
     created_at: 'createdAt',
   },
   email_item: {
@@ -329,6 +332,7 @@ const COLUMN_MAP: Record<string, Record<string, string>> = {
     description: 'description',
     read: 'read',
     promoted: 'promoted',
+    opened_at: 'openedAt',
     imported_at: 'importedAt',
   },
   setting: {
@@ -659,6 +663,7 @@ function defaultsForTable(table: any, values: any, id: number): any {
         publishedAt: values.publishedAt ?? values.published_at ?? null,
         read: values.read ?? false,
         promoted: values.promoted ?? false,
+        openedAt: values.openedAt ?? values.opened_at ?? null,
         createdAt: values.createdAt ?? values.created_at ?? now,
         _insertionOrder: store.insertionCounter++,
       };
@@ -674,6 +679,7 @@ function defaultsForTable(table: any, values: any, id: number): any {
         description: values.description ?? null,
         read: values.read ?? false,
         promoted: values.promoted ?? false,
+        openedAt: values.openedAt ?? values.opened_at ?? null,
         importedAt: values.importedAt ?? values.imported_at ?? now,
       };
     }

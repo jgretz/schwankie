@@ -1,5 +1,5 @@
 import {createFileRoute, redirect, useNavigate} from '@tanstack/react-router';
-import {useState, useCallback, useEffect, useMemo, useRef} from 'react';
+import {type MouseEvent, useState, useCallback, useEffect, useMemo, useRef} from 'react';
 import {z} from 'zod';
 import {toast} from 'sonner';
 import type {EmailItemData} from 'client';
@@ -10,7 +10,9 @@ import {
   useMarkEmailItemRead,
   usePromoteEmailItem,
 } from '@www/hooks/use-email-items';
+import {markEmailItemOpenedAction} from '@www/lib/email-actions';
 import {formatEmailMeta} from '@www/lib/format-email-meta';
+import {opensLink} from '@www/lib/opens-link';
 import {triggerRefreshEmailsAction} from '@www/lib/work-request-actions';
 
 const searchSchema = z.object({
@@ -311,13 +313,24 @@ function EmailRow({item, showSender, onMarkRead, onPromote}: EmailRowProps) {
     date,
   });
 
+  // Fire-and-forget: recording the open must never hold up navigation.
+  function handleOpen(event: MouseEvent<HTMLAnchorElement>) {
+    if (!opensLink(event.button)) return;
+    markEmailItemOpenedAction({data: {id: item.id}}).catch(function (error) {
+      console.warn('Failed to record email item open', error);
+    });
+  }
+
   return (
     <div className="flex items-center justify-between border-b border-border py-3 px-4 hover:bg-bg-subtle transition-colors group">
       <div className="flex-1 min-w-0">
+        {/* biome-ignore lint/a11y/useValidAnchor: a real href navigates; onClick only records the open */}
         <a
           href={item.link}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={handleOpen}
+          onAuxClick={handleOpen}
           className="text-text hover:text-accent transition-colors font-sans text-[0.95rem] block truncate"
         >
           {item.title || item.link}

@@ -67,6 +67,7 @@ mock.module('@domain', () => ({
   listRssItems: mockListRssItems,
   listAllRssItems: mock(async () => ({items: [], total: 0, hasMore: false, nextOffset: 0})),
   markRssItemRead: mockMarkRssItemRead,
+  markRssItemOpened: mockMarkRssItemRead,
   markAllRssItemsRead: mock(async () => 0),
   promoteRssItem: mockPromoteRssItem,
   bulkUpsertRssItems: mockBulkUpsertRssItems,
@@ -82,6 +83,7 @@ mock.module('@domain', () => ({
   getEmailItem: mockGetSetting,
   createEmailItem: mockSetSetting,
   markEmailItemRead: mockSetSetting,
+  markEmailItemOpened: mockSetSetting,
   promoteEmailItem: mockSetSetting,
   getGmailTokens: mockGetSetting,
   setGmailTokens: mockSetSetting,
@@ -165,6 +167,14 @@ describe('Feeds Routes - Auth Enforcement', () => {
 
     it('POST /api/feeds/:id/items/:itemId/read - requires auth', async () => {
       const req = new Request('http://localhost/api/feeds/feed-id/items/item-id/read', {
+        method: 'POST',
+      });
+      const res = await app.fetch(req);
+      expect(res.status).toBe(401);
+    });
+
+    it('POST /api/feeds/:id/items/:itemId/open - requires auth', async () => {
+      const req = new Request('http://localhost/api/feeds/feed-id/items/item-id/open', {
         method: 'POST',
       });
       const res = await app.fetch(req);

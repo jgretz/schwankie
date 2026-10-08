@@ -9,6 +9,7 @@ import {
   listRssItems,
   listAllRssItems,
   markRssItemRead,
+  markRssItemOpened,
   markAllRssItemsRead,
   promoteRssItem,
   bulkUpsertRssItems,
@@ -140,6 +141,18 @@ feedsRoutes.post('/api/feeds/:feedId/items/:itemId/read', auth, async (c) => {
     return c.json({error: 'Item not found'}, 404);
   }
   return c.json({marked: true});
+});
+
+feedsRoutes.post('/api/feeds/:feedId/items/:itemId/open', auth, async (c) => {
+  const itemId = parseId(c.req.param('itemId'));
+  if (itemId === null) {
+    return c.json({error: 'Invalid item ID'}, 400);
+  }
+  const result = await markRssItemOpened(itemId);
+  if (!result) {
+    return c.json({error: 'Item not found'}, 404);
+  }
+  return c.json({opened: true});
 });
 
 feedsRoutes.post('/api/feeds/:feedId/items/:itemId/promote', auth, async (c) => {
