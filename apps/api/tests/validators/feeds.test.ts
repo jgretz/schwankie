@@ -126,8 +126,8 @@ describe('Feed Validators', () => {
       expect(result.success).toBe(false);
     });
 
-    it('should validate with clicked filter', () => {
-      const valid = {feedId: 'feed-1', clicked: 'true'};
+    it('should validate with promoted filter', () => {
+      const valid = {feedId: 'feed-1', promoted: 'true'};
       const result = listFeedItemsSchema.safeParse(valid);
       expect(result.success).toBe(true);
     });

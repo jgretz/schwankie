@@ -5,7 +5,7 @@ import type {ListRssItemsParams, ListRssItemsResult} from '../types';
 
 export async function listRssItems(params: ListRssItemsParams): Promise<ListRssItemsResult> {
   const db = getDb();
-  const {feedId, limit = 20, offset = 0, read, clicked, q} = params;
+  const {feedId, limit = 20, offset = 0, read, promoted, q} = params;
 
   const conditions: Parameters<typeof and> = [eq(rssItem.feedId, feedId)];
 
@@ -13,8 +13,8 @@ export async function listRssItems(params: ListRssItemsParams): Promise<ListRssI
     conditions.push(eq(rssItem.read, read));
   }
 
-  if (clicked !== undefined) {
-    conditions.push(eq(rssItem.clicked, clicked));
+  if (promoted !== undefined) {
+    conditions.push(eq(rssItem.promoted, promoted));
   }
 
   if (q) {

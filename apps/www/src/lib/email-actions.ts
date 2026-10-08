@@ -31,6 +31,19 @@ export const markEmailItemReadAction = createServerFn({method: 'POST'})
     return markEmailItemRead(data.id);
   });
 
+const markEmailItemOpenedInput = z.object({
+  id: z.string(),
+});
+
+export const markEmailItemOpenedAction = createServerFn({method: 'POST'})
+  .inputValidator(markEmailItemOpenedInput)
+  .handler(async ({data}) => {
+    await getClient();
+    await requireAuth();
+    const {markEmailItemOpened} = await import('client');
+    return markEmailItemOpened(data.id);
+  });
+
 const promoteEmailItemInput = z.object({
   id: z.string(),
 });

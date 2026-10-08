@@ -3,6 +3,7 @@ import {setupDb} from '../helpers/setup';
 import {makeFeed, makeRssItem} from '../helpers/factory';
 import {listRssItems} from '../../src/queries/list-rss-items';
 import {markRssItemRead} from '../../src/commands/mark-rss-item-read';
+import {promoteRssItem} from '../../src/commands/promote-rss-item';
 
 describe('listRssItems', function () {
   setupDb();
@@ -57,18 +58,18 @@ describe('listRssItems', function () {
     expect(page2.hasMore).toBe(false);
   });
 
-  it('should filter by clicked status', async function () {
+  it('should filter by promoted status', async function () {
     const feed = await makeFeed();
     const item1 = await makeRssItem(feed.id);
     await makeRssItem(feed.id);
 
-    await markRssItemRead(item1!.id, true);
+    await promoteRssItem(item1!.id);
 
-    const notClicked = await listRssItems({feedId: feed.id, clicked: false});
-    const clicked = await listRssItems({feedId: feed.id, clicked: true});
+    const notPromoted = await listRssItems({feedId: feed.id, promoted: false});
+    const promoted = await listRssItems({feedId: feed.id, promoted: true});
 
-    expect(notClicked.items).toHaveLength(1);
-    expect(clicked.items).toHaveLength(1);
+    expect(notPromoted.items).toHaveLength(1);
+    expect(promoted.items).toHaveLength(1);
   });
 
   it('should search by title', async function () {

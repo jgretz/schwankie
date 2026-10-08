@@ -14,7 +14,7 @@ const fetchFeedItemsInput = z.object({
   limit: z.number().optional(),
   offset: z.number().optional(),
   read: z.boolean().optional(),
-  clicked: z.boolean().optional(),
+  promoted: z.boolean().optional(),
   q: z.string().optional(),
 });
 
@@ -94,6 +94,17 @@ export const markRssItemReadAction = createServerFn({method: 'POST'})
     await requireAuth();
     const {markRssItemRead} = await import('client');
     return markRssItemRead(data.feedId, data.itemId);
+  });
+
+const markRssItemOpenedInput = z.object({feedId: z.string(), itemId: z.string()});
+
+export const markRssItemOpenedAction = createServerFn({method: 'POST'})
+  .inputValidator(markRssItemOpenedInput)
+  .handler(async ({data}) => {
+    await getClient();
+    await requireAuth();
+    const {markRssItemOpened} = await import('client');
+    return markRssItemOpened(data.feedId, data.itemId);
   });
 
 const markAllRssItemsReadInput = z.object({feedId: z.string().optional()});

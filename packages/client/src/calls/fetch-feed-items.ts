@@ -6,7 +6,7 @@ type FetchFeedItemsParams = {
   limit?: number;
   offset?: number;
   read?: boolean;
-  clicked?: boolean;
+  promoted?: boolean;
   q?: string;
 };
 
@@ -22,7 +22,7 @@ export function fetchFeedItems(params: FetchFeedItemsParams): Promise<FetchFeedI
   if (params.limit != null) search.set('limit', String(params.limit));
   if (params.offset != null) search.set('offset', String(params.offset));
   if (params.read != null) search.set('read', String(params.read));
-  if (params.clicked != null) search.set('clicked', String(params.clicked));
+  if (params.promoted != null) search.set('promoted', String(params.promoted));
   if (params.q) search.set('q', params.q);
 
   const qs = search.toString();

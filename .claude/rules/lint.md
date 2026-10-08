@@ -41,10 +41,16 @@ Every `biome-ignore` must state *why* after the colon. Two rules are suppressed 
   closures or drops a needed re-run.
 - **`security/noDangerouslySetInnerHtml`** ×1 — `__root.tsx`, the pre-hydration theme
   script (`react-components.md` #2). It must run synchronously before React hydrates.
+- **`a11y/useValidAnchor`** ×2: `rss-item-row.tsx` and `emails.index.tsx`, the item
+  title links. 1.5.3 flags any `onClick` on an `<a>`, even one with a real `href`. These
+  anchors navigate normally; `onClick`/`onAuxClick` only record the open (`opened_at`).
+  Do not convert them to buttons: that loses middle-click, copy-link and new-tab.
 
-In JSX, a suppression comment must be a `//` comment **inside the opening tag**, on the
-line directly above the offending attribute. A `{/* … */}` JSX comment node does not
-register and reports `suppressions/unused`.
+Where the suppression goes depends on what the diagnostic points at. When it points at an
+**attribute**, use a `//` comment **inside the opening tag**, on the line directly above
+that attribute; a `{/* … */}` JSX comment node there does not register and reports
+`suppressions/unused`. When it points at the **element** (`useValidAnchor` reports the
+`<a`), the reverse holds: use a `{/* … */}` comment node on the line above the element.
 
 ## Known 1.5.3 rule gaps
 

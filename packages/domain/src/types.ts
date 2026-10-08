@@ -146,7 +146,7 @@ export type ListRssItemsParams = {
   limit?: number;
   offset?: number;
   read?: boolean;
-  clicked?: boolean;
+  promoted?: boolean;
   q?: string;
 };
 

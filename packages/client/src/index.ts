@@ -57,6 +57,7 @@ export {deleteFeed} from './calls/delete-feed';
 export {fetchFeedItems} from './calls/fetch-feed-items';
 export {listAllRssItems} from './calls/list-all-rss-items';
 export {markRssItemRead} from './calls/mark-rss-item-read';
+export {markRssItemOpened} from './calls/mark-rss-item-opened';
 export {markAllRssItemsRead} from './calls/mark-all-rss-items-read';
 export {promoteRssItem} from './calls/promote-rss-item';
 export {fetchAllFeeds} from './calls/fetch-all-feeds';
@@ -67,6 +68,7 @@ export {
 } from './calls/bulk-upsert-email-items';
 export {listEmailItems} from './calls/list-email-items';
 export {markEmailItemRead} from './calls/mark-email-item-read';
+export {markEmailItemOpened} from './calls/mark-email-item-opened';
 export {markAllEmailItemsRead} from './calls/mark-all-email-items-read';
 export {promoteEmailItem} from './calls/promote-email-item';
 export {listPendingWorkRequests} from './calls/list-pending-work-requests';

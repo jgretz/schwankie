@@ -4,6 +4,7 @@ import {
   fetchFeeds,
   listAllRssItems,
   markAllRssItemsRead,
+  markRssItemOpened,
   markRssItemRead,
   promoteRssItem,
   triggerRefreshAllFeeds,
@@ -35,6 +36,18 @@ export function useAllRssItems(options: UseAllRssItemsOptions = {}) {
       }),
     initialPageParam: 0,
     getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.nextOffset : undefined),
+  });
+}
+
+// Best-effort: a failed open record warns and stays silent. Lists are not
+// invalidated, so the opened item stays put while the browser sheet is up.
+export function useMarkRssItemOpened() {
+  return useMutation({
+    mutationFn: ({feedId, itemId}: {feedId: string; itemId: string}) =>
+      markRssItemOpened(feedId, itemId),
+    onError: (error) => {
+      console.warn('[useMarkRssItemOpened] Failed to record open:', error);
+    },
   });
 }
 

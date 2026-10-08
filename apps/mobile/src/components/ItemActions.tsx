@@ -4,6 +4,7 @@ import {openLink} from '../services/open-link';
 
 type ItemActionsProps = {
   url: string;
+  onOpen: () => void;
   onMarkRead: () => void;
   onPromote: () => void;
   isMarkingRead?: boolean;
@@ -18,13 +19,17 @@ type ItemActionsProps = {
 
 export function ItemActions({
   url,
+  onOpen,
   onMarkRead,
   onPromote,
   isMarkingRead,
   isPromoting,
   colors,
 }: ItemActionsProps) {
-  const handleOpen = () => openLink({url, colors, source: 'ItemActions'});
+  const handleOpen = () => {
+    onOpen();
+    openLink({url, colors, source: 'ItemActions'});
+  };
 
   return (
     <View

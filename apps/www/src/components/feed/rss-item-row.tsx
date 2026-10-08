@@ -1,7 +1,9 @@
-import {useState} from 'react';
+import {type MouseEvent, useState} from 'react';
 import {toast} from 'sonner';
 import type {RssItemData} from 'client';
 import {Button} from '@www/components/ui/button';
+import {markRssItemOpenedAction} from '@www/lib/feed-actions';
+import {opensLink} from '@www/lib/opens-link';
 
 type RssItemRowProps = {
   item: RssItemData;
@@ -14,6 +16,14 @@ type RssItemRowProps = {
 export function RssItemRow({item, sourceLabel, onMarkRead, onPromote, onRemove}: RssItemRowProps) {
   const [isHidden, setIsHidden] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Fire-and-forget: recording the open must never hold up navigation.
+  function handleOpen(event: MouseEvent<HTMLAnchorElement>) {
+    if (!opensLink(event.button)) return;
+    markRssItemOpenedAction({data: {feedId: item.feedId, itemId: item.id}}).catch(function (error) {
+      console.warn('Failed to record RSS item open', error);
+    });
+  }
 
   async function handleMarkRead() {
     setIsLoading(true);
@@ -63,10 +73,13 @@ export function RssItemRow({item, sourceLabel, onMarkRead, onPromote, onRemove}:
   return (
     <div className="flex items-center justify-between border-b border-border py-3 px-4 hover:bg-bg-subtle transition-colors group">
       <div className="flex-1 min-w-0">
+        {/* biome-ignore lint/a11y/useValidAnchor: a real href navigates; onClick only records the open */}
         <a
           href={item.link}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={handleOpen}
+          onAuxClick={handleOpen}
           className="text-text hover:text-accent transition-colors font-sans text-[0.95rem] block truncate"
         >
           {item.title}

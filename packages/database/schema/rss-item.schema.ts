@@ -17,7 +17,10 @@ export const rssItem = pgTable(
     imageUrl: text('image_url'),
     publishedAt: timestamp('published_at', {withTimezone: true}),
     read: boolean('read').notNull().default(false),
-    clicked: boolean('clicked').notNull().default(false),
+    // Set by promote only: the item was saved to the link queue.
+    promoted: boolean('promoted').notNull().default(false),
+    // Last time the item's link was opened from a schwankie reader. Null when never opened.
+    openedAt: timestamp('opened_at', {withTimezone: true}),
     createdAt: timestamp('created_at', {withTimezone: true}).notNull().defaultNow(),
   },
   (table) => ({

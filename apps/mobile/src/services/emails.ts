@@ -3,6 +3,7 @@ import Toast from 'react-native-toast-message';
 import {
   listEmailItems,
   markAllEmailItemsRead,
+  markEmailItemOpened,
   markEmailItemRead,
   promoteEmailItem,
   triggerRefreshEmails,
@@ -27,6 +28,17 @@ export function useEmailItems(options: UseEmailItemsOptions = {}) {
       }),
     initialPageParam: 0,
     getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.nextOffset : undefined),
+  });
+}
+
+// Best-effort: a failed open record warns and stays silent. Lists are not
+// invalidated, so the opened item stays put while the browser sheet is up.
+export function useMarkEmailItemOpened() {
+  return useMutation({
+    mutationFn: (itemId: string) => markEmailItemOpened(itemId),
+    onError: (error) => {
+      console.warn('[useMarkEmailItemOpened] Failed to record open:', error);
+    },
   });
 }
 
