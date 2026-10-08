@@ -50,19 +50,27 @@ not an LLM failure and still propagates as a 500.
 
 ## Implementation Notes
 
-### No tsvector index
+### Stored search vectors
 
-The search vector is computed per query: `title` (A), `summary` (B) and the first 2000
-characters of `content` (C) for RSS; `title` and `email_subject` (A) and `description`
-(B) for email. The window scan is bounded by `idx_rss_item_created_at` and
-`idx_email_item_imported_at`.
+`rss_item.search_vector` and `email_item.search_vector` are stored generated tsvector
+columns with GIN indexes, from migration `0020_add-item-search-vector.sql`: `title` (A),
+`summary` (B) and the first 2000 characters of `content` (C) for RSS; `title` and
+`email_subject` (A) and `description` (B) for email. The 2000-character cap keeps a vector
+under Postgres's 1 MB tsvector limit.
 
-A stored generated tsvector with a GIN index would be faster, but the pinned toolchain
-cannot produce one: drizzle-orm 0.30 has no `generatedAlwaysAs` and indexes only plain
-columns, and drizzle-kit 0.21 always emits a btree. It needs a hand-written migration
-(precedent: `0013_add_link_embedding_hnsw_index.sql`) or a drizzle upgrade.
+They replaced a per-query `to_tsvector`, which measured 4.6–6.8 s for a 30-day window in
+production and pushed searches past Bun's 10 s idle timeout.
 
-The cost was estimated, never measured: a 90-day worst case of several seconds. Each
-search logs `[history] retrieve=…ms expand=…ms judge=…ms candidates=N`; if `retrieve`
-regularly exceeds about 3 s in the Fly logs, add the index. The 2000-character content
-cap also keeps any future stored vector under Postgres's 1 MB tsvector limit.
+The pinned toolchain cannot express them: drizzle-orm 0.30 has no `generatedAlwaysAs`, and
+drizzle-kit 0.21 only emits btree indexes. So `0020` is a `drizzle-kit generate --custom`
+migration (journaled, like `0013`'s HNSW index). The columns are not in the drizzle schema,
+and `packages/domain/src/lib/history-candidates.ts` refers to them by name.
+`tests/lib/history-candidates.test.ts` pins the weighting in the migration.
+
+Each search logs `[history] retrieve=…ms expand=…ms judge=…ms candidates=N`.
+
+### Server idle timeout
+
+Both `apps/api` and `apps/www` set Bun's `idleTimeout` to 60 s. Bun's 10 s default closes
+the connection on any response slower than that, and two sequential LLM calls can approach
+it. www waits on the api, so its timeout must be at least as long.

@@ -1,3 +1,5 @@
+import {readFileSync} from 'node:fs';
+import {join} from 'node:path';
 import {describe, expect, it} from 'bun:test';
 import {createDatabase} from 'database';
 import {
@@ -51,20 +53,16 @@ describe('rssCandidateQuery', function () {
     expect(paramAt(params, match![1])).toBe(WINDOW_START.toISOString());
   });
 
-  it('should weight title, summary and capped content', function () {
-    expect(sql).toContain(
-      `setweight(to_tsvector('english', coalesce("rss_item"."title", '')), 'A')`,
-    );
-    expect(sql).toContain(
-      `setweight(to_tsvector('english', coalesce("rss_item"."summary", '')), 'B')`,
-    );
-    expect(sql).toContain(
-      `setweight(to_tsvector('english', left(coalesce("rss_item"."content", ''), 2000)), 'C')`,
-    );
+  it('should match the stored search vector against the tsquery', function () {
+    expect(sql).toContain(`"rss_item"."search_vector" @@ (plainto_tsquery`);
   });
 
-  it('should match the document against the tsquery', function () {
-    expect(sql).toMatch(/'C'\)\) @@ \(plainto_tsquery/);
+  it('should rank by the stored search vector', function () {
+    expect(sql).toContain(`ts_rank("rss_item"."search_vector", (plainto_tsquery`);
+  });
+
+  it('should not build a tsvector at query time', function () {
+    expect(sql).not.toContain('to_tsvector');
   });
 
   it('should boost opened items in the rank', function () {
@@ -101,21 +99,48 @@ describe('emailCandidateQuery', function () {
     expect(paramAt(params, match![1])).toBe(WINDOW_START.toISOString());
   });
 
-  it('should weight title and subject over description', function () {
-    expect(sql).toContain(
-      `setweight(to_tsvector('english', coalesce("email_item"."title", '')), 'A')`,
-    );
-    expect(sql).toContain(
-      `setweight(to_tsvector('english', coalesce("email_item"."email_subject", '')), 'A')`,
-    );
-    expect(sql).toContain(
-      `setweight(to_tsvector('english', coalesce("email_item"."description", '')), 'B')`,
-    );
+  it('should match the stored search vector against the tsquery', function () {
+    expect(sql).toContain(`"email_item"."search_vector" @@ (plainto_tsquery`);
+  });
+
+  it('should not build a tsvector at query time', function () {
+    expect(sql).not.toContain('to_tsvector');
   });
 
   it('should boost opened items and order by the rank alias', function () {
     expect(sql).toMatch(/case when ("email_item"\.)?"opened_at" is not null then 1\.5 else 1 end/);
     expect(sql).toMatch(/order by "rank" desc limit \$\d+$/);
+  });
+});
+
+// The weighting moved into the generated columns of migration 0020; these pin
+// it so ranking cannot change silently if the migration is regenerated.
+describe('search vector migration', function () {
+  const migration = readFileSync(
+    join(import.meta.dir, '../../../database/drizzle/0020_add-item-search-vector.sql'),
+    'utf8',
+  );
+
+  it('should weight rss title, summary and capped content', function () {
+    expect(migration).toContain(`setweight(to_tsvector('english', coalesce("title", '')), 'A')`);
+    expect(migration).toContain(`setweight(to_tsvector('english', coalesce("summary", '')), 'B')`);
+    expect(migration).toContain(
+      `setweight(to_tsvector('english', left(coalesce("content", ''), 2000)), 'C')`,
+    );
+  });
+
+  it('should weight email title and subject over description', function () {
+    expect(migration).toContain(
+      `setweight(to_tsvector('english', coalesce("email_subject", '')), 'A')`,
+    );
+    expect(migration).toContain(
+      `setweight(to_tsvector('english', coalesce("description", '')), 'B')`,
+    );
+  });
+
+  it('should index both search vectors with gin', function () {
+    expect(migration).toContain(`ON "rss_item" USING gin ("search_vector")`);
+    expect(migration).toContain(`ON "email_item" USING gin ("search_vector")`);
   });
 });
 
