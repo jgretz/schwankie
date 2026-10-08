@@ -19,6 +19,7 @@ import {rssRoutes} from './routes/rss';
 import {atomRoutes} from './routes/atom';
 import {digestRoutes} from './routes/digest';
 import {promoteFailuresRoutes} from './routes/promote-failures';
+import {historyRoutes} from './routes/history';
 
 const envSchema = z.object({
   PORT: z.string().default('3001'),
@@ -51,6 +52,7 @@ app.route('/', rssRoutes);
 app.route('/', atomRoutes);
 app.route('/', digestRoutes);
 app.route('/', promoteFailuresRoutes);
+app.route('/', historyRoutes);
 app.route('/api/metadata', metadataRoutes);
 
 app.onError(errorHandler);

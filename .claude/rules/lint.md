@@ -32,7 +32,7 @@ here instead.
 
 ## Standing suppressions
 
-Every `biome-ignore` must state *why* after the colon. Two rules are suppressed today:
+Every `biome-ignore` must state *why* after the colon. Three rules are suppressed today:
 
 - **`correctness/useExhaustiveDependencies`** ×2 — `daily-summary.tsx`,
   `use-form-validation.ts`. Biome 1.5.3 demands member expressions
@@ -41,8 +41,8 @@ Every `biome-ignore` must state *why* after the colon. Two rules are suppressed 
   closures or drops a needed re-run.
 - **`security/noDangerouslySetInnerHtml`** ×1 — `__root.tsx`, the pre-hydration theme
   script (`react-components.md` #2). It must run synchronously before React hydrates.
-- **`a11y/useValidAnchor`** ×2: `rss-item-row.tsx` and `emails.index.tsx`, the item
-  title links. 1.5.3 flags any `onClick` on an `<a>`, even one with a real `href`. These
+- **`a11y/useValidAnchor`** ×3: `rss-item-row.tsx`, `emails.index.tsx` and
+  `history-result-row.tsx`, the item title links. 1.5.3 flags any `onClick` on an `<a>`, even one with a real `href`. These
   anchors navigate normally; `onClick`/`onAuxClick` only record the open (`opened_at`).
   Do not convert them to buttons: that loses middle-click, copy-link and new-tab.
 

@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as QueueRouteImport } from './routes/queue'
+import { Route as HistoryRouteImport } from './routes/history'
 import { Route as FeedsRouteImport } from './routes/feeds'
 import { Route as DailySummaryRouteImport } from './routes/daily-summary'
 import { Route as AdminRouteImport } from './routes/admin'
@@ -32,6 +33,11 @@ import { Route as AdminDeadLinksRouteImport } from './routes/admin.dead-links'
 const QueueRoute = QueueRouteImport.update({
   id: '/queue',
   path: '/queue',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HistoryRoute = HistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FeedsRoute = FeedsRouteImport.update({
@@ -131,6 +137,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren
   '/daily-summary': typeof DailySummaryRoute
   '/feeds': typeof FeedsRouteWithChildren
+  '/history': typeof HistoryRoute
   '/queue': typeof QueueRoute
   '/admin/dead-links': typeof AdminDeadLinksRoute
   '/admin/feeds': typeof AdminFeedsRoute
@@ -150,6 +157,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/daily-summary': typeof DailySummaryRoute
+  '/history': typeof HistoryRoute
   '/queue': typeof QueueRoute
   '/admin/dead-links': typeof AdminDeadLinksRoute
   '/admin/feeds': typeof AdminFeedsRoute
@@ -172,6 +180,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/daily-summary': typeof DailySummaryRoute
   '/feeds': typeof FeedsRouteWithChildren
+  '/history': typeof HistoryRoute
   '/queue': typeof QueueRoute
   '/admin/dead-links': typeof AdminDeadLinksRoute
   '/admin/feeds': typeof AdminFeedsRoute
@@ -195,6 +204,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/daily-summary'
     | '/feeds'
+    | '/history'
     | '/queue'
     | '/admin/dead-links'
     | '/admin/feeds'
@@ -214,6 +224,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/daily-summary'
+    | '/history'
     | '/queue'
     | '/admin/dead-links'
     | '/admin/feeds'
@@ -235,6 +246,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/daily-summary'
     | '/feeds'
+    | '/history'
     | '/queue'
     | '/admin/dead-links'
     | '/admin/feeds'
@@ -257,6 +269,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRouteWithChildren
   DailySummaryRoute: typeof DailySummaryRoute
   FeedsRoute: typeof FeedsRouteWithChildren
+  HistoryRoute: typeof HistoryRoute
   QueueRoute: typeof QueueRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
   AuthLoginRoute: typeof AuthLoginRoute
@@ -271,6 +284,13 @@ declare module '@tanstack/react-router' {
       path: '/queue'
       fullPath: '/queue'
       preLoaderRoute: typeof QueueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/history': {
+      id: '/history'
+      path: '/history'
+      fullPath: '/history'
+      preLoaderRoute: typeof HistoryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/feeds': {
@@ -442,6 +462,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRouteWithChildren,
   DailySummaryRoute: DailySummaryRoute,
   FeedsRoute: FeedsRouteWithChildren,
+  HistoryRoute: HistoryRoute,
   QueueRoute: QueueRoute,
   AuthCallbackRoute: AuthCallbackRoute,
   AuthLoginRoute: AuthLoginRoute,

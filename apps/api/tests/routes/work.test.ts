@@ -13,6 +13,7 @@ const mockCreateWorkRequest = mock(async (_input?: unknown) => ({id: 'wr-1'}) as
 const mockNoop = mock(async () => null as any);
 
 mock.module('@domain', () => ({
+  searchHistoryCandidates: mock(async () => []),
   DomainValidationError,
   NotFoundError,
   listPendingWorkRequests: mockListPendingWorkRequests,

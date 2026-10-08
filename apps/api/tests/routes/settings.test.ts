@@ -14,6 +14,7 @@ const mockSetSetting = mock(async () => undefined);
 const mockValidateSettingValue = mock(() => ({success: true}));
 
 mock.module('@domain', () => ({
+  searchHistoryCandidates: mock(async () => []),
   DomainValidationError,
   NotFoundError,
   getSetting: mockGetSetting,

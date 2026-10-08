@@ -19,6 +19,7 @@ const mockListDailySummaryDates = mock(async () => [] as string[]);
 const mockUpsertDailySummary = mock(async (_input?: unknown) => null as any);
 
 mock.module('@domain', () => ({
+  searchHistoryCandidates: mock(async () => []),
   DomainValidationError,
   NotFoundError,
   listDigestSourceItems: mockListDigestSourceItems,
