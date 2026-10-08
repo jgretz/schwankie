@@ -1,0 +1,19 @@
+# fly deploy uses the repo root as build context; without this every deploy
+# uploaded ~2 GB (iOS Pods, node_modules) to use ~13 MB of source.
+# Allowlist only what deploy/api and deploy/www Dockerfiles COPY.
+*
+!bun.lock
+!package.json
+!tsconfig.json
+!packages
+!apps/api
+!apps/www
+
+# Images run a fresh `bun install` / `vite build`; host artifacts would
+# leak macOS binaries into the Linux image.
+**/node_modules
+apps/www/dist
+apps/www/.tanstack
+
+# Dockerfiles rename .env.production to .env; local .env never ships.
+**/.env
