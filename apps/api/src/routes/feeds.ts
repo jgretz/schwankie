@@ -120,7 +120,7 @@ feedsRoutes.get('/api/feeds/:feedId/items', auth, async (c) => {
     limit: c.req.query('limit'),
     offset: c.req.query('offset'),
     read: c.req.query('read'),
-    clicked: c.req.query('clicked'),
+    promoted: c.req.query('promoted'),
     q: c.req.query('q'),
   });
   if (!parsed.success) {

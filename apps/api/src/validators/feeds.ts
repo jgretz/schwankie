@@ -43,7 +43,7 @@ export const listFeedItemsSchema = z.object({
   limit: z.coerce.number().int().positive().default(20),
   offset: z.coerce.number().int().nonnegative().default(0),
   read: boolString,
-  clicked: boolString,
+  promoted: boolString,
   q: z.string().optional(),
 });
 

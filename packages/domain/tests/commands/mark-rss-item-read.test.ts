@@ -17,16 +17,6 @@ describe('markRssItemRead', function () {
     expect(updated?.read).toBe(true);
   });
 
-  it('should mark both read and clicked when clicked is true', async function () {
-    const feed = await makeFeed();
-    const item = await makeRssItem(feed.id);
-
-    const updated = await markRssItemRead(item!.id, true);
-
-    expect(updated?.read).toBe(true);
-    expect(updated?.clicked).toBe(true);
-  });
-
   it('should return null for non-existent item', async function () {
     const updated = await markRssItemRead('non-existent-id');
 

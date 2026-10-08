@@ -29,7 +29,7 @@ export async function listAllRssItems(
         imageUrl: rssItem.imageUrl,
         publishedAt: rssItem.publishedAt,
         read: rssItem.read,
-        clicked: rssItem.clicked,
+        promoted: rssItem.promoted,
         createdAt: rssItem.createdAt,
       })
       .from(rssItem)

@@ -17,7 +17,7 @@ describe('createEmailItem', function () {
     expect(result!.emailFrom).toBe('sender@example.com');
     expect(result!.link).toBe('https://example.com');
     expect(result!.read).toBe(false);
-    expect(result!.clicked).toBe(false);
+    expect(result!.promoted).toBe(false);
     expect(result!.id).toBeDefined();
   });
 

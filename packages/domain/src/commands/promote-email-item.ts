@@ -26,7 +26,7 @@ export async function promoteEmailItem(id: string): Promise<LinkWithTags> {
       tx as any,
     );
 
-    await tx.update(emailItem).set({clicked: true}).where(eq(emailItem.id, id));
+    await tx.update(emailItem).set({promoted: true}).where(eq(emailItem.id, id));
 
     return link;
   });

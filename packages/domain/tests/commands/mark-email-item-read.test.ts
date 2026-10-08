@@ -11,17 +11,8 @@ describe('markEmailItemRead', function () {
     expect(item!.read).toBe(false);
 
     const updated = await markEmailItemRead(item!.id);
-    expect(updated).not.toBeNull();
-    expect(updated!.read).toBe(true);
-    expect(updated!.clicked).toBe(false);
-  });
-
-  it('should mark email item as read and clicked', async function () {
-    const item = await makeEmailItem();
-    const updated = await markEmailItemRead(item!.id, {clicked: true});
 
     expect(updated!.read).toBe(true);
-    expect(updated!.clicked).toBe(true);
   });
 
   it('should return null for non-existent item', async function () {

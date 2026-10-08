@@ -14,7 +14,7 @@ const fetchFeedItemsInput = z.object({
   limit: z.number().optional(),
   offset: z.number().optional(),
   read: z.boolean().optional(),
-  clicked: z.boolean().optional(),
+  promoted: z.boolean().optional(),
   q: z.string().optional(),
 });
 

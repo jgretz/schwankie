@@ -3,17 +3,12 @@ import {eq} from 'drizzle-orm';
 import {getDb} from '../db';
 import type {RssItem} from '../types';
 
-export async function markRssItemRead(id: string, clicked?: boolean): Promise<RssItem | null> {
+export async function markRssItemRead(id: string): Promise<RssItem | null> {
   const db = getDb();
-
-  const updateValues = {
-    read: true,
-    ...(clicked !== undefined && {clicked}),
-  };
 
   const [updated] = await db
     .update(rssItem)
-    .set(updateValues)
+    .set({read: true})
     .where(eq(rssItem.id, id))
     .returning();
 

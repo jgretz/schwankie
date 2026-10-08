@@ -43,14 +43,14 @@ describe('promoteEmailItem', function () {
     expect(link.title).toBe('https://example.com/article');
   });
 
-  it('should mark email item as clicked', async function () {
+  it('should mark email item as promoted', async function () {
     const item = await makeEmailItem();
-    expect(item!.clicked).toBe(false);
+    expect(item!.promoted).toBe(false);
 
     await promoteEmailItem(item!.id);
 
     const updated = await getEmailItem(item!.id);
-    expect(updated!.clicked).toBe(true);
+    expect(updated!.promoted).toBe(true);
   });
 
   it('should throw NotFoundError for non-existent item', async function () {

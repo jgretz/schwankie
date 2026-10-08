@@ -64,14 +64,14 @@ describe('promoteRssItem', function () {
     expect(link?.imageUrl).toBe('https://example.com/image.jpg');
   });
 
-  it('should mark item as clicked', async function () {
+  it('should mark item as promoted', async function () {
     const feed = await makeFeed();
     const item = await makeRssItem(feed.id);
 
     await promoteRssItem(item!.id);
 
     const updatedItem = store.rssItems.find((i) => i.id === item!.id);
-    expect(updatedItem?.clicked).toBe(true);
+    expect(updatedItem?.promoted).toBe(true);
   });
 
   it('should return null for non-existent item', async function () {

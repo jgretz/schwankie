@@ -65,7 +65,7 @@ type RssItemRow = {
   imageUrl: string | null;
   publishedAt: Date | null;
   read: boolean;
-  clicked: boolean;
+  promoted: boolean;
   createdAt: Date;
 };
 
@@ -78,7 +78,7 @@ type EmailItemRow = {
   title: string | null;
   description: string | null;
   read: boolean;
-  clicked: boolean;
+  promoted: boolean;
   importedAt: Date;
 };
 
@@ -316,7 +316,7 @@ const COLUMN_MAP: Record<string, Record<string, string>> = {
     image_url: 'imageUrl',
     published_at: 'publishedAt',
     read: 'read',
-    clicked: 'clicked',
+    promoted: 'promoted',
     created_at: 'createdAt',
   },
   email_item: {
@@ -328,7 +328,7 @@ const COLUMN_MAP: Record<string, Record<string, string>> = {
     title: 'title',
     description: 'description',
     read: 'read',
-    clicked: 'clicked',
+    promoted: 'promoted',
     imported_at: 'importedAt',
   },
   setting: {
@@ -658,7 +658,7 @@ function defaultsForTable(table: any, values: any, id: number): any {
         imageUrl: values.imageUrl ?? values.image_url ?? null,
         publishedAt: values.publishedAt ?? values.published_at ?? null,
         read: values.read ?? false,
-        clicked: values.clicked ?? false,
+        promoted: values.promoted ?? false,
         createdAt: values.createdAt ?? values.created_at ?? now,
         _insertionOrder: store.insertionCounter++,
       };
@@ -673,7 +673,7 @@ function defaultsForTable(table: any, values: any, id: number): any {
         title: values.title ?? null,
         description: values.description ?? null,
         read: values.read ?? false,
-        clicked: values.clicked ?? false,
+        promoted: values.promoted ?? false,
         importedAt: values.importedAt ?? values.imported_at ?? now,
       };
     }

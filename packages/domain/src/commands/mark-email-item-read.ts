@@ -3,18 +3,12 @@ import {emailItem} from 'database';
 import {getDb} from '../db';
 import type {EmailItem} from '../types';
 
-export async function markEmailItemRead(
-  id: string,
-  options?: {clicked?: boolean},
-): Promise<EmailItem | null> {
+export async function markEmailItemRead(id: string): Promise<EmailItem | null> {
   const db = getDb();
 
   const [updated] = await db
     .update(emailItem)
-    .set({
-      read: true,
-      ...(options?.clicked && {clicked: true}),
-    })
+    .set({read: true})
     .where(eq(emailItem.id, id))
     .returning();
 

@@ -14,7 +14,7 @@ describe('createRssItem', function () {
     expect(result?.feedId).toBe(feed.id);
     expect(result?.title).toBe('Test Article');
     expect(result?.read).toBe(false);
-    expect(result?.clicked).toBe(false);
+    expect(result?.promoted).toBe(false);
   });
 
   it('should return null on conflict (duplicate guid)', async function () {

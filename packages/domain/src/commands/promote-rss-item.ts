@@ -27,7 +27,7 @@ export async function promoteRssItem(id: string): Promise<number | null> {
 
     if (!created) return null;
 
-    await tx.update(rssItem).set({clicked: true}).where(eq(rssItem.id, id));
+    await tx.update(rssItem).set({promoted: true}).where(eq(rssItem.id, id));
 
     return created.id;
   });

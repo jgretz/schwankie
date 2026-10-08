@@ -105,7 +105,7 @@ export type RssItemData = {
   imageUrl: string | null;
   publishedAt: string | null;
   read: boolean;
-  clicked: boolean;
+  promoted: boolean;
   createdAt: string;
 };
 
@@ -163,7 +163,7 @@ export type EmailItemData = {
   title: string | null;
   description: string | null;
   read: boolean;
-  clicked: boolean;
+  promoted: boolean;
   importedAt: string;
 };
 

@@ -12,7 +12,8 @@ export const emailItem = pgTable(
     title: text('title'),
     description: text('description'),
     read: boolean('read').notNull().default(false),
-    clicked: boolean('clicked').notNull().default(false),
+    // Set by promote only: the item was saved to the link queue.
+    promoted: boolean('promoted').notNull().default(false),
     importedAt: timestamp('imported_at', {precision: 6, withTimezone: true}).notNull().defaultNow(),
   },
   (table) => ({
