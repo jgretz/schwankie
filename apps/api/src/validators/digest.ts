@@ -11,6 +11,10 @@ export const getDailySummarySchema = z.object({
   date: summaryDate.optional(),
 });
 
+export const markDailySummaryReadSchema = z.object({
+  date: summaryDate,
+});
+
 export const digestTopicSchema = z.object({
   rank: z.number().int(),
   title: z.string().min(1),

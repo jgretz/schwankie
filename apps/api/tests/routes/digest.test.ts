@@ -17,6 +17,7 @@ const mockListDigestSourceItems = mock(async () => ({
 const mockGetDailySummary = mock(async (_date?: string) => null as any);
 const mockListDailySummaryDates = mock(async () => [] as string[]);
 const mockUpsertDailySummary = mock(async (_input?: unknown) => null as any);
+const mockMarkDailySummaryItemsRead = mock(async (_date?: string) => null as any);
 
 mock.module('@domain', () => ({
   searchHistoryCandidates: mock(async () => []),
@@ -26,6 +27,7 @@ mock.module('@domain', () => ({
   getDailySummary: mockGetDailySummary,
   listDailySummaryDates: mockListDailySummaryDates,
   upsertDailySummary: mockUpsertDailySummary,
+  markDailySummaryItemsRead: mockMarkDailySummaryItemsRead,
   localSummaryDate: (now: Date) => now.toISOString().slice(0, 10),
   digestWindow: (now: Date, hours: number) => ({
     windowStart: new Date(now.getTime() - hours * 3600 * 1000),
@@ -348,5 +350,75 @@ describe('POST /api/digest/daily-summary', function () {
     });
 
     expect(res.status).toBe(401);
+  });
+});
+
+describe('POST /api/digest/daily-summary/mark-read', function () {
+  const path = '/api/digest/daily-summary/mark-read';
+
+  async function post(
+    body: string,
+    headers: Record<string, string> = authHeader,
+  ): Promise<Response> {
+    return makeApp().request(path, {
+      method: 'POST',
+      headers: {...headers, 'Content-Type': 'application/json'},
+      body,
+    });
+  }
+
+  beforeEach(function () {
+    mockMarkDailySummaryItemsRead.mockReset();
+  });
+
+  it('should return 200 with the counts and forward the date', async function () {
+    const counts = {rssCount: 2, emailCount: 1, count: 3};
+    mockMarkDailySummaryItemsRead.mockResolvedValue(counts);
+
+    const res = await post(JSON.stringify({date: '2026-07-27'}));
+
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual(counts);
+    expect(mockMarkDailySummaryItemsRead).toHaveBeenCalledWith('2026-07-27');
+  });
+
+  it('should return 404 when the date has no digest', async function () {
+    mockMarkDailySummaryItemsRead.mockResolvedValue(null);
+
+    const res = await post(JSON.stringify({date: '2026-01-01'}));
+
+    expect(res.status).toBe(404);
+    expect((await res.json()).error).toBe('Daily summary not found');
+  });
+
+  it('should return 400 on a malformed date', async function () {
+    const res = await post(JSON.stringify({date: '27-07-2026'}));
+
+    expect(res.status).toBe(400);
+    expect((await res.json()).error).toBe('Invalid request body');
+    expect(mockMarkDailySummaryItemsRead).not.toHaveBeenCalled();
+  });
+
+  it('should return 400 on a missing date', async function () {
+    const res = await post(JSON.stringify({}));
+
+    expect(res.status).toBe(400);
+    expect((await res.json()).error).toBe('Invalid request body');
+    expect(mockMarkDailySummaryItemsRead).not.toHaveBeenCalled();
+  });
+
+  it('should return 400 on a body that is not json', async function () {
+    const res = await post('not json');
+
+    expect(res.status).toBe(400);
+    expect((await res.json()).error).toBe('Invalid request body');
+    expect(mockMarkDailySummaryItemsRead).not.toHaveBeenCalled();
+  });
+
+  it('should return 401 without auth', async function () {
+    const res = await post(JSON.stringify({date: '2026-07-27'}), {});
+
+    expect(res.status).toBe(401);
+    expect(mockMarkDailySummaryItemsRead).not.toHaveBeenCalled();
   });
 });

@@ -4,6 +4,7 @@ import {fetchDigestSourceItems} from '../../src/calls/fetch-digest-source-items'
 import {fetchDailySummary} from '../../src/calls/fetch-daily-summary';
 import {fetchDailySummaryDates} from '../../src/calls/fetch-daily-summary-dates';
 import {upsertDailySummary} from '../../src/calls/upsert-daily-summary';
+import {markDailySummaryItemsRead} from '../../src/calls/mark-daily-summary-items-read';
 
 const TEST_API_URL = 'http://localhost:3001';
 const TEST_API_KEY = 'test-key';
@@ -172,5 +173,25 @@ describe('upsertDailySummary', () => {
     expect(async () => {
       await upsertDailySummary({topics: []});
     }).toThrow();
+  });
+});
+
+describe('markDailySummaryItemsRead', () => {
+  it('should post the date and return the counts', async () => {
+    const counts = {rssCount: 2, emailCount: 1, count: 3};
+    const captured = captureFetch(counts);
+
+    const result = await markDailySummaryItemsRead('2026-07-27');
+
+    expect(captured.url).toBe(`${TEST_API_URL}/api/digest/daily-summary/mark-read`);
+    expect(captured.init.method).toBe('POST');
+    expect(JSON.parse(captured.init.body as string)).toEqual({date: '2026-07-27'});
+    expect(result).toEqual(counts);
+  });
+
+  it('should throw on a non-ok response', async () => {
+    captureFetch({error: 'Daily summary not found'}, 404);
+
+    await expect(markDailySummaryItemsRead('2026-01-01')).rejects.toThrow('API error: 404');
   });
 });

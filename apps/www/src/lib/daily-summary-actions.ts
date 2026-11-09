@@ -31,3 +31,12 @@ export const listDailySummaryDatesAction = createServerFn({method: 'GET'}).handl
   const {fetchDailySummaryDates} = await import('client');
   return fetchDailySummaryDates();
 });
+
+export const markDailySummaryItemsReadAction = createServerFn({method: 'POST'})
+  .inputValidator(z.object({date: z.string()}))
+  .handler(async ({data}) => {
+    await getClient();
+    await requireAuth();
+    const {markDailySummaryItemsRead} = await import('client');
+    return markDailySummaryItemsRead(data.date);
+  });

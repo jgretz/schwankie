@@ -5,12 +5,14 @@ import {
   listDailySummaryDates,
   listDigestSourceItems,
   localSummaryDate,
+  markDailySummaryItemsRead,
   upsertDailySummary,
 } from '@domain';
 import {authMiddleware} from '../middleware/auth';
 import {
   getDailySummarySchema,
   listDigestSourceItemsSchema,
+  markDailySummaryReadSchema,
   upsertDailySummarySchema,
 } from '../validators/digest';
 
@@ -80,4 +82,18 @@ digestRoutes.post('/api/digest/daily-summary', auth, async (c) => {
   });
 
   return c.json(summary, 201);
+});
+
+digestRoutes.post('/api/digest/daily-summary/mark-read', auth, async (c) => {
+  const parsed = markDailySummaryReadSchema.safeParse(await c.req.json().catch(() => null));
+  if (!parsed.success) {
+    return c.json({error: 'Invalid request body', details: parsed.error.flatten()}, 400);
+  }
+
+  const result = await markDailySummaryItemsRead(parsed.data.date);
+  if (!result) {
+    return c.json({error: 'Daily summary not found'}, 404);
+  }
+
+  return c.json(result);
 });
