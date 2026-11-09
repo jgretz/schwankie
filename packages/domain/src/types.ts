@@ -277,3 +277,9 @@ export type UpsertDailySummaryInput = {
   notable?: string | null;
   topics: DigestTopic[];
 };
+
+export type MarkDailySummaryItemsReadResult = {
+  rssCount: number;
+  emailCount: number;
+  count: number;
+};

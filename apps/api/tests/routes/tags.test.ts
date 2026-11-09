@@ -96,6 +96,7 @@ mock.module('@domain', () => ({
   getDailySummary: mock(async () => null),
   listDailySummaryDates: mock(async () => []),
   upsertDailySummary: mock(async () => null),
+  markDailySummaryItemsRead: mock(async () => null),
   localSummaryDate: () => '2026-07-27',
   digestWindow: () => ({windowStart: new Date(), windowEnd: new Date()}),
   getRssItem: mock(async () => null),

@@ -429,6 +429,12 @@ function evaluateCondition(row: any, condition: any, _rowTable: any): boolean {
   const col = getColumn(chunks);
   const val = getValue(chunks);
 
+  // inArray(col, select): drizzle binds the mock builder as the Param value, so
+  // without this it would reach the raw-SQL branch below and match every row.
+  if (op === 'in' && typeof val?.then === 'function') {
+    return matchesSelectSubquery(row, col, val);
+  }
+
   // SQL subquery (e.g. `link.id IN (subquery)`) — check for " in " with nested SQL
   if (op === 'in' && !Array.isArray(val)) {
     // This is a raw SQL subquery — used by listLinks for tag filtering
@@ -475,6 +481,25 @@ function evaluateCondition(row: any, condition: any, _rowTable: any): boolean {
     default:
       return true;
   }
+}
+
+function matchesSelectSubquery(row: any, col: any, subquery: any): boolean {
+  if (!col) throw new Error('inArray subquery has no left-hand column');
+
+  let subqueryRows: any[] | undefined;
+  subquery.then((resolved: any[]) => {
+    subqueryRows = resolved;
+  });
+  if (!subqueryRows) throw new Error('inArray subquery did not resolve synchronously');
+
+  const cellValue = resolveField(row, col);
+  return subqueryRows.some((subqueryRow) => {
+    const columns = Object.values(subqueryRow);
+    if (columns.length !== 1) {
+      throw new Error(`inArray subquery must select one column, got ${columns.length}`);
+    }
+    return columns[0] === cellValue;
+  });
 }
 
 function extractTagIdsFromSubquery(condition: any): number[] {

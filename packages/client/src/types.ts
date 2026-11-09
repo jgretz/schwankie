@@ -283,6 +283,12 @@ export type UpsertDailySummaryInput = {
   topics: DigestTopic[];
 };
 
+export type MarkDailySummaryItemsReadResult = {
+  rssCount: number;
+  emailCount: number;
+  count: number;
+};
+
 export type HistoryDays = 7 | 30 | 90;
 
 type HistoryMatchBase = {

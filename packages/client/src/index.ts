@@ -88,6 +88,7 @@ export {fetchDigestSourceItems} from './calls/fetch-digest-source-items';
 export {fetchDailySummary} from './calls/fetch-daily-summary';
 export {fetchDailySummaryDates} from './calls/fetch-daily-summary-dates';
 export {upsertDailySummary} from './calls/upsert-daily-summary';
+export {markDailySummaryItemsRead} from './calls/mark-daily-summary-items-read';
 export {listPromoteFailures} from './calls/list-promote-failures';
 export {searchHistory} from './calls/search-history';
 
@@ -127,6 +128,7 @@ export type {
   DigestTopicLink,
   DailySummaryData,
   UpsertDailySummaryInput,
+  MarkDailySummaryItemsReadResult,
   PromoteFailureData,
   HistoryDays,
   HistoryMatch,

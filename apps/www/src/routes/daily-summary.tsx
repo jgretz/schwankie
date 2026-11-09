@@ -1,8 +1,10 @@
 import {createFileRoute, redirect, useNavigate} from '@tanstack/react-router';
 import {useCallback, useMemo} from 'react';
+import {toast} from 'sonner';
 import {z} from 'zod';
 import type {DigestTopic} from 'client';
-import {useDailySummary} from '@www/hooks/use-daily-summary';
+import {MarkDigestReadButton} from '@www/components/daily-summary/mark-digest-read-button';
+import {useDailySummary, useMarkDailySummaryItemsRead} from '@www/hooks/use-daily-summary';
 import {useDailySummaryDates} from '@www/hooks/use-daily-summary-dates';
 
 const searchSchema = z.object({
@@ -66,6 +68,20 @@ function DailySummaryPage() {
     [navigate],
   );
 
+  const markReadMutation = useMarkDailySummaryItemsRead();
+
+  const handleMarkRead = useCallback(
+    async (summaryDate: string) => {
+      try {
+        const result = await markReadMutation.mutateAsync(summaryDate);
+        toast.success(`Marked ${result.count} as read`);
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : 'Failed to mark as read');
+      }
+    },
+    [markReadMutation],
+  );
+
   if (isLoading) {
     return (
       <div className="px-6 py-6">
@@ -99,6 +115,12 @@ function DailySummaryPage() {
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
+          {summary ? (
+            <MarkDigestReadButton
+              isPending={markReadMutation.isPending}
+              onClick={() => handleMarkRead(summary.summaryDate)}
+            />
+          ) : null}
           <button
             type="button"
             onClick={() => goTo(previousDate)}

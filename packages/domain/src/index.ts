@@ -75,6 +75,7 @@ export {searchHistoryCandidates} from './queries/search-history-candidates';
 export {getDailySummary} from './queries/get-daily-summary';
 export {listDailySummaryDates} from './queries/list-daily-summary-dates';
 export {upsertDailySummary} from './commands/upsert-daily-summary';
+export {markDailySummaryItemsRead} from './commands/mark-daily-summary-items-read';
 export {recordPromoteFailure} from './commands/record-promote-failure';
 
 // lib
@@ -134,6 +135,7 @@ export type {
   HistoryCandidateBase,
   SearchHistoryCandidatesParams,
   UpsertDailySummaryInput,
+  MarkDailySummaryItemsReadResult,
   PromoteFailure,
   RecordPromoteFailureInput,
   ListPromoteFailuresParams,

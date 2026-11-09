@@ -81,6 +81,7 @@ mock.module('@domain', () => ({
   getDailySummary: mockNoop,
   listDailySummaryDates: mockNoop,
   upsertDailySummary: mockNoop,
+  markDailySummaryItemsRead: mockNoop,
   localSummaryDate: () => '2026-07-27',
   digestWindow: () => ({windowStart: new Date(), windowEnd: new Date()}),
 }));

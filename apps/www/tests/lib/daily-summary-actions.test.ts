@@ -41,6 +41,9 @@ type Summary = {summaryDate: string; topics: unknown[]} | null;
 
 let getDailySummaryAction: (input: {data: {date?: string}}) => Promise<Summary>;
 let listDailySummaryDatesAction: () => Promise<{dates: string[]}>;
+let markDailySummaryItemsReadAction: (input: {
+  data: {date: string};
+}) => Promise<{rssCount: number; emailCount: number; count: number}>;
 let createSession: (email: string) => Promise<void>;
 
 beforeAll(async function () {
@@ -51,6 +54,8 @@ beforeAll(async function () {
   getDailySummaryAction = mod.getDailySummaryAction as typeof getDailySummaryAction;
   listDailySummaryDatesAction =
     mod.listDailySummaryDatesAction as typeof listDailySummaryDatesAction;
+  markDailySummaryItemsReadAction =
+    mod.markDailySummaryItemsReadAction as typeof markDailySummaryItemsReadAction;
 
   const sessionMod = await import('../../src/lib/session.server');
   createSession = sessionMod.createSession;
@@ -142,5 +147,48 @@ describe('listDailySummaryDatesAction', function () {
     } catch (error) {
       expect((error as Error).message).toBe('Unauthorized');
     }
+  });
+});
+
+describe('markDailySummaryItemsReadAction', function () {
+  it('should forward the date to the API', async function () {
+    respondWith({rssCount: 0, emailCount: 0, count: 0});
+
+    await markDailySummaryItemsReadAction({data: {date: '2026-07-27'}});
+
+    const [url, requestInit] = (global.fetch as unknown as ReturnType<typeof mock>).mock
+      .calls[0] as [string, RequestInit];
+    expect(url).toBe('http://localhost:3001/api/digest/daily-summary/mark-read');
+    expect(requestInit.method).toBe('POST');
+    expect(JSON.parse(requestInit.body as string)).toEqual({date: '2026-07-27'});
+  });
+
+  it('should return the counts', async function () {
+    const counts = {rssCount: 2, emailCount: 1, count: 3};
+    respondWith(counts);
+
+    const result = await markDailySummaryItemsReadAction({data: {date: '2026-07-27'}});
+
+    expect(result).toEqual(counts);
+  });
+
+  it('should reject on a non-ok response', async function () {
+    respondWith({error: 'Daily summary not found'}, false, 404);
+
+    await expect(markDailySummaryItemsReadAction({data: {date: '2026-01-01'}})).rejects.toThrow(
+      'API error: 404',
+    );
+  });
+
+  it('should throw and skip the API when not authenticated', async function () {
+    respondWith({rssCount: 0, emailCount: 0, count: 0});
+    for (const key of Object.keys(cookies)) {
+      delete cookies[key];
+    }
+
+    await expect(markDailySummaryItemsReadAction({data: {date: '2026-07-27'}})).rejects.toThrow(
+      'Unauthorized',
+    );
+    expect(global.fetch).not.toHaveBeenCalled();
   });
 });
