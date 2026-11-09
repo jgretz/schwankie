@@ -4,7 +4,7 @@ description: Cluster the last 24h of schwankie links into ranked topics and publ
 entry: fetch
 input:
   lookbackHours: {type: number, default: 24}
-  topicCount: {type: number, default: 10}
+  topicCount: {type: number, default: 15}
 steps:
   fetch:
     kind: worker
