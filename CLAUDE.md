@@ -41,7 +41,7 @@ process-globally, so `apps/api`'s partial `@domain` stubs leak into
 
 - **api** — Hono REST API (port 3001). Bearer auth middleware. Routes in `src/routes/`. Exports `fetch: app.fetch` for Bun server.
 - **www** — TanStack Start + Vite + Tailwind. File-based routing in `src/routes/`. Do NOT edit `routeTree.gen.ts`.
-- **mobile** — Expo Router (SDK 55, React 19, RN 0.83). Tabs: Queue, Feeds, Emails, Settings. Init client with `EXPO_PUBLIC_API_URL` and `EXPO_PUBLIC_API_KEY` env vars.
+- **mobile** — Expo Router (SDK 58, React 19.3, RN 0.88). Tabs: Daily, Compendium, Queue, RSS, Emails. Init client with `EXPO_PUBLIC_API_URL` and `EXPO_PUBLIC_API_KEY` env vars.
 - **tasks** — Bun polling task runner.
 
 ## Packages

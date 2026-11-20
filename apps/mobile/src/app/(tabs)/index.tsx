@@ -127,14 +127,18 @@ export default function QueueScreen() {
         onEndReached={handleEndReached}
         onEndReachedThreshold={0.5}
         refreshControl={
-          <RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={colors.accent} />
+          <RefreshControl
+            refreshing={isRefetching}
+            onRefresh={() => void refetch()}
+            tintColor={colors.accent}
+          />
         }
         ListFooterComponent={
           isFetchingNextPage ? (
             <View style={{paddingVertical: 20, alignItems: 'center'}}>
               <ActivityIndicator size="small" color={colors.accent} />
             </View>
-          ) : null
+          ) : undefined
         }
         contentContainerStyle={{paddingBottom: 20}}
       />

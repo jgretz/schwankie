@@ -7,15 +7,6 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "scheme": "schwankie",
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#f7f3ed",
-      "dark": {
-        "image": "./assets/splash-icon.png",
-        "backgroundColor": "#1a1c1e"
-      }
-    },
     "plugins": [
       [
         "expo-router",
@@ -26,7 +17,21 @@
       "expo-web-browser",
       "@bacons/apple-targets",
       "expo-font",
-      "./plugins/with-sync-extension-version"
+      "./plugins/with-sync-extension-version",
+      "expo-status-bar",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#f7f3ed",
+          "dark": {
+            "image": "./assets/splash-icon.png",
+            "backgroundColor": "#1a1c1e"
+          },
+          "imageWidth": 200
+        }
+      ]
     ],
     "ios": {
       "supportsTablet": true,

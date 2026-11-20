@@ -301,7 +301,7 @@ export default function EmailsScreen() {
             <View style={{paddingVertical: 16, alignItems: 'center'}}>
               <ActivityIndicator size="small" color={colors.accent} />
             </View>
-          ) : null
+          ) : undefined
         }
         refreshControl={
           <RefreshControl
