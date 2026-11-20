@@ -59,7 +59,7 @@ function ReaderShell() {
         }
       >
         <SafeAreaInsetsContext.Provider value={columnInsets}>
-          <TabsNavigator />
+          <TabsNavigator isRail={layout.mode === 'stacked'} />
         </SafeAreaInsetsContext.Provider>
       </View>
       {layout.mode === 'split' && url ? <ReaderPane key={url} url={url} onClose={close} /> : null}
@@ -67,7 +67,9 @@ function ReaderShell() {
   );
 }
 
-function TabsNavigator() {
+// Portrait puts the tabs in a right-hand rail, within thumb reach on the narrow
+// closed Duo; landscape keeps them along the bottom of the list column.
+function TabsNavigator({isRail}: {isRail: boolean}) {
   const colors = useColors();
 
   // RN 0.88 widens the navigator's `color` to ColorValue (number | null too),
@@ -99,10 +101,14 @@ function TabsNavigator() {
         },
         tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: colors.textMuted,
+        tabBarPosition: isRail ? 'right' : 'bottom',
+        tabBarVariant: isRail ? 'material' : 'uikit',
+        tabBarShowLabel: !isRail,
         tabBarStyle: {
           backgroundColor: colors.card,
-          borderTopColor: colors.border,
-          borderTopWidth: 1,
+          borderColor: colors.border,
+          borderTopWidth: isRail ? 0 : 1,
+          borderLeftWidth: isRail ? 1 : 0,
         },
       }}
     >
