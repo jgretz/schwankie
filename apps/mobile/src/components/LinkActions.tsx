@@ -1,6 +1,6 @@
 import {View, TouchableOpacity, Text, ActivityIndicator, Alert} from 'react-native';
 import {MaterialIcons} from '@expo/vector-icons';
-import {openLink} from '../services/open-link';
+import {useOpenLink} from '../services/reader-pane';
 
 type LinkActionsProps = {
   url: string;
@@ -10,7 +10,6 @@ type LinkActionsProps = {
   isDeleting?: boolean;
   colors: {
     accent: string;
-    bg: string;
     error: string;
     textMuted: string;
   };
@@ -24,7 +23,8 @@ export function LinkActions({
   isDeleting,
   colors,
 }: LinkActionsProps) {
-  const handleOpen = () => openLink({url, colors, source: 'LinkActions'});
+  const openLink = useOpenLink();
+  const handleOpen = () => openLink(url, 'LinkActions');
 
   const handleDelete = () => {
     Alert.alert('Delete link?', 'This cannot be undone.', [
