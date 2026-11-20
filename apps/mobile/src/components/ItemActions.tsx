@@ -1,6 +1,6 @@
 import {View, TouchableOpacity, Text, ActivityIndicator} from 'react-native';
 import {MaterialIcons} from '@expo/vector-icons';
-import {openLink} from '../services/open-link';
+import {useOpenLink} from '../services/reader-pane';
 
 type ItemActionsProps = {
   url: string;
@@ -12,7 +12,6 @@ type ItemActionsProps = {
   colors: {
     text: string;
     accent: string;
-    bg: string;
     textMuted: string;
   };
 };
@@ -26,9 +25,10 @@ export function ItemActions({
   isPromoting,
   colors,
 }: ItemActionsProps) {
+  const openLink = useOpenLink();
   const handleOpen = () => {
     onOpen();
-    openLink({url, colors, source: 'ItemActions'});
+    openLink(url, 'ItemActions');
   };
 
   return (

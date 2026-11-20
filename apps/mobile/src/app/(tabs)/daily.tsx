@@ -6,7 +6,7 @@ import {LoadingState, ErrorState, EmptyState} from '../../components/ListStates'
 import {formatSummaryDate} from '../../lib/format-summary-date';
 import {resolveAdjacentDates} from '../../lib/resolve-adjacent-dates';
 import {useDailySummary, useDailySummaryDates} from '../../services/daily-summary';
-import {openLink} from '../../services/open-link';
+import {useOpenLink} from '../../services/reader-pane';
 
 type Colors = ReturnType<typeof useColors>;
 
@@ -202,6 +202,7 @@ function DayNavButton({
 }
 
 function TopicCard({topic, colors}: {topic: DigestTopic; colors: Colors}) {
+  const openLink = useOpenLink();
   return (
     <View
       style={{
@@ -239,10 +240,7 @@ function TopicCard({topic, colors}: {topic: DigestTopic; colors: Colors}) {
         >
           {topic.links.map((link) => (
             <View key={link.url} style={{flexDirection: 'row', alignItems: 'baseline', gap: 8}}>
-              <TouchableOpacity
-                style={{flex: 1}}
-                onPress={() => openLink({url: link.url, colors, source: 'DailyScreen'})}
-              >
+              <TouchableOpacity style={{flex: 1}} onPress={() => openLink(link.url, 'DailyScreen')}>
                 <Text style={{fontSize: 13, color: colors.text}}>{link.title}</Text>
               </TouchableOpacity>
               <Text style={{fontSize: 11, color: colors.textFaint}}>{link.source}</Text>
