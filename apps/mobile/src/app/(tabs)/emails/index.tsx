@@ -8,38 +8,37 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import {useMemo, useState} from 'react';
-import type {RssItemWithFeedData} from 'client';
-import {useColors} from '../../theme/use-colors';
-import {LoadingState, ErrorState, EmptyState} from '../../components/ListStates';
-import {ItemActions} from '../../components/ItemActions';
+import type {EmailItemData} from 'client';
+import {formatEmailMeta} from '../../../lib/format-email-meta';
+import {useColors} from '../../../theme/use-colors';
+import {LoadingState, ErrorState, EmptyState} from '../../../components/ListStates';
+import {ItemActions} from '../../../components/ItemActions';
 import {
-  useAllRssItems,
-  useListFeeds,
-  useMarkAllRssItemsRead,
-  useMarkRssItemOpened,
-  useMarkRssItemRead,
-  usePromoteRssItem,
-  useTriggerRefreshAllFeeds,
-} from '../../services/feeds';
+  useEmailItems,
+  useMarkAllEmailItemsRead,
+  useMarkEmailItemOpened,
+  useMarkEmailItemRead,
+  usePromoteEmailItem,
+  useTriggerRefreshEmails,
+} from '../../../services/emails';
 
-export default function FeedsScreen() {
+export default function EmailsScreen() {
   const colors = useColors();
   const [unread, setUnread] = useState(true);
-  const [selectedFeedId, setSelectedFeedId] = useState<string | null>(null);
+  const [selectedFrom, setSelectedFrom] = useState<string | null>(null);
   const [hiddenItems, setHiddenItems] = useState<Set<string>>(new Set());
   const [pendingMarkReadId, setPendingMarkReadId] = useState<string | null>(null);
   const [pendingPromoteId, setPendingPromoteId] = useState<string | null>(null);
 
-  const {data: feedsData} = useListFeeds();
   const {data, isLoading, error, refetch, fetchNextPage, hasNextPage, isFetchingNextPage} =
-    useAllRssItems({unread, feedId: selectedFeedId ?? undefined});
-  const {mutate: markOpened} = useMarkRssItemOpened();
-  const {mutate: markRead, isPending: isMarkingRead} = useMarkRssItemRead();
-  const {mutate: promote, isPending: isPromoting} = usePromoteRssItem();
-  const {mutate: markAllRead, isPending: isMarkingAllRead} = useMarkAllRssItemsRead();
-  const {mutate: triggerRefresh, isPending: isRefreshing} = useTriggerRefreshAllFeeds();
+    useEmailItems({unread, from: selectedFrom ?? undefined});
+  const {mutate: markOpened} = useMarkEmailItemOpened();
+  const {mutate: markRead, isPending: isMarkingRead} = useMarkEmailItemRead();
+  const {mutate: promote, isPending: isPromoting} = usePromoteEmailItem();
+  const {mutate: markAllRead, isPending: isMarkingAllRead} = useMarkAllEmailItemsRead();
+  const {mutate: triggerRefresh, isPending: isRefreshing} = useTriggerRefreshEmails();
 
-  const items = useMemo<RssItemWithFeedData[]>(
+  const items = useMemo<EmailItemData[]>(
     () => data?.pages.flatMap((page) => page.items) ?? [],
     [data],
   );
@@ -49,43 +48,44 @@ export default function FeedsScreen() {
   );
   const total = data?.pages[0]?.total ?? 0;
 
-  const feedOptions = useMemo(() => {
-    const feeds = feedsData ?? [];
-    return [...feeds].filter((f) => !f.disabled).sort((a, b) => a.name.localeCompare(b.name));
-  }, [feedsData]);
+  const senderOptions = useMemo(() => {
+    const set = new Set<string>();
+    for (const item of items) set.add(item.emailFrom);
+    return [...set].sort((a, b) => a.localeCompare(b));
+  }, [items]);
 
   const handleRefresh = () => {
     triggerRefresh();
     refetch();
   };
 
-  const handleMarkRead = (item: RssItemWithFeedData) => {
+  const handleMarkRead = (item: EmailItemData) => {
     setPendingMarkReadId(item.id);
-    markRead(
-      {feedId: item.feedId, itemId: item.id},
-      {
-        onSuccess: () => setHiddenItems((prev) => new Set([...prev, item.id])),
-        onSettled: () => setPendingMarkReadId(null),
-      },
-    );
+    markRead(item.id, {
+      onSuccess: () => setHiddenItems((prev) => new Set([...prev, item.id])),
+      onSettled: () => setPendingMarkReadId(null),
+    });
   };
 
-  const handlePromote = (item: RssItemWithFeedData) => {
+  const handlePromote = (item: EmailItemData) => {
     setPendingPromoteId(item.id);
-    promote(
-      {feedId: item.feedId, itemId: item.id},
-      {
-        onSuccess: () => setHiddenItems((prev) => new Set([...prev, item.id])),
-        onSettled: () => setPendingPromoteId(null),
-      },
-    );
+    promote(item.id, {
+      onSuccess: () => setHiddenItems((prev) => new Set([...prev, item.id])),
+      onSettled: () => setPendingPromoteId(null),
+    });
   };
 
-  const renderItem = ({item}: {item: RssItemWithFeedData}) => {
-    const createdMs = new Date(item.createdAt).getTime();
-    const publishedMs = item.publishedAt ? new Date(item.publishedAt).getTime() : null;
-    const displayMs = publishedMs !== null && publishedMs <= createdMs ? publishedMs : createdMs;
-    const displayDate = new Date(displayMs).toLocaleString();
+  const renderItem = ({item}: {item: EmailItemData}) => {
+    const d = new Date(item.importedAt);
+    const displayDate = `${d.toLocaleDateString()} ${d.toLocaleTimeString([], {
+      hour: 'numeric',
+      minute: '2-digit',
+    })}`;
+    const {meta, subject} = formatEmailMeta({
+      emailFrom: item.emailFrom,
+      emailSubject: item.emailSubject,
+      date: displayDate,
+    });
 
     return (
       <View
@@ -106,23 +106,28 @@ export default function FeedsScreen() {
             }}
             numberOfLines={2}
           >
-            {item.title}
+            {item.title || '(No subject)'}
           </Text>
-          {item.summary && (
+          {item.description && (
             <Text
               style={{fontSize: 12, color: colors.textMuted, marginBottom: 8}}
               numberOfLines={2}
             >
-              {item.summary}
+              {item.description}
             </Text>
           )}
-          <Text style={{fontSize: 11, color: colors.textFaint}}>
-            {item.feedName} · {displayDate}
+          <Text style={{fontSize: 11, color: colors.textFaint}} numberOfLines={1}>
+            {meta}
           </Text>
+          {subject && (
+            <Text style={{fontSize: 11, color: colors.textFaint, marginTop: 2}} numberOfLines={1}>
+              {subject}
+            </Text>
+          )}
         </View>
         <ItemActions
           url={item.link}
-          onOpen={() => markOpened({feedId: item.feedId, itemId: item.id})}
+          onOpen={() => markOpened(item.id)}
           onMarkRead={() => handleMarkRead(item)}
           onPromote={() => handlePromote(item)}
           isMarkingRead={pendingMarkReadId === item.id && isMarkingRead}
@@ -153,7 +158,7 @@ export default function FeedsScreen() {
         </Text>
         <View style={{flexDirection: 'row', gap: 8}}>
           <TouchableOpacity
-            onPress={() => markAllRead(selectedFeedId ?? undefined)}
+            onPress={() => markAllRead(selectedFrom ?? undefined)}
             disabled={isMarkingAllRead}
             style={{
               paddingHorizontal: 10,
@@ -212,43 +217,43 @@ export default function FeedsScreen() {
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={() => setSelectedFeedId(null)}
+          onPress={() => setSelectedFrom(null)}
           style={{
             paddingHorizontal: 12,
             paddingVertical: 6,
             borderRadius: 16,
-            backgroundColor: selectedFeedId === null ? colors.accent : colors.border,
+            backgroundColor: selectedFrom === null ? colors.accent : colors.border,
           }}
         >
           <Text
             style={{
               fontSize: 12,
               fontWeight: '600',
-              color: selectedFeedId === null ? colors.bg : colors.text,
+              color: selectedFrom === null ? colors.bg : colors.text,
             }}
           >
-            All sources
+            All senders
           </Text>
         </TouchableOpacity>
-        {feedOptions.map((feed) => (
+        {senderOptions.map((from) => (
           <TouchableOpacity
-            key={feed.id}
-            onPress={() => setSelectedFeedId(feed.id)}
+            key={from}
+            onPress={() => setSelectedFrom(from)}
             style={{
               paddingHorizontal: 12,
               paddingVertical: 6,
               borderRadius: 16,
-              backgroundColor: selectedFeedId === feed.id ? colors.accent : colors.border,
+              backgroundColor: selectedFrom === from ? colors.accent : colors.border,
             }}
           >
             <Text
               style={{
                 fontSize: 12,
                 fontWeight: '600',
-                color: selectedFeedId === feed.id ? colors.bg : colors.text,
+                color: selectedFrom === from ? colors.bg : colors.text,
               }}
             >
-              {feed.name}
+              {from}
             </Text>
           </TouchableOpacity>
         ))}
@@ -263,7 +268,7 @@ export default function FeedsScreen() {
   if (error) {
     return (
       <ErrorState
-        title="Error loading items"
+        title="Error loading emails"
         message={error instanceof Error ? error.message : 'Unknown error'}
         colors={colors}
       />
@@ -280,12 +285,8 @@ export default function FeedsScreen() {
         stickyHeaderIndices={[0]}
         ListEmptyComponent={
           <EmptyState
-            title={unread ? 'No unread items' : 'No items'}
-            message={
-              unread
-                ? 'Subscribe to feeds or pull to refresh'
-                : 'Subscribe to RSS feeds to get started'
-            }
+            title={unread ? 'No unread emails' : 'No emails'}
+            message={unread ? 'Pull to refresh' : 'Email items will appear here'}
             colors={colors}
           />
         }

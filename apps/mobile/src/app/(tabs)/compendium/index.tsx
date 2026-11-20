@@ -10,12 +10,12 @@ import {useCallback, useMemo, useState} from 'react';
 import type {ListRenderItem} from 'react-native';
 import {MaterialIcons} from '@expo/vector-icons';
 import type {LinkData} from 'client';
-import {useColors} from '../../theme/use-colors';
-import {CompendiumLinkRow} from '../../components/CompendiumLinkRow';
-import {EmptyState} from '../../components/EmptyState';
-import {FilterStrip} from '../../components/FilterStrip';
-import {TagsDrawer} from '../../components/TagsDrawer';
-import {useLinks, useLinkTags} from '../../services/links';
+import {useColors} from '../../../theme/use-colors';
+import {CompendiumLinkRow} from '../../../components/CompendiumLinkRow';
+import {EmptyState} from '../../../components/EmptyState';
+import {FilterStrip} from '../../../components/FilterStrip';
+import {TagsDrawer} from '../../../components/TagsDrawer';
+import {useLinks, useLinkTags} from '../../../services/links';
 
 export default function CompendiumScreen() {
   const colors = useColors();

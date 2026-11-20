@@ -2,11 +2,13 @@ import {createContext, useCallback, useContext, useEffect, useMemo, useState} fr
 import type {ReactNode} from 'react';
 import {useWindowDimensions} from 'react-native';
 import {useColors} from '../theme/use-colors';
-import {isLandscape} from '../lib/resolve-reader-layout';
+import {isLandscape, resolveReaderLayout} from '../lib/resolve-reader-layout';
+import type {ReaderLayout} from '../lib/resolve-reader-layout';
 import {openLink} from './open-link';
 
 type ReaderPaneState = {
   canSplit: boolean;
+  layout: ReaderLayout;
   url: string | null;
   open: (url: string) => void;
   close: () => void;
@@ -14,6 +16,7 @@ type ReaderPaneState = {
 
 const ReaderPaneContext = createContext<ReaderPaneState>({
   canSplit: false,
+  layout: {mode: 'full'},
   url: null,
   open: function () {},
   close: function () {},
@@ -37,7 +40,16 @@ export function ReaderPaneProvider({children}: {children: ReactNode}) {
     setUrl(null);
   }, []);
 
-  const value = useMemo(() => ({canSplit, url, open: setUrl, close}), [canSplit, url, close]);
+  const hasOpenLink = url !== null;
+  const layout = useMemo(
+    () => resolveReaderLayout({width, height, hasOpenLink}),
+    [width, height, hasOpenLink],
+  );
+
+  const value = useMemo(
+    () => ({canSplit, layout, url, open: setUrl, close}),
+    [canSplit, layout, url, close],
+  );
 
   return <ReaderPaneContext.Provider value={value}>{children}</ReaderPaneContext.Provider>;
 }
