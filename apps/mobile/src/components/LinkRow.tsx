@@ -3,6 +3,8 @@ import type {LinkData} from 'client';
 
 type LinkRowProps = {
   link: LinkData;
+  // When set, the title is a link that opens the URL.
+  onOpen?: () => void;
   colors: {
     bg: string;
     text: string;
@@ -12,7 +14,7 @@ type LinkRowProps = {
   };
 };
 
-export function LinkRow({link, colors}: LinkRowProps) {
+export function LinkRow({link, onOpen, colors}: LinkRowProps) {
   const date = new Date(link.createDate).toLocaleDateString();
   const url = (() => {
     try {
@@ -40,6 +42,8 @@ export function LinkRow({link, colors}: LinkRowProps) {
           marginBottom: 4,
         }}
         numberOfLines={2}
+        onPress={onOpen}
+        accessibilityRole={onOpen ? 'link' : undefined}
       >
         {link.title}
       </Text>
