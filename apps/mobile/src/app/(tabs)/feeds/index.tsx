@@ -10,6 +10,7 @@ import {
 import {useMemo, useState} from 'react';
 import type {RssItemWithFeedData} from 'client';
 import {useColors} from '../../../theme/use-colors';
+import {RowGap} from '../../../components/RowGap';
 import {LoadingState, ErrorState, EmptyState} from '../../../components/ListStates';
 import {ItemActions} from '../../../components/ItemActions';
 import {
@@ -276,6 +277,7 @@ export default function FeedsScreen() {
         data={visibleItems}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
+        ItemSeparatorComponent={RowGap}
         ListHeaderComponent={renderHeader}
         stickyHeaderIndices={[0]}
         ListEmptyComponent={

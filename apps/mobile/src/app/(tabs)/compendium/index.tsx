@@ -11,6 +11,7 @@ import type {ListRenderItem} from 'react-native';
 import {MaterialIcons} from '@expo/vector-icons';
 import type {LinkData} from 'client';
 import {useColors} from '../../../theme/use-colors';
+import {RowGap} from '../../../components/RowGap';
 import {CompendiumLinkRow} from '../../../components/CompendiumLinkRow';
 import {EmptyState} from '../../../components/EmptyState';
 import {FilterStrip} from '../../../components/FilterStrip';
@@ -161,6 +162,7 @@ export default function CompendiumScreen() {
         data={links}
         keyExtractor={(item) => String(item.id)}
         renderItem={renderItem}
+        ItemSeparatorComponent={RowGap}
         maintainVisibleContentPosition={{minIndexForVisible: 0}}
         onEndReached={handleEndReached}
         onEndReachedThreshold={0.5}

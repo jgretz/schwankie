@@ -11,6 +11,7 @@ import {useMemo, useState} from 'react';
 import type {EmailItemData} from 'client';
 import {formatEmailMeta} from '../../../lib/format-email-meta';
 import {useColors} from '../../../theme/use-colors';
+import {RowGap} from '../../../components/RowGap';
 import {LoadingState, ErrorState, EmptyState} from '../../../components/ListStates';
 import {ItemActions} from '../../../components/ItemActions';
 import {
@@ -281,6 +282,7 @@ export default function EmailsScreen() {
         data={visibleItems}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
+        ItemSeparatorComponent={RowGap}
         ListHeaderComponent={renderHeader}
         stickyHeaderIndices={[0]}
         ListEmptyComponent={
