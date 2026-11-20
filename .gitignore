@@ -45,6 +45,7 @@ apps/mobile/android/
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+WORKING.md
 CLAUDE-WORKING.md
 CLAUDE-TASK.md
 .mcp.json
