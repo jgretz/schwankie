@@ -190,7 +190,11 @@ export default function FeedsScreen() {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        style={{borderBottomWidth: 1, borderBottomColor: colors.border}}
+        style={{
+          backgroundColor: colors.bg,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border,
+        }}
         contentContainerStyle={{paddingHorizontal: 12, paddingVertical: 8, gap: 8}}
       >
         <TouchableOpacity
