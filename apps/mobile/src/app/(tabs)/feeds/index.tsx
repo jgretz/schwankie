@@ -9,9 +9,10 @@ import {
 } from 'react-native';
 import {useMemo, useState} from 'react';
 import type {RssItemWithFeedData} from 'client';
-import {useColors} from '../../theme/use-colors';
-import {LoadingState, ErrorState, EmptyState} from '../../components/ListStates';
-import {ItemActions} from '../../components/ItemActions';
+import {useColors} from '../../../theme/use-colors';
+import {RowGap} from '../../../components/RowGap';
+import {LoadingState, ErrorState, EmptyState} from '../../../components/ListStates';
+import {ItemActions} from '../../../components/ItemActions';
 import {
   useAllRssItems,
   useListFeeds,
@@ -20,7 +21,7 @@ import {
   useMarkRssItemRead,
   usePromoteRssItem,
   useTriggerRefreshAllFeeds,
-} from '../../services/feeds';
+} from '../../../services/feeds';
 
 export default function FeedsScreen() {
   const colors = useColors();
@@ -189,7 +190,11 @@ export default function FeedsScreen() {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        style={{borderBottomWidth: 1, borderBottomColor: colors.border}}
+        style={{
+          backgroundColor: colors.bg,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border,
+        }}
         contentContainerStyle={{paddingHorizontal: 12, paddingVertical: 8, gap: 8}}
       >
         <TouchableOpacity
@@ -276,6 +281,7 @@ export default function FeedsScreen() {
         data={visibleItems}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
+        ItemSeparatorComponent={RowGap}
         ListHeaderComponent={renderHeader}
         stickyHeaderIndices={[0]}
         ListEmptyComponent={

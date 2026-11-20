@@ -1,8 +1,7 @@
 import {memo} from 'react';
-import {View} from 'react-native';
 import type {LinkData} from 'client';
 import {LinkRow} from './LinkRow';
-import {LinkActions} from './LinkActions';
+import {useOpenLink} from '../services/reader-pane';
 import type {lightColors} from '../theme/colors';
 
 type Colors = typeof lightColors;
@@ -13,11 +12,10 @@ type CompendiumLinkRowProps = {
 };
 
 function CompendiumLinkRowComponent({link, colors}: CompendiumLinkRowProps) {
+  const openLink = useOpenLink();
+
   return (
-    <View>
-      <LinkRow link={link} colors={colors} />
-      <LinkActions url={link.url} colors={colors} />
-    </View>
+    <LinkRow link={link} onOpen={() => openLink(link.url, 'CompendiumLinkRow')} colors={colors} />
   );
 }
 

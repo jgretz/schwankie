@@ -3,10 +3,11 @@ import {useCallback, useMemo, useState} from 'react';
 import type {ListRenderItem} from 'react-native';
 import Toast from 'react-native-toast-message';
 import type {LinkData} from 'client';
-import {useColors} from '../../theme/use-colors';
-import {QueueLinkRow} from '../../components/QueueLinkRow';
-import {EmptyState} from '../../components/EmptyState';
-import {useDeleteLink, useLinks, useUpdateLink} from '../../services/links';
+import {useColors} from '../../../theme/use-colors';
+import {RowGap} from '../../../components/RowGap';
+import {QueueLinkRow} from '../../../components/QueueLinkRow';
+import {EmptyState} from '../../../components/EmptyState';
+import {useDeleteLink, useLinks, useUpdateLink} from '../../../services/links';
 
 export default function QueueScreen() {
   const colors = useColors();
@@ -123,6 +124,7 @@ export default function QueueScreen() {
         data={links}
         keyExtractor={(item) => String(item.id)}
         renderItem={renderItem}
+        ItemSeparatorComponent={RowGap}
         maintainVisibleContentPosition={{minIndexForVisible: 0}}
         onEndReached={handleEndReached}
         onEndReachedThreshold={0.5}
