@@ -5,7 +5,11 @@ import {useColors} from '../../../theme/use-colors';
 import {LoadingState, ErrorState, EmptyState} from '../../../components/ListStates';
 import {formatSummaryDate} from '../../../lib/format-summary-date';
 import {resolveAdjacentDates} from '../../../lib/resolve-adjacent-dates';
-import {useDailySummary, useDailySummaryDates} from '../../../services/daily-summary';
+import {
+  useDailySummary,
+  useDailySummaryDates,
+  useMarkDailySummaryItemsRead,
+} from '../../../services/daily-summary';
 import {useOpenLink} from '../../../services/reader-pane';
 
 type Colors = ReturnType<typeof useColors>;
@@ -25,6 +29,7 @@ export default function DailyScreen() {
   // controls work even when the screen opened without one selected.
   const activeDate = summary?.summaryDate ?? date;
   const {previousDate, nextDate} = resolveAdjacentDates(dates, activeDate);
+  const {mutate: markRead, isPending: isMarkingRead} = useMarkDailySummaryItemsRead();
 
   const handleRefresh = () => {
     refetch();
@@ -59,6 +64,8 @@ export default function DailyScreen() {
             previousDate={previousDate}
             nextDate={nextDate}
             onSelectDate={setDate}
+            onMarkRead={markRead}
+            isMarkingRead={isMarkingRead}
             colors={colors}
           />
         }
@@ -96,12 +103,16 @@ function DigestHeader({
   previousDate,
   nextDate,
   onSelectDate,
+  onMarkRead,
+  isMarkingRead,
   colors,
 }: {
   summary: DailySummaryData | null | undefined;
   previousDate: string | undefined;
   nextDate: string | undefined;
   onSelectDate: (date: string) => void;
+  onMarkRead: (date: string) => void;
+  isMarkingRead: boolean;
   colors: Colors;
 }) {
   return (
@@ -118,11 +129,20 @@ function DigestHeader({
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between',
+          flexWrap: 'wrap',
           gap: 12,
         }}
       >
         {summary ? (
-          <Text style={{flex: 1, fontSize: 12, color: colors.textFaint}}>
+          <Text
+            style={{
+              flexGrow: 1,
+              flexShrink: 1,
+              minWidth: 160,
+              fontSize: 12,
+              color: colors.textFaint,
+            }}
+          >
             {formatSummaryDate(summary.summaryDate)} · {pluralizeLinks(summary.itemCount)} over{' '}
             {summary.lookbackHours}h
             {summary.topics.length > 0
@@ -133,6 +153,25 @@ function DigestHeader({
           <View style={{flex: 1}} />
         )}
         <View style={{flexDirection: 'row', gap: 8}}>
+          {summary ? (
+            <TouchableOpacity
+              onPress={() => onMarkRead(summary.summaryDate)}
+              disabled={isMarkingRead}
+              accessibilityLabel="Mark this digest's items as read"
+              style={{
+                paddingHorizontal: 10,
+                paddingVertical: 6,
+                borderRadius: 6,
+                borderWidth: 1,
+                borderColor: colors.border,
+                opacity: isMarkingRead ? 0.5 : 1,
+              }}
+            >
+              <Text style={{fontSize: 12, color: colors.text}}>
+                {isMarkingRead ? 'Marking…' : 'Mark read'}
+              </Text>
+            </TouchableOpacity>
+          ) : null}
           <DayNavButton
             label="← Older"
             accessibilityLabel="Previous digest"

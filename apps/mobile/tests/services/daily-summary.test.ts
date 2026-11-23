@@ -1,7 +1,15 @@
-import {afterAll, beforeAll, beforeEach, describe, expect, it} from 'bun:test';
+import {afterAll, beforeAll, beforeEach, describe, expect, it, mock} from 'bun:test';
 import {init} from 'client';
 import {makeDailySummary} from '../factories';
-import {fetchDailySummaryOrNull} from '../../src/services/daily-summary';
+
+// react-native-toast-message pulls in react-native, which cannot load under
+// bun test, so stub it before importing the module under test.
+mock.module('react-native-toast-message', () => ({
+  default: {show: () => {}},
+}));
+
+type Mod = typeof import('../../src/services/daily-summary');
+let fetchDailySummaryOrNull: Mod['fetchDailySummaryOrNull'];
 
 // The mapping under test is a contract with the message `apiFetch` builds, so
 // these drive the real client and stub `fetch` rather than mocking the call.
@@ -14,7 +22,9 @@ function respond(status: number, statusText: string, body: unknown): void {
     new Response(JSON.stringify(body), {status, statusText})) as unknown as typeof fetch;
 }
 
-beforeAll(function () {
+beforeAll(async function () {
+  fetchDailySummaryOrNull = (await import('../../src/services/daily-summary'))
+    .fetchDailySummaryOrNull;
   init({apiUrl: 'https://api.test.local', apiKey: 'test-key'});
 });
 

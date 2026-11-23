@@ -1,5 +1,6 @@
-import {useQuery} from '@tanstack/react-query';
-import {fetchDailySummary, fetchDailySummaryDates} from 'client';
+import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
+import Toast from 'react-native-toast-message';
+import {fetchDailySummary, fetchDailySummaryDates, markDailySummaryItemsRead} from 'client';
 import type {DailySummaryData} from 'client';
 import {isMissingDigestError} from '../lib/is-missing-digest-error';
 
@@ -31,5 +32,28 @@ export function useDailySummaryDates() {
     queryKey: ['daily-summary-dates'],
     queryFn: () => fetchDailySummaryDates(),
     select: (data) => data.dates,
+  });
+}
+
+// Marks the RSS and email items inside the digest's stored window as read, so
+// the RSS and Emails tabs drop what the digest already covered.
+export function useMarkDailySummaryItemsRead() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (date: string) => markDailySummaryItemsRead(date),
+    onSuccess: (result) => {
+      Toast.show({type: 'success', text1: `Marked ${result.count} as read`});
+      queryClient.invalidateQueries({queryKey: ['all-rss-items']});
+      queryClient.invalidateQueries({queryKey: ['email-items']});
+    },
+    onError: (error) => {
+      console.error('[useMarkDailySummaryItemsRead] Error:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Failed to mark as read',
+        text2: error instanceof Error ? error.message : 'Unknown error',
+      });
+    },
   });
 }
